@@ -9,7 +9,8 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
-import CarIllustration from "../assets/CarIllustration";
+// import CarIllustration from "../assets/CarIllustration";
+import bmw from "../assets/bmw.png";
 import useAppStore from "../store/useAppStore";
 import SplashScreen from "../components/ui/SplashScreen";
 import apexToast from "../utils/toast";
@@ -170,7 +171,7 @@ const Login = () => {
 
           {/* Car SVG — floating animation */}
           <motion.div
-            className="absolute w-[85%] max-w-lg top-1/2 left-1/2 -translate-x-1/2"
+            className="absolute w-full max-w-3xl top-1/2 left-1/2 -translate-x-1/2"
             animate={{ y: ["-54%", "-58%", "-54%"] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
@@ -179,7 +180,12 @@ const Login = () => {
               (See the full SVG code in the widget above)
               In your real project, save it as src/assets/CarIllustration.jsx
             */}
-            <CarIllustration />
+            {/* <CarIllustration /> */}
+            <img
+              src={bmw}
+              alt="BMW GT"
+              className="object-center h-auto w-full"
+            />
           </motion.div>
 
           {/* Spec badges — top right */}

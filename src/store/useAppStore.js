@@ -29,7 +29,17 @@ const useAppStore = create(
       // ── Theme ─────────────────────────────────────────────────────────────
       theme: "dark",
       toggleTheme: () =>
-        set((state) => ({ theme: state.theme === "dark" ? "light" : "dark" })),
+        set((state) => {
+          const newTheme = state.theme === "dark" ? "light" : "dark";
+          if (newTheme === "dark") {
+            document.documentElement.classList.add("dark");
+            document.documentElement.classList.remove("light");
+          } else {
+            document.documentElement.classList.remove("dark");
+            document.documentElement.classList.add("light");
+          }
+          return { theme: newTheme };
+        }),
     }),
     {
       // The key used in localStorage — open DevTools → Application → Local Storage

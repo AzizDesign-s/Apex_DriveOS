@@ -1,92 +1,107 @@
-// src/assets/CarIllustration.jsx
-// This is just the SVG car drawing as a React component.
-// Using it as a component means you can reuse it anywhere.
-
-function CarIllustration() {
+const CarIllustration = () => {
   return (
-    <svg viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Floor shadow */}
-      <ellipse
-        cx="260"
-        cy="200"
-        rx="200"
-        ry="18"
-        fill="rgba(212,175,55,0.08)"
-      />
-      {/* Car body */}
+    <svg
+      width="800"
+      height="300"
+      viewBox="0 0 800 300"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Shadow */}
+      <ellipse cx="400" cy="240" rx="260" ry="20" fill="#D1D5DB" />
+
+      {/* Car Body */}
       <path
-        d="M60 150 L80 100 L140 70 L200 55 L320 55 L380 70 L440 100 L460 150 L460 165 L60 165 Z"
-        fill="#1a2333"
-        stroke="#2D3A4A"
-        strokeWidth="1"
+        d="M180 180
+           L250 120
+           C280 95 330 80 400 80
+           L520 80
+           C580 80 620 100 650 140
+           L700 180
+           L700 210
+           L180 210
+           Z"
+        fill="#FFD500"
+        stroke="#111827"
+        strokeWidth="4"
       />
-      {/* Roof */}
+
+      {/* Hood */}
       <path
-        d="M155 100 L185 68 L200 58 L320 58 L335 68 L365 100 Z"
-        fill="#141e2e"
-        stroke="#2D3A4A"
-        strokeWidth="1"
+        d="M180 180
+           L240 130
+           L300 130
+           L280 180
+           Z"
+        fill="#F4C400"
       />
-      {/* Windshield */}
+
+      {/* Windows */}
       <path
-        d="M168 98 L192 70 L200 62 L240 62 L240 98 Z"
-        fill="#1E3A5F"
-        stroke="#38BDF830"
-        strokeWidth="1"
-        opacity="0.8"
+        d="M290 120
+           C320 100 350 95 400 95
+           L510 95
+           C545 95 575 110 600 140
+           L320 140
+           Z"
+        fill="#1E293B"
       />
-      {/* ... rest of SVG paths from the preview ... */}
-      {/* Wheels */}
-      <circle
-        cx="380"
-        cy="166"
-        r="28"
-        fill="#0D1117"
-        stroke="#2D3A4A"
+
+      {/* Window Divider */}
+      <line
+        x1="430"
+        y1="95"
+        x2="430"
+        y2="140"
+        stroke="#94A3B8"
+        strokeWidth="3"
+      />
+
+      {/* BMW Kidney Grille */}
+      <rect x="190" y="150" width="16" height="28" rx="6" fill="#111827" />
+      <rect x="210" y="150" width="16" height="28" rx="6" fill="#111827" />
+
+      {/* Headlight */}
+      <path d="M225 145 L255 145 L245 160 L220 160 Z" fill="#E5E7EB" />
+
+      {/* Tail Light */}
+      <rect x="665" y="150" width="18" height="10" rx="3" fill="#EF4444" />
+
+      {/* Door Line */}
+      <line
+        x1="420"
+        y1="140"
+        x2="420"
+        y2="210"
+        stroke="#111827"
         strokeWidth="2"
       />
+
+      {/* Door Handle */}
+      <rect x="450" y="150" width="22" height="4" rx="2" fill="#111827" />
+
+      {/* Front Wheel */}
+      <circle cx="280" cy="210" r="45" fill="#111827" />
+      <circle cx="280" cy="210" r="28" fill="#9CA3AF" />
+      <circle cx="280" cy="210" r="12" fill="#E5E7EB" />
+
+      {/* Rear Wheel */}
+      <circle cx="600" cy="210" r="45" fill="#111827" />
+      <circle cx="600" cy="210" r="28" fill="#9CA3AF" />
+      <circle cx="600" cy="210" r="12" fill="#E5E7EB" />
+
+      {/* BMW Badge */}
+      <circle cx="340" cy="110" r="10" fill="#2563EB" />
       <circle
-        cx="380"
-        cy="166"
-        r="20"
-        fill="#111827"
-        stroke="#3A4A5A"
-        strokeWidth="1"
-      />
-      <circle
-        cx="380"
-        cy="166"
-        r="8"
-        fill="#1E2D40"
-        stroke="#D4AF3740"
-        strokeWidth="1"
-      />
-      <circle
-        cx="140"
-        cy="166"
-        r="28"
-        fill="#0D1117"
-        stroke="#2D3A4A"
+        cx="340"
+        cy="110"
+        r="10"
+        stroke="#111827"
         strokeWidth="2"
-      />
-      <circle
-        cx="140"
-        cy="166"
-        r="20"
-        fill="#111827"
-        stroke="#3A4A5A"
-        strokeWidth="1"
-      />
-      <circle
-        cx="140"
-        cy="166"
-        r="8"
-        fill="#1E2D40"
-        stroke="#D4AF3740"
-        strokeWidth="1"
+        fill="none"
       />
     </svg>
   );
-}
+};
 
 export default CarIllustration;

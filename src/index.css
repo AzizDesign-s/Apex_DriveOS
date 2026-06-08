@@ -4,6 +4,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── THEME VARIABLES ────────────────────────────────────────────────────────
+   These CSS variables are what Tailwind color utilities read.
+   .dark on <html>  → dark values active
+   no .dark on <html> → light values active (overridden below)
+   This is the SINGLE source of truth for both themes.
+──────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Dark theme — default */
+  --color-base: #0b0f14;
+  --color-card: #111827;
+  --color-card-hover: #1a2333;
+  --color-border: #1e2d40;
+  --color-text-primary: #f9fafb;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #475569;
+
+  /* Scrollbar */
+  --scrollbar-track: #111827;
+  --scrollbar-thumb: rgba(212, 175, 55, 0.3);
+}
+
+/* Light theme — applied when .dark is NOT on <html> */
+html:not(.dark) {
+  --color-base: #f0f4f8;
+  --color-card: #ffffff;
+  --color-card-hover: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-muted: #475569;
+  --color-text-subtle: #94a3b8;
+
+  --scrollbar-track: #e2e8f0;
+  --scrollbar-thumb: rgba(212, 175, 55, 0.4);
+}
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -16,92 +52,129 @@
   }
 
   body {
-    background-color: #0b0f14;
-    color: #f9fafb;
+    /* Uses CSS variable so it switches with theme */
+    background-color: var(--color-base);
+    color: var(--color-text-primary);
     font-family: "Montserrat", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    /* Smooth background color transition when toggling theme */
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
 
-  /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 4px;
   }
   ::-webkit-scrollbar-track {
-    background: #111827;
+    background: var(--scrollbar-track);
   }
   ::-webkit-scrollbar-thumb {
-    background: #d4af3750;
+    background: var(--scrollbar-thumb);
     border-radius: 2px;
   }
   ::-webkit-scrollbar-thumb:hover {
     background: #d4af37;
   }
+}
 
+@layer components {
+  /* Glassmorphism card */
+  .glass-card {
+    background: rgba(from var(--color-card) r g b / 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease;
+  }
+
+  /* Light mode glass adjustment — needs less blur, more solid bg */
+  html:not(.dark) .glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  }
+  /* Gold gradient text */
+  .text-gold-gradient {
+    @apply bg-gradient-to-r from-gold-light via-gold to-gold-dark bg-clip-text text-transparent;
+  }
+
+  /* Diamond logo shape */
   .splash-diamond {
-    width: 72px;
-    height: 72px;
     background: linear-gradient(135deg, #b8931f, #d4af37, #e8c84a);
     clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #0b0f14;
-  }
-}
-
-@layer components {
-  /* Glassmorphism card base */
-  .glass-card {
-    @apply bg-card/80 backdrop-blur-glass border border-border rounded-2xl shadow-glass;
-  }
-
-  /* Gold gradient text */
-  .text-gold-gradient {
-    @apply bg-gradient-to-r from-gold-light via-gold to-gold-dark bg-clip-text text-transparent;
+    font-weight: 900;
   }
 
   /* Premium button */
   .btn-gold {
-    @apply bg-gradient-to-r from-gold-dark via-gold to-gold-light text-base font-semibold 
-           px-6 py-2.5 rounded-xl shadow-gold hover:shadow-gold-lg 
+    @apply bg-gradient-to-r from-gold-dark via-gold to-gold-light text-base font-semibold
+           px-6 py-2.5 rounded-xl shadow-gold hover:shadow-gold-lg
            transition-all duration-300 hover:scale-[1.02] active:scale-[0.98];
   }
 
   /* Ghost button */
   .btn-ghost {
-    @apply border border-border text-text-muted hover:border-gold hover:text-gold 
+    @apply border border-border text-text-muted hover:border-gold hover:text-gold
            px-6 py-2.5 rounded-xl transition-all duration-300;
   }
 
   /* Status badges */
   .badge-available {
-    @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 
-           text-xs font-medium px-2.5 py-1 rounded-full;
+    @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-medium px-2.5 py-1 rounded-full;
   }
   .badge-reserved {
-    @apply bg-sky-500/10 text-sky-400 border border-sky-500/20 
-           text-xs font-medium px-2.5 py-1 rounded-full;
+    @apply bg-sky-500/10 text-sky-400 border border-sky-500/20 text-xs font-medium px-2.5 py-1 rounded-full;
   }
   .badge-sold {
-    @apply bg-gold/10 text-gold border border-gold/20 
-           text-xs font-medium px-2.5 py-1 rounded-full;
+    @apply bg-gold/10 text-gold border border-gold/20 text-xs font-medium px-2.5 py-1 rounded-full;
   }
   .badge-maintenance {
-    @apply bg-rose-500/10 text-rose-400 border border-rose-500/20 
-           text-xs font-medium px-2.5 py-1 rounded-full;
+    @apply bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs font-medium px-2.5 py-1 rounded-full;
   }
 
   /* Input field */
   .input-luxury {
-    @apply bg-card border border-border rounded-xl px-4 py-2.5 text-text-primary 
-           placeholder:text-text-subtle outline-none focus:border-gold/50 
-           focus:ring-1 focus:ring-gold/20 transition-all duration-200 w-full;
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    padding: 0.625rem 1rem;
+    color: var(--color-text-primary);
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    width: 100%;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s,
+      background-color 0.3s;
+  }
+  .input-luxury::placeholder {
+    color: var(--color-text-subtle);
+  }
+  .input-luxury:focus {
+    border-color: rgba(212, 175, 55, 0.5);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08);
   }
 }
 
 @layer utilities {
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
   .text-balance {
     text-wrap: balance;
   }
