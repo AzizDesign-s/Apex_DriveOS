@@ -1,85 +1,85 @@
-// src/components/ui/DeleteConfirm.jsx
-// Reusable delete confirmation — used in Inventory, Customers, Invoices etc.
+// src/components/ui/MoreMenu.jsx
+// The 3-dot popup menu — Refresh, Export Excel, Export PDF etc.
+// Reused in every module toolbar.
 
-import { useState, useEffect } from "react";
-import { Trash2, AlertTriangle } from "lucide-react";
-import Modal from "./Modal";
-import Button from "./Button";
+import { useState, useEffect, useRef } from "react";
+import { MoreHorizontal } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import clsx from "clsx";
 
-function DeleteConfirm({
-  isOpen,
-  onClose,
-  onConfirm,
-  title = "Delete this item?",
-  description,
-  confirmText, // if set, user must type this to confirm
-  itemName, // shown in description
-}) {
-  const [typed, setTyped] = useState("");
+function MoreMenu({ items = [] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+
+  // Close on outside click
   useEffect(() => {
-    if (isOpen) setTyped("");
-  }, [isOpen]);
-
-  const requiresTyping = !!confirmText;
-  const canConfirm = !requiresTyping || typed.trim() === confirmText;
+    const handler = (e) => {
+      if (!ref.current?.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={title}
-      subtitle={
-        description ||
-        (itemName ? `Permanently remove "${itemName}"` : undefined)
-      }
-    >
-      {/* Warning */}
-      <div
-        className="flex items-start gap-2 bg-amber-400/8 border border-amber-400/15
-                      rounded-xl p-3 mb-4"
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className={clsx(
+          "w-8 h-8 rounded-xl border flex items-center justify-center transition-all",
+          open
+            ? "border-gold/40 text-gold bg-gold/5"
+            : "border-border text-text-muted hover:border-gold/30 hover:text-gold",
+        )}
+        aria-label="More options"
       >
-        <AlertTriangle
-          size={14}
-          className="text-amber-400 flex-shrink-0 mt-0.5"
-        />
-        <p className="text-[11px] text-amber-400/80 leading-relaxed">
-          This action cannot be undone.
-        </p>
-      </div>
+        <MoreHorizontal size={15} />
+      </button>
 
-      {/* Type-to-confirm input */}
-      {requiresTyping && (
-        <div className="mb-4">
-          <p className="text-[9px] font-bold tracking-[0.2em] text-text-subtle uppercase mb-2">
-            Type <span className="text-gold">{confirmText}</span> to confirm
-          </p>
-          <input
-            className="input-luxury text-xs"
-            placeholder={confirmText}
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
-            autoFocus
-          />
-        </div>
-      )}
-
-      {/* Actions */}
-      <div className="flex gap-3">
-        <Button variant="ghost" onClick={onClose} fullWidth>
-          Cancel
-        </Button>
-        <Button
-          variant="danger"
-          onClick={() => canConfirm && onConfirm()}
-          disabled={!canConfirm}
-          icon={Trash2}
-          fullWidth
-        >
-          Delete
-        </Button>
-      </div>
-    </Modal>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="absolute right-0 top-[calc(100%+6px)] w-44 bg-card border border-border
+                       rounded-xl shadow-glass z-30 overflow-hidden py-1"
+            initial={{ opacity: 0, y: -6, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+          >
+            {items.map((item, i) =>
+              item === "divider" ? (
+                <div key={i} className="h-px bg-border mx-2 my-1" />
+              ) : (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setOpen(false);
+                    item.onClick?.();
+                  }}
+                  className={clsx(
+                    "w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium",
+                    "transition-colors hover:bg-gold/5",
+                    item.danger
+                      ? "text-rose-400 hover:text-rose-400"
+                      : "text-text-muted hover:text-text-primary",
+                  )}
+                >
+                  {item.icon && (
+                    <item.icon
+                      size={13}
+                      className={
+                        item.danger ? "text-rose-400" : "text-text-subtle"
+                      }
+                    />
+                  )}
+                  {item.label}
+                </button>
+              ),
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
-export default DeleteConfirm;
+export default MoreMenu;

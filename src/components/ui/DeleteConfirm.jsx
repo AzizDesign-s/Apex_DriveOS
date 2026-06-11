@@ -1,6 +1,4 @@
 // src/components/ui/DeleteConfirm.jsx
-// Reusable delete confirmation — used in Inventory, Customers, Invoices etc.
-
 import { useState, useEffect } from "react";
 import { Trash2, AlertTriangle } from "lucide-react";
 import Modal from "./Modal";
@@ -12,28 +10,31 @@ function DeleteConfirm({
   onConfirm,
   title = "Delete this item?",
   description,
-  confirmText, // if set, user must type this to confirm
-  itemName, // shown in description
+  itemName,
+  confirmText, // if provided → user must type this string to enable delete button
 }) {
   const [typed, setTyped] = useState("");
   useEffect(() => {
     if (isOpen) setTyped("");
   }, [isOpen]);
 
+  // If confirmText is provided, user must type it exactly.
+  // If not provided (bulk delete), button is always enabled.
   const requiresTyping = !!confirmText;
   const canConfirm = !requiresTyping || typed.trim() === confirmText;
+
+  const displayDescription =
+    description ||
+    (itemName ? `Permanently remove "${itemName}" from inventory.` : undefined);
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      subtitle={
-        description ||
-        (itemName ? `Permanently remove "${itemName}"` : undefined)
-      }
+      subtitle={displayDescription}
     >
-      {/* Warning */}
+      {/* Warning banner */}
       <div
         className="flex items-start gap-2 bg-amber-400/8 border border-amber-400/15
                       rounded-xl p-3 mb-4"
@@ -47,14 +48,14 @@ function DeleteConfirm({
         </p>
       </div>
 
-      {/* Type-to-confirm input */}
+      {/* Type-to-confirm — only shown for single car delete */}
       {requiresTyping && (
         <div className="mb-4">
           <p className="text-[9px] font-bold tracking-[0.2em] text-text-subtle uppercase mb-2">
             Type <span className="text-gold">{confirmText}</span> to confirm
           </p>
           <input
-            className="input-luxury text-xs"
+            className="input-luxury text-xs w-full"
             placeholder={confirmText}
             value={typed}
             onChange={(e) => setTyped(e.target.value)}
@@ -70,12 +71,17 @@ function DeleteConfirm({
         </Button>
         <Button
           variant="danger"
-          onClick={() => canConfirm && onConfirm()}
+          onClick={() => {
+            if (canConfirm) {
+              onConfirm();
+              onClose();
+            }
+          }}
           disabled={!canConfirm}
           icon={Trash2}
           fullWidth
         >
-          Delete
+          {requiresTyping ? "Delete" : "Yes, Delete"}
         </Button>
       </div>
     </Modal>

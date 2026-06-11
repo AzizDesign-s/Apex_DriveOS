@@ -385,7 +385,7 @@ function Sidebar({ isMobile = false }) {
             {/* Drawer panel */}
             <motion.aside
               className="fixed top-0 left-0 bottom-0 w-[260px] z-40
-                         bg-card/95 border-r border-border
+                         bg-card/95 border-r border-border bg-base/20 backdrop-blur-sm
                          flex flex-col p-5"
               variants={drawerVariants}
               initial="closed"

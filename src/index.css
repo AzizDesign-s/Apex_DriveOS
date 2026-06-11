@@ -12,21 +12,23 @@
 ──────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Dark theme — default */
-  --color-base: #0b0f14;
-  --color-card: #111827;
-  --color-card-hover: #1a2333;
-  --color-border: #1e2d40;
-  --color-text-primary: #f9fafb;
-  --color-text-muted: #94a3b8;
-  --color-text-subtle: #475569;
+  /* Dark — Deep Navy + Gold */
+  --color-base: #080c14;
+  --color-card: #0d1526;
+  --color-card-hover: #112040;
+  --color-border: #1b2e4a;
+  --color-text-primary: #f0f4ff;
+  --color-text-muted: #8ba0c0;
+  --color-text-subtle: #4a6080;
 
-  /* Scrollbar */
-  --scrollbar-track: #111827;
+  --scrollbar-track: #0d1526;
   --scrollbar-thumb: rgba(212, 175, 55, 0.3);
+
+  /* RGB variants for opacity modifiers */
+  --color-card-rgb: 13, 21, 38;
+  --color-base-rgb: 8, 12, 20;
 }
 
-/* Light theme — applied when .dark is NOT on <html> */
 html:not(.dark) {
   --color-base: #f0f4f8;
   --color-card: #ffffff;
@@ -35,9 +37,10 @@ html:not(.dark) {
   --color-text-primary: #0f172a;
   --color-text-muted: #475569;
   --color-text-subtle: #94a3b8;
-
   --scrollbar-track: #e2e8f0;
   --scrollbar-thumb: rgba(212, 175, 55, 0.4);
+  --color-card-rgb: 255, 255, 255;
+  --color-base-rgb: 240, 244, 248;
 }
 
 @layer base {

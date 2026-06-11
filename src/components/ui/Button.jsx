@@ -39,9 +39,9 @@ const VARIANTS = {
 };
 
 const SIZES = {
-  sm: "px-3 py-1.5 text-[10px] rounded-lg gap-1.5",
-  md: "px-4 py-2   text-xs    rounded-xl gap-2",
-  lg: "px-5 py-2.5 text-sm    rounded-xl gap-2",
+  sm: "px-3 py-1.5 text-[10px] rounded-lg gap-1.5  ",
+  md: "px-4 py-2   text-xs    rounded-xl gap-2 ",
+  lg: "px-5 py-2.5 text-sm    rounded-xl gap-2 ",
 };
 
 function Button({

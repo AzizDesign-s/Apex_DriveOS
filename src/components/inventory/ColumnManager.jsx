@@ -1,10 +1,7 @@
 // src/components/inventory/ColumnManager.jsx
-//
-// Renders the column toggle + drag-to-reorder panel.
-// Uses @dnd-kit for drag reordering.
-// Columns state is managed by parent (Inventory.jsx) and passed via props.
+// Toggle column visibility + drag to reorder.
+// Uses @dnd-kit/sortable for drag reordering.
 
-import { useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -22,47 +19,40 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Eye, EyeOff } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
-// ── Single sortable column row ────────────────────────────────────────────────
-function SortableColumn({ col, onToggle }) {
+// ── Single sortable row ───────────────────────────────────────────────────────
+function SortableCol({ col, onToggle }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: col.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className="flex items-center justify-between px-2 py-2 rounded-lg
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className="flex items-center gap-2 px-2 py-2 rounded-lg
                  hover:bg-gold/5 transition-colors group"
     >
       {/* Drag handle */}
       <div
         {...attributes}
         {...listeners}
-        className="text-text-subtle hover:text-text-muted cursor-grab active:cursor-grabbing mr-2"
+        className="text-text-subtle/40 hover:text-text-muted
+                   cursor-grab active:cursor-grabbing flex-shrink-0"
       >
         <GripVertical size={13} />
       </div>
 
       <span className="flex-1 text-xs text-text-muted">{col.label}</span>
 
-      {/* Toggle visibility — disabled for required columns */}
+      {/* Toggle */}
       {col.canHide ? (
         <button
           onClick={() => onToggle(col.id)}
-          className="text-text-subtle hover:text-gold transition-colors"
+          className={`transition-colors ${col.visible ? "text-gold" : "text-text-subtle/40"}`}
+          aria-label={col.visible ? `Hide ${col.label}` : `Show ${col.label}`}
         >
-          {col.visible ? (
-            <Eye size={13} />
-          ) : (
-            <EyeOff size={13} className="text-text-subtle/50" />
-          )}
+          {col.visible ? <Eye size={13} /> : <EyeOff size={13} />}
         </button>
       ) : (
         <span className="text-[9px] text-text-subtle/40 tracking-widest uppercase">
@@ -73,7 +63,7 @@ function SortableColumn({ col, onToggle }) {
   );
 }
 
-// ── Main ColumnManager component ──────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 function ColumnManager({ columns, onColumnsChange, isOpen, onClose }) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -82,7 +72,6 @@ function ColumnManager({ columns, onColumnsChange, isOpen, onClose }) {
     }),
   );
 
-  // When drag ends, reorder columns array
   const handleDragEnd = ({ active, over }) => {
     if (active.id !== over?.id) {
       const oldIdx = columns.findIndex((c) => c.id === active.id);
@@ -91,7 +80,6 @@ function ColumnManager({ columns, onColumnsChange, isOpen, onClose }) {
     }
   };
 
-  // Toggle single column visibility
   const handleToggle = (id) => {
     onColumnsChange(
       columns.map((c) => (c.id === id ? { ...c, visible: !c.visible } : c)),
@@ -104,11 +92,9 @@ function ColumnManager({ columns, onColumnsChange, isOpen, onClose }) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Click outside to close */}
           <div className="fixed inset-0 z-10" onClick={onClose} />
-
           <motion.div
-            className="absolute right-0 top-[calc(100%+6px)] w-52 z-20
+            className="absolute right-0 top-[calc(100%+6px)] w-64 z-20
                        bg-card border border-border rounded-xl shadow-glass overflow-hidden"
             initial={{ opacity: 0, y: -8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -116,22 +102,21 @@ function ColumnManager({ columns, onColumnsChange, isOpen, onClose }) {
             transition={{ duration: 0.15 }}
           >
             {/* Header */}
-            <div className="px-3 py-2.5 border-b border-border flex items-center justify-between">
+            <div className="flex items-center justify-between px-3 py-4 border-b border-border">
               <p className="text-[9px] font-bold tracking-[0.2em] text-text-subtle uppercase">
                 Manage Columns
               </p>
-              <span className="text-[9px] text-gold font-semibold">
+              <span className="text-[9px] font-semibold text-gold">
                 {visibleCount} visible
               </span>
             </div>
 
-            {/* Hint */}
-            <p className="px-3 pt-2 text-[9px] text-text-subtle/60 tracking-wide">
-              Drag to reorder · Click eye to show/hide
+            <p className="px-3 py-3 text-[9px] text-text-subtle/60">
+              Drag to reorder · Eye to show/hide
             </p>
 
-            {/* Sortable column list */}
-            <div className="px-2 py-2">
+            {/* Sortable list */}
+            <div className="px-2 pb-3 flex flex-col gap-1">
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -142,7 +127,7 @@ function ColumnManager({ columns, onColumnsChange, isOpen, onClose }) {
                   strategy={verticalListSortingStrategy}
                 >
                   {columns.map((col) => (
-                    <SortableColumn
+                    <SortableCol
                       key={col.id}
                       col={col}
                       onToggle={handleToggle}
@@ -152,10 +137,10 @@ function ColumnManager({ columns, onColumnsChange, isOpen, onClose }) {
               </DndContext>
             </div>
 
-            {/* Reset button */}
+            {/* Reset */}
             <div className="px-3 py-2.5 border-t border-border">
               <button
-                className="text-[10px] text-text-subtle hover:text-gold transition-colors w-full text-left"
+                className="text-[10px] text-text-subtle hover:text-gold transition-colors"
                 onClick={() =>
                   onColumnsChange(columns.map((c) => ({ ...c, visible: true })))
                 }

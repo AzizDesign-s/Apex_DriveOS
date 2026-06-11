@@ -36,10 +36,11 @@ function Select({
           disabled={disabled}
           className={clsx(
             "w-full bg-card border rounded-xl",
-            "text-sm font-[Montserrat] text-text-primary",
+            "text-xs font-[Montserrat] text-text-primary",
             "pl-3 pr-9 py-2.5",
             "outline-none transition-all duration-200",
-            "appearance-none cursor-pointer",
+
+            "appearance-none cursor-pointer ",
             error
               ? "border-rose-400/50 focus:border-rose-400"
               : "border-border focus:border-gold/50 focus:ring-1 focus:ring-gold/15",
@@ -47,7 +48,11 @@ function Select({
             className,
           )}
         >
-          {placeholder && <option value="">{placeholder}</option>}
+          {placeholder && (
+            <option value="" className="text-text-subtle">
+              {placeholder}
+            </option>
+          )}
           {normalized.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}

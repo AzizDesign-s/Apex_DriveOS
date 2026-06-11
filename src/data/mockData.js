@@ -197,7 +197,7 @@ export const DEFAULT_COLUMNS = [
   { id: "transmission", label: "Transmission", visible: false, canHide: true },
   { id: "plate", label: "Plate No.", visible: false, canHide: true },
   { id: "year", label: "Year", visible: false, canHide: true },
-  { id: "category", label: "Category", visible: false, canHide: true },
+  { id: "category", label: "Body Type", visible: false, canHide: true },
 ];
 
 // ── BRAND → MODELS MAP ────────────────────────────────────────────────────────
@@ -248,7 +248,16 @@ export const cars = [
     features:
       "• AMG Performance exhaust\n• Burmester surround sound\n• Night Vision Assist\n• Head-up display\n• Active Ride Control",
     condition: "Brand new. Zero defects. Full dealer warranty.",
-    photos: [],
+    photos: [
+      {
+        url: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80",
+        label: "Exterior Front",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&q=80",
+        label: "Interior",
+      },
+    ],
   },
   {
     id: 2,
@@ -276,7 +285,20 @@ export const cars = [
     features:
       "• M Carbon ceramic brakes\n• Harman Kardon audio\n• Gesture control\n• M Traction Control",
     condition: "Brand new. Reserved for Mohammed Al-Rashid.",
-    photos: [],
+    photos: [
+      {
+        url: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80",
+        label: "Exterior Front",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80",
+        label: "Exterior Side",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
+        label: "Interior",
+      },
+    ],
   },
   {
     id: 3,
@@ -304,7 +326,24 @@ export const cars = [
     features:
       "• Ferrari Dynamic Enhancer+\n• Carbon fibre body panels\n• Racing exhaust\n• Alcantara interior",
     condition: "Pre-owned. Excellent condition. Full service history.",
-    photos: [],
+    photos: [
+      {
+        url: "https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=800&q=80",
+        label: "Exterior Front",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800&q=80",
+        label: "Exterior Rear",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&q=80",
+        label: "Interior",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80",
+        label: "Engine Bay",
+      },
+    ],
   },
   {
     id: 4,
@@ -332,7 +371,16 @@ export const cars = [
     features:
       "• Starlight Headliner\n• Bespoke Audio system\n• Massage seats\n• Panoramic glass roof",
     condition: "Brand new. Bespoke commission.",
-    photos: [],
+    photos: [
+      {
+        url: "https://images.unsplash.com/photo-1631295868223-63265b40d9e4?w=800&q=80",
+        label: "Exterior Front",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=800&q=80",
+        label: "Interior",
+      },
+    ],
   },
   {
     id: 5,
@@ -360,7 +408,20 @@ export const cars = [
     features:
       "• Torque Vectoring AWD\n• Carbon ceramic brakes\n• Bang & Olufsen audio\n• Lamborghini Telemetry",
     condition: "Brand new.",
-    photos: [],
+    photos: [
+      {
+        url: "https://images.unsplash.com/photo-1544169785-be38eb42ce11?w=800&q=80",
+        label: "Exterior Front",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+        label: "Exterior Side",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&q=80",
+        label: "Interior",
+      },
+    ],
   },
   {
     id: 6,
@@ -388,6 +449,15 @@ export const cars = [
     features:
       "• PDCC Sport\n• Burmester audio\n• Sport Chrono Package\n• Night Vision",
     condition: "Pre-owned. Scheduled maintenance in progress.",
-    photos: [],
+    photos: [
+      {
+        url: "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=800&q=80",
+        label: "Exterior Front",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800&q=80",
+        label: "Interior",
+      },
+    ],
   },
 ];
