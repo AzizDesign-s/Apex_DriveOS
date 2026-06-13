@@ -699,3 +699,167 @@ export const DEFAULT_CUSTOMER_COLUMNS = [
   { id: "dob", label: "Birthday", visible: true, canHide: true },
   { id: "instagram", label: "Instagram", visible: true, canHide: true },
 ];
+
+// Add to src/data/mockData.js
+
+// ── SALES EXECUTIVES ──────────────────────────────────────────────────────────
+export const SALES_EXECUTIVES = [
+  "Ahmed Al-Sayed",
+  "Fatima Hassan",
+  "Omar Khalid",
+  "Sara Mohammed",
+  "Bilal Yousuf",
+];
+
+// ── TIME SLOTS ────────────────────────────────────────────────────────────────
+export const TIME_SLOTS = [
+  "09:00 AM",
+  "10:00 AM",
+  "11:00 AM",
+  "12:00 PM",
+  "02:00 PM",
+  "03:00 PM",
+  "04:00 PM",
+  "05:00 PM",
+];
+
+// ── TEST DRIVE COLUMN CONFIG ──────────────────────────────────────────────────
+export const DEFAULT_TESTDRIVE_COLUMNS = [
+  { id: "bookingId", label: "Booking ID", visible: true, canHide: false },
+  { id: "customer", label: "Customer", visible: true, canHide: false },
+  { id: "car", label: "Car", visible: true, canHide: true },
+  { id: "datetime", label: "Date & Time", visible: true, canHide: true },
+  { id: "exec", label: "Sales Exec", visible: true, canHide: true },
+  { id: "location", label: "Location", visible: false, canHide: true },
+  { id: "duration", label: "Duration", visible: false, canHide: true },
+  { id: "status", label: "Status", visible: true, canHide: true },
+];
+
+// ── Auto-generate booking ID ──────────────────────────────────────────────────
+export const generateBookingId = (existing) => {
+  const max = existing.reduce((acc, b) => {
+    const num = parseInt(b.bookingId?.replace("TD-2026-", "") || "0");
+    return Math.max(acc, num);
+  }, 0);
+  return `TD-2026-${String(max + 1).padStart(3, "0")}`;
+};
+
+// ── TEST DRIVE DATA ───────────────────────────────────────────────────────────
+export const testDrives = [
+  {
+    id: 1,
+    bookingId: "TD-2026-001",
+    customerId: 1,
+    customerName: "Mohammed Al-Rashid",
+    customerMobile: "+971 50 123 4567",
+    carId: 1,
+    carName: "Mercedes AMG GT 63S",
+    carPlate: "AXG-2024",
+    date: "2026-06-10",
+    time: "10:00 AM",
+    duration: "45 minutes",
+    location: "APEX GT Showroom, Sheikh Zayed Road, Dubai",
+    exec: "Ahmed Al-Sayed",
+    source: "Instagram",
+    status: "pending",
+    notes:
+      "Customer interested in purchasing. Has driven AMG before. Prefers morning slot.",
+    createdAt: "2026-06-05",
+  },
+  {
+    id: 2,
+    bookingId: "TD-2026-002",
+    customerId: 2,
+    customerName: "Sarah Johnson",
+    customerMobile: "+971 55 987 6543",
+    carId: 4,
+    carName: "Rolls Royce Ghost EWB",
+    carPlate: "RRG-2024",
+    date: "2026-06-11",
+    time: "02:00 PM",
+    duration: "60 minutes",
+    location: "APEX GT Showroom, Sheikh Zayed Road, Dubai",
+    exec: "Fatima Hassan",
+    source: "Facebook",
+    status: "approved",
+    notes:
+      "First-time customer. Birthday in July — send offer after test drive.",
+    createdAt: "2026-06-06",
+  },
+  {
+    id: 3,
+    bookingId: "TD-2026-003",
+    customerId: 3,
+    customerName: "Khalid Al-Mansoori",
+    customerMobile: "+971 52 456 7890",
+    carId: 5,
+    carName: "Lamborghini Urus Performante",
+    carPlate: "LMB-URS",
+    date: "2026-06-08",
+    time: "11:00 AM",
+    duration: "30 minutes",
+    location: "APEX GT Showroom, Sheikh Zayed Road, Dubai",
+    exec: "Omar Khalid",
+    source: "Referral",
+    status: "completed",
+    notes: "VIP customer. Private showing arranged.",
+    createdAt: "2026-06-01",
+  },
+  {
+    id: 4,
+    bookingId: "TD-2026-004",
+    customerId: 4,
+    customerName: "Emma Williams",
+    customerMobile: "+44 79 8321 0987",
+    carId: 2,
+    carName: "BMW M8 Competition",
+    carPlate: "BMW-M8X",
+    date: "2026-06-14",
+    time: "09:00 AM",
+    duration: "45 minutes",
+    location: "APEX GT Showroom, Sheikh Zayed Road, Dubai",
+    exec: "Sara Mohammed",
+    source: "Walk-in",
+    status: "pending",
+    notes: "",
+    createdAt: "2026-06-07",
+  },
+  {
+    id: 5,
+    bookingId: "TD-2026-005",
+    customerId: 5,
+    customerName: "Ravi Krishnamurthy",
+    customerMobile: "+91 98765 43210",
+    carId: 6,
+    carName: "Porsche 911 Turbo S",
+    carPlate: "PCH-911",
+    date: "2026-06-05",
+    time: "03:00 PM",
+    duration: "30 minutes",
+    location: "APEX GT Showroom, Sheikh Zayed Road, Dubai",
+    exec: "Ahmed Al-Sayed",
+    source: "Instagram",
+    status: "rejected",
+    notes: "Customer did not meet requirements.",
+    createdAt: "2026-06-01",
+  },
+  {
+    id: 6,
+    bookingId: "TD-2026-006",
+    customerId: 6,
+    customerName: "Ahmed Al-Farsi",
+    customerMobile: "+971 54 111 2233",
+    carId: 3,
+    carName: "Ferrari 488 Pista",
+    carPlate: "FER-488",
+    date: "2026-06-09",
+    time: "04:00 PM",
+    duration: "45 minutes",
+    location: "APEX GT Showroom, Sheikh Zayed Road, Dubai",
+    exec: "Fatima Hassan",
+    source: "Website",
+    status: "cancelled",
+    notes: "Customer cancelled — no show.",
+    createdAt: "2026-06-02",
+  },
+];

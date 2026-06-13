@@ -1,29 +1,30 @@
-// src/components/customers/CustomerToolbar.jsx
-// Same pattern as InventoryToolbar — mobile search popup included
+// src/components/testdrives/TestDriveToolbar.jsx
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   SlidersHorizontal,
+  Columns,
   RefreshCw,
   FileSpreadsheet,
   FileText,
-  Columns,
-  UserPlus,
+  CalendarPlus,
   Trash2,
   Tag,
   X,
+  LayoutList,
+  Calendar,
 } from "lucide-react";
 import { Button } from "../ui";
 import MoreMenu from "../ui/MoreMenu";
 import ColumnManager from "../ui/ColumnManager";
 import clsx from "clsx";
 
-function CustomerToolbar({
+function TestDriveToolbar({
   search,
   onSearch,
-  filterCount = 0,
+  filterCount,
   onFilterOpen,
   colMgrOpen,
   onColMgrToggle,
@@ -35,14 +36,17 @@ function CustomerToolbar({
   onDeleteSelected,
   onRefresh,
   onExport,
-  onAddCustomer,
+  onAddBooking,
+  // view toggle
+  view,
+  onViewChange,
 }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const hasSelection = selected?.size > 0;
 
   return (
     <div className="flex flex-col gap-2">
-      {/* ── Mobile search overlay ── */}
+      {/* Mobile search overlay */}
       <AnimatePresence>
         {mobileSearchOpen && (
           <>
@@ -70,7 +74,7 @@ function CustomerToolbar({
                 />
                 <input
                   className="input-luxury flex-1 py-2.5 text-sm"
-                  placeholder="Search name, ID, email, phone..."
+                  placeholder="Search customer, car, exec..."
                   value={search}
                   onChange={(e) => onSearch(e.target.value)}
                   autoFocus
@@ -88,21 +92,18 @@ function CustomerToolbar({
         )}
       </AnimatePresence>
 
-      {/* ── Bulk action bar ── */}
+      {/* Bulk bar */}
       {hasSelection && (
         <motion.div
           className="flex items-center gap-2 bg-gold/[0.04] border border-gold/15
-                     rounded-xl px-4 py-2 "
+                     rounded-xl px-4 py-2"
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
         >
           <span className="text-xs font-bold text-gold">
-            {selected.size} customer{selected.size > 1 ? "s" : ""} selected
+            {selected.size} booking{selected.size > 1 ? "s" : ""} selected
           </span>
-
           <div className="flex-1" />
-
           <Button size="sm" variant="ghost" onClick={onClearSelected}>
             Clear
           </Button>
@@ -115,12 +116,12 @@ function CustomerToolbar({
             icon={Trash2}
             onClick={onDeleteSelected}
           >
-            Delete Selected
+            Delete
           </Button>
         </motion.div>
       )}
 
-      {/* ── Main toolbar ── */}
+      {/* Main toolbar */}
       <div className="flex items-center gap-2 bg-card border border-border rounded-2xl px-3 py-2.5">
         {/* Desktop search */}
         <div className="relative flex-1 max-w-xs hidden lg:block">
@@ -130,7 +131,7 @@ function CustomerToolbar({
           />
           <input
             className="input-luxury pl-9 py-2 text-xs w-full"
-            placeholder="Search brand, model, plate..."
+            placeholder="Search customer, car, exec..."
             value={search}
             onChange={(e) => onSearch(e.target.value)}
           />
@@ -145,12 +146,12 @@ function CustomerToolbar({
               ? "border-gold/40 text-gold bg-gold/5"
               : "border-border text-text-muted hover:border-gold/30 hover:text-gold",
           )}
-          aria-label="Search customers"
+          aria-label="Search bookings"
         >
           <Search size={14} />
         </button>
 
-        <div className="w-px h-5 bg-border flex-shrink-0" />
+        <div className="w-px h-5 bg-border flex-shrink-0 hidden lg:block" />
 
         {/* Filter */}
         <Button
@@ -158,7 +159,7 @@ function CustomerToolbar({
           variant="ghost"
           icon={SlidersHorizontal}
           onClick={onFilterOpen}
-          className={clsx(filterCount > 0 && "!border-gold/40 !text-gold"), "h-8 "}
+          className={clsx(filterCount > 0 && "!border-gold/40 !text-gold")}
         >
           <span className="hidden lg:inline">Filters</span>
           {filterCount > 0 && (
@@ -171,14 +172,14 @@ function CustomerToolbar({
           )}
         </Button>
 
-        {/* Column manager — icon only on mobile */}
+        {/* Column manager */}
         <div className="relative">
           <Button
             size="sm"
             variant="ghost"
             icon={Columns}
             onClick={onColMgrToggle}
-            className={clsx(colMgrOpen && "!border-gold/40 !text-gold"), "h-8"}
+            className={clsx(colMgrOpen && "!border-gold/40 !text-gold")}
           >
             <span className="hidden lg:inline">Columns</span>
           </Button>
@@ -190,11 +191,40 @@ function CustomerToolbar({
           />
         </div>
 
-        
+        <div className="w-px h-5 bg-border flex-shrink-0" />
+
+        {/* ── View toggle: Table / Calendar ── */}
+        <div className="flex bg-base border border-border rounded-xl overflow-hidden flex-shrink-0">
+          <button
+            onClick={() => onViewChange("table")}
+            className={clsx(
+              "flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold transition-all",
+              view === "table"
+                ? "bg-gold/10 text-gold"
+                : "text-text-muted hover:text-text-primary",
+            )}
+          >
+            <LayoutList size={13} />
+            <span className="hidden sm:inline">Table</span>
+          </button>
+          <div className="w-px bg-border" />
+          <button
+            onClick={() => onViewChange("calendar")}
+            className={clsx(
+              "flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold transition-all",
+              view === "calendar"
+                ? "bg-gold/10 text-gold"
+                : "text-text-muted hover:text-text-primary",
+            )}
+          >
+            <Calendar size={13} />
+            <span className="hidden sm:inline">Calendar</span>
+          </button>
+        </div>
 
         <div className="w-px h-5 bg-border flex-shrink-0" />
 
-        {/* 3-dot more menu */}
+        {/* More menu */}
         <MoreMenu
           items={[
             { label: "Refresh", icon: RefreshCw, onClick: onRefresh },
@@ -214,18 +244,17 @@ function CustomerToolbar({
 
         <div className="flex-1" />
 
-        {/* Add Customer */}
         <Button
           variant="primary"
-          size="md"
-          icon={UserPlus}
-          onClick={onAddCustomer}
+          size="sm"
+          icon={CalendarPlus}
+          onClick={onAddBooking}
         >
-        <span className="hidden sm:inline">Add Customer</span>
+          <span className="hidden sm:inline">Book Test Drive</span>
         </Button>
       </div>
     </div>
   );
 }
 
-export default CustomerToolbar;
+export default TestDriveToolbar;

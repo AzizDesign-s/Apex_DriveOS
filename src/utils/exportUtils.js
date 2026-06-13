@@ -169,6 +169,24 @@ function getCellValue(colId, row) {
     case "customerId":
       return row.customerId || "";
 
+    // Add these cases to getCellValue() in exportUtils.js:
+    case "bookingId":
+      return row.bookingId || "";
+    case "customerName":
+      return row.customerName || "";
+    case "carName":
+      return row.carName || "";
+    case "time":
+      return row.time || "";
+    case "duration":
+      return row.duration || "";
+    case "exec":
+      return row.exec || "";
+    case "location":
+      return row.location || "";
+    case "source":
+      return row.source || "";
+
     // ── Generic fallback ──
     default:
       return row[colId] !== undefined ? String(row[colId]) : "";

@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui";
 import MoreMenu from "../ui/MoreMenu";
-import ColumnManager from "./ColumnManager";
+import ColumnManager from "../ui/ColumnManager";
 import clsx from "clsx";
 
 function InventoryToolbar({
