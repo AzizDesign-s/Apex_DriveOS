@@ -9,12 +9,14 @@ import {
 } from "../data/mockData";
 import { DeleteConfirm, ChangeStatusModal } from "../components/ui";
 import InvoiceStats from "../components/invoices/InvoiceStats";
+import InvoiceBottomSheet from "../components/invoices/InvoiceBottomSheet";
 import InvoiceToolbar from "../components/invoices/InvoiceToolbar";
 import InvoiceTable from "../components/invoices/InvoiceTable";
 import InvoicePreview from "../components/invoices/InvoicePreview";
 import InvoiceFilterDrawer from "../components/invoices/InvoiceFilterDrawer";
 import InvoiceFormPage from "../components/invoices/InvoiceFormPage";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
+import { generateInvoicePDF } from "../utils/invoicePDFUtils";
 import apexToast from "../utils/toast";
 
 const PER_PAGE = 10;
@@ -51,6 +53,8 @@ const EXPORT_COLS = [
 
 function Invoices() {
   const [invoices, setInvoices] = useState(initialInvoices);
+
+  const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
 
   // Search + filters
   const [search, setSearch] = useState("");
@@ -292,11 +296,11 @@ function Invoices() {
   );
 
   const handleDownloadPDF = useCallback((invoice) => {
-    apexToast.info(
-      "Download PDF",
-      `Generating PDF for ${invoice.invoiceId}...`,
+    generateInvoicePDF(invoice);
+    apexToast.success(
+      "PDF Downloaded",
+      `${invoice.invoiceId} downloaded successfully.`,
     );
-    // Phase future: implement jsPDF rendering of InvoiceTemplate
   }, []);
 
   const handleSend = useCallback((invoice) => {
@@ -306,8 +310,10 @@ function Invoices() {
     apexToast.success("Invoice Sent", `${invoice.invoiceId} marked as sent.`);
   }, []);
 
+  // Update handleView:
   const handleView = useCallback((invoice) => {
     setActiveInvoice(invoice);
+    setMobilePreviewOpen(true); // ← opens bottom sheet on mobile
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -340,8 +346,9 @@ function Invoices() {
       />
 
       {/* ── Split layout: table left + preview right ── */}
-      <div className="flex   gap-3 flex-1  min-h-0">
-        {/* Table — takes remaining width */}
+      {/* ── Split layout: table left + preview right ── */}
+      <div className="flex gap-3 flex-1 min-h-0">
+        {/* Table — full width on mobile, shared on desktop */}
         <div className="flex flex-col flex-1 min-w-0 min-h-0">
           <InvoiceTable
             data={pageData}
@@ -372,8 +379,8 @@ function Invoices() {
           />
         </div>
 
-        {/* Preview panel — fixed 360px */}
-        <div className="md:w-[460px] w-[360px] flex-shrink-0 hidden sm:flex flex-col min-h-0">
+        {/* Desktop preview panel — hidden on mobile */}
+        <div className="w-[460px] flex-shrink-0 hidden lg:flex flex-col min-h-0">
           <InvoicePreview
             invoice={activeInvoice}
             onEdit={(inv) => {
@@ -385,6 +392,20 @@ function Invoices() {
           />
         </div>
       </div>
+
+      {/* ── Mobile bottom sheet preview ── */}
+      <InvoiceBottomSheet
+        invoice={activeInvoice}
+        isOpen={mobilePreviewOpen}
+        onClose={() => setMobilePreviewOpen(false)}
+        onEdit={(inv) => {
+          setMobilePreviewOpen(false);
+          setEditInvoice(inv);
+          setFormOpen(true);
+        }}
+        onDownloadPDF={handleDownloadPDF}
+        onSend={handleSend}
+      />
 
       {/* Modals & drawers */}
       <InvoiceFilterDrawer

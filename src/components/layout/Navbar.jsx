@@ -294,7 +294,7 @@ function Navbar() {
                         key={i}
                         className="flex items-start gap-3 px-4 py-3
                                    hover:bg-gold/5 transition-colors cursor-pointer
-                                   border-b border-border/50 last:border-0"
+                                   border-b border-border last:border-0"
                       >
                         <div
                           className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${n.dot}`}
