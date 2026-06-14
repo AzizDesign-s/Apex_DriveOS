@@ -1105,3 +1105,81 @@ export const calcInvoice = (items = [], discount = 0, vatRate = 5) => {
   const total = afterDisc + vat;
   return { subtotal, afterDisc, vat, total };
 };
+
+// Add to src/data/mockData.js
+
+// ── ANALYTICS MOCK DATA ───────────────────────────────────────────────────────
+
+export const MONTHLY_REVENUE = [
+  { month: "Jan", revenue: 1240000, target: 1000000, invoices: 3 },
+  { month: "Feb", revenue: 980000, target: 1000000, invoices: 2 },
+  { month: "Mar", revenue: 1650000, target: 1200000, invoices: 4 },
+  { month: "Apr", revenue: 1120000, target: 1200000, invoices: 3 },
+  { month: "May", revenue: 2100000, target: 1500000, invoices: 5 },
+  { month: "Jun", revenue: 1870000, target: 1500000, invoices: 4 },
+  { month: "Jul", revenue: 2340000, target: 1800000, invoices: 6 },
+  { month: "Aug", revenue: 1980000, target: 1800000, invoices: 5 },
+  { month: "Sep", revenue: 2560000, target: 2000000, invoices: 7 },
+  { month: "Oct", revenue: 2210000, target: 2000000, invoices: 6 },
+  { month: "Nov", revenue: 2890000, target: 2200000, invoices: 8 },
+  { month: "Dec", revenue: 3100000, target: 2200000, invoices: 9 },
+];
+
+export const SALES_BY_BRAND = [
+  { brand: "Mercedes-Benz", sales: 8, revenue: 4200000, color: "#D4AF37" },
+  { brand: "BMW", sales: 6, revenue: 2800000, color: "#38BDF8" },
+  { brand: "Rolls Royce", sales: 3, revenue: 5400000, color: "#A78BFA" },
+  { brand: "Ferrari", sales: 4, revenue: 3680000, color: "#FB7185" },
+  { brand: "Lamborghini", sales: 3, revenue: 2250000, color: "#FBBF24" },
+  { brand: "Porsche", sales: 5, revenue: 2100000, color: "#10B981" },
+];
+
+export const CUSTOMER_GROWTH = [
+  { month: "Jan", total: 8, new: 3, returning: 5 },
+  { month: "Feb", total: 11, new: 4, returning: 7 },
+  { month: "Mar", total: 14, new: 5, returning: 9 },
+  { month: "Apr", total: 16, new: 3, returning: 13 },
+  { month: "May", total: 19, new: 6, returning: 13 },
+  { month: "Jun", total: 24, new: 7, returning: 17 },
+];
+
+export const INVENTORY_STATUS_DATA = [
+  { name: "Available", value: 12, color: "#10B981" },
+  { name: "Reserved", value: 5, color: "#38BDF8" },
+  { name: "Sold", value: 18, color: "#D4AF37" },
+  { name: "Maintenance", value: 3, color: "#FB7185" },
+];
+
+export const TOP_CARS = [
+  {
+    model: "Mercedes AMG GT 63S",
+    brand: "Mercedes",
+    sold: 4,
+    revenue: 2720000,
+  },
+  {
+    model: "Rolls Royce Ghost",
+    brand: "Rolls Royce",
+    sold: 3,
+    revenue: 5400000,
+  },
+  { model: "Ferrari 488 Pista", brand: "Ferrari", sold: 3, revenue: 2760000 },
+  { model: "BMW M8 Competition", brand: "BMW", sold: 3, revenue: 1140000 },
+  { model: "Porsche 911 Turbo S", brand: "Porsche", sold: 3, revenue: 1860000 },
+];
+
+export const TESTDRIVE_CONVERSION = [
+  { month: "Jan", drives: 4, converted: 2 },
+  { month: "Feb", drives: 3, converted: 1 },
+  { month: "Mar", drives: 6, converted: 3 },
+  { month: "Apr", drives: 5, converted: 2 },
+  { month: "May", drives: 8, converted: 5 },
+  { month: "Jun", drives: 6, converted: 4 },
+];
+
+export const PAYMENT_METHOD_DATA = [
+  { method: "Cash", count: 9, revenue: 4200000, color: "#D4AF37" },
+  { method: "Bank Transfer", count: 6, revenue: 8100000, color: "#38BDF8" },
+  { method: "Card", count: 4, revenue: 1860000, color: "#10B981" },
+  { method: "Cheque", count: 3, revenue: 2050000, color: "#A78BFA" },
+];

@@ -22,7 +22,7 @@ import {
   Users,
   CalendarCheck,
   FileText,
-  BarChart3,
+  BarChart2,
   Bell,
   Settings,
   ChevronLeft,
@@ -96,7 +96,7 @@ function Sidebar({ isMobile = false }) {
       items: [
         { icon: FileText, label: "Invoices", path: "/invoices", badge: null },
         {
-          icon: BarChart3,
+          icon: BarChart2,
           label: "Analytics",
           path: "/analytics",
           badge: null,
