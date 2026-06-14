@@ -340,7 +340,7 @@ function Invoices() {
       />
 
       {/* ── Split layout: table left + preview right ── */}
-      <div className="flex gap-3 flex-1 min-h-0">
+      <div className="flex   gap-3 flex-1  min-h-0">
         {/* Table — takes remaining width */}
         <div className="flex flex-col flex-1 min-w-0 min-h-0">
           <InvoiceTable
@@ -373,7 +373,7 @@ function Invoices() {
         </div>
 
         {/* Preview panel — fixed 360px */}
-        <div className="w-[360px] flex-shrink-0 hidden lg:flex flex-col min-h-0">
+        <div className="md:w-[460px] w-[360px] flex-shrink-0 hidden sm:flex flex-col min-h-0">
           <InvoicePreview
             invoice={activeInvoice}
             onEdit={(inv) => {

@@ -171,7 +171,7 @@ function TestDriveFormPage({
                 <ArrowLeft size={16} />
               </button>
               <div>
-                <h2 className="lg:text-sm text-[12px] font-extrabold text-text-primary">
+                <h2 className="sm:text-sm text-[12px] font-extrabold text-text-primary">
                   {editBooking
                     ? `Edit · ${editBooking.bookingId}`
                     : "Book Test Drive"}
@@ -247,7 +247,7 @@ function TestDriveFormPage({
 
               {/* Customer & Car */}
               <FormSection title="Customer & Car">
-                <div className="grid lg:grid-cols-2 grid-cols-1 gap-4">
+                <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
                   <Field label="Customer" required error={errors.customerId}>
                     <Select
                       value={form.customerId}
@@ -289,7 +289,7 @@ function TestDriveFormPage({
 
               {/* Date, Time & Location */}
               <FormSection title="Date, Time & Location">
-                <div className="grid lg:grid-cols-3 grid-cols-1 gap-4">
+                <div className="grid sm:grid-cols-3 grid-cols-1 gap-4">
                   <Field label="Date" required error={errors.date}>
                     <input
                       type="date"
@@ -317,7 +317,7 @@ function TestDriveFormPage({
                       ]}
                     />
                   </Field>
-                  <div className="lg:col-span-3 col-span-1">
+                  <div className="sm:col-span-3 col-span-1">
                     <Field label="Location">
                       <Input
                         placeholder="e.g. APEX GT Showroom, Sheikh Zayed Road, Dubai"
@@ -331,7 +331,7 @@ function TestDriveFormPage({
 
               {/* Assignment & Notes */}
               <FormSection title="Assignment & Notes">
-                <div className="grid lg:grid-cols-2 grid-cols-1 gap-4">
+                <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
                   <Field label="Sales Executive">
                     <Select
                       value={form.exec}

@@ -87,7 +87,7 @@ function InvoiceTemplate({ invoice }) {
         </div>
 
         {/* Invoice meta */}
-        <div className="text-right">
+        <div className="text-right w-fit">
           <p className="text-xl font-extrabold text-[#0F172A]">
             {invoice.invoiceId}
           </p>

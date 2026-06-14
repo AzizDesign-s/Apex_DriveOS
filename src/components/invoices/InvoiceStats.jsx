@@ -66,7 +66,7 @@ function InvoiceStats({ stats = {} }) {
         <motion.div
           key={key}
           className="flex items-center gap-3 bg-card border border-border rounded-xl
-                     px-3 py-2.5 flex-1 min-w-[90px]
+                     px-3 py-6 flex-1 min-w-[160px] max-w-[230px]
                      hover:border-gold/20 transition-colors cursor-default"
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -83,7 +83,7 @@ function InvoiceStats({ stats = {} }) {
           <div>
             <p
               className="text-[9px] font-bold tracking-[0.2em] text-text-subtle
-                          uppercase leading-none mb-1"
+                          uppercase leading-none mb-3"
             >
               {label}
             </p>
@@ -91,7 +91,7 @@ function InvoiceStats({ stats = {} }) {
               {isAmount
                 ? `AED ${
                     stats[key] >= 1000000
-                      ? `${(stats[key] / 1000000).toFixed(1)}M`
+                      ? `${(stats[key] / 1000000).toFixed(1)} M`
                       : (stats[key] || 0).toLocaleString()
                   }`
                 : (stats[key] ?? 0)}

@@ -171,7 +171,7 @@ function CustomerFormPage({
   const Tab0 = (
     <>
       <FormSection title="Customer Identity">
-        <div className="grid lg:grid-cols-3 grid-cols-1 gap-4">
+        <div className="grid sm:grid-cols-3 grid-cols-1 gap-4">
           {/* Auto-generated Customer ID — read only */}
           <Field label="Customer ID">
             <div

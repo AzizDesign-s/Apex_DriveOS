@@ -47,7 +47,7 @@ function FormSection({ title, children }) {
     <div className="bg-card border border-border rounded-2xl p-5 mb-4">
       <p
         className="text-[9px] font-bold tracking-[0.25em] text-gold uppercase
-                    mb-4 pb-2.5 border-b border-border/60"
+                    mb-4 pb-2.5 border-b border-border"
       >
         {title}
       </p>
@@ -223,23 +223,25 @@ function InvoiceFormPage({
               </Button>
               <Button
                 variant="primary"
-                size="sm"
+                size="md"
                 icon={Check}
                 onClick={handleSave}
               >
-                {editInvoice ? "Update Invoice" : "Create Invoice"}
+                <span className="hidden sm:inline">
+                  {editInvoice ? "Update Invoice" : "Create Invoice"}
+                </span>
               </Button>
             </div>
           </div>
 
           {/* Two-column layout: Form left, live total right */}
           <div className="flex-1 overflow-y-auto">
-            <div className="max-w-4xl mx-auto px-6 py-6 grid grid-cols-3 gap-5">
+            <div className="max-w-4xl mx-auto px-6 py-6 grid sm:grid-cols-3 grid-cols-1 gap-5">
               {/* ── Left: Form (2 cols wide) ── */}
-              <div className="col-span-2 space-y-0">
+              <div className="sm:col-span-2 col-span-1 space-y-4">
                 {/* Invoice Identity */}
                 <FormSection title="Invoice Details">
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid sm:grid-cols-3 grid-cols-1 gap-4">
                     <Field label="Invoice ID">
                       <div
                         className="input-luxury py-2.5 text-xs font-bold text-gold
@@ -298,7 +300,7 @@ function InvoiceFormPage({
 
                 {/* Customer & Car */}
                 <FormSection title="Customer & Car">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
                     <Field label="Customer" required error={errors.customerId}>
                       <Select
                         value={form.customerId}
@@ -348,8 +350,8 @@ function InvoiceFormPage({
 
                   {/* Header row */}
                   <div
-                    className="grid gap-2 mb-2"
-                    style={{ gridTemplateColumns: "1fr 80px 80px 110px 32px" }}
+                    className="grid-cols-2 sm:grid gap-2 mb-2 sm:grid-cols-[1fr_120px_90px_140px_40px]"
+                    // style={{ gridTemplateColumns: "1fr 80px 80px 110px 32px" }}
                   >
                     {["Description", "Type", "Qty", "Unit Price (AED)", ""].map(
                       (h) => (
@@ -369,10 +371,12 @@ function InvoiceFormPage({
                     {form.items.map((item) => (
                       <div
                         key={item.id}
-                        className="grid gap-2 items-center"
-                        style={{
-                          gridTemplateColumns: "1fr 80px 80px 110px 32px",
-                        }}
+                        className=" grid gap-2
+                                    lg:grid-cols-[1fr_120px_90px_140px_40px]
+                                    grid-cols-1 rounded-xl border border-border p-3 lg:p-0 lg:border-0 "
+                        // style={{
+                        //   gridTemplateColumns: "1fr 80px 80px 110px 32px",
+                        // }}
                       >
                         <Input
                           placeholder="Item description..."
@@ -447,7 +451,7 @@ function InvoiceFormPage({
                   <div className="bg-card border border-border rounded-2xl p-5">
                     <p
                       className="text-[9px] font-bold tracking-[0.25em] text-gold uppercase
-                                  mb-4 pb-2.5 border-b border-border/60"
+                                  mb-4 pb-2.5 border-b border-border"
                     >
                       Invoice Summary
                     </p>
@@ -527,7 +531,7 @@ function InvoiceFormPage({
                     {/* Save */}
                     <Button
                       variant="primary"
-                      size="sm"
+                      size="md"
                       icon={Check}
                       onClick={handleSave}
                       fullWidth
@@ -550,7 +554,7 @@ function InvoiceFormPage({
             </Button>
             <Button
               variant="primary"
-              size="sm"
+              size="md"
               icon={Check}
               onClick={handleSave}
             >

@@ -86,7 +86,7 @@ function InvoiceFilterDrawer({ isOpen, onClose, onApply }) {
             onClick={onClose}
           />
           <motion.div
-            className="fixed top-0 right-0 bottom-0 w-72 z-40
+            className="fixed top-0 right-0 bottom-0 sm:w-[400px] w-11/12 z-40
                        bg-card border-l border-border flex flex-col shadow-glass"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}

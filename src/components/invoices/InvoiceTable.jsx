@@ -15,10 +15,10 @@ import { Badge, EmptyState, Button } from "../ui";
 import clsx from "clsx";
 
 const COL_WIDTH = {
-  invoiceId: "110px",
-  customer: undefined,
-  amount: "150px",
-  status: "125px",
+  invoiceId: "90px",
+  customer: "180px",
+  amount: "140px",
+  status: "180px",
   method: "110px",
   dueDate: "110px",
   issuedDate: "110px",
@@ -155,11 +155,11 @@ function InvoiceTable({
           style={{ tableLayout: "fixed", minWidth: "650px" }}
         >
           <colgroup>
-            <col style={{ width: "44px" }} />
+            <col style={{ width: "50px" }} />
             {visibleCols.map((col) => (
               <col key={col.id} style={{ width: COL_WIDTH[col.id] }} />
             ))}
-            <col style={{ width: "96px" }} />
+            <col style={{ width: "140px" }} />
           </colgroup>
 
           <thead>
@@ -226,7 +226,7 @@ function InvoiceTable({
                   <motion.tr
                     key={inv.id}
                     className={clsx(
-                      "border-b border-border/50 last:border-0 cursor-pointer transition-colors",
+                      "border-b border-border last:border-0 cursor-pointer transition-colors",
                       isActive ? "bg-gold/[0.05]" : "hover:bg-gold/[0.02]",
                       selected.has(inv.id) && "bg-gold/[0.04]",
                     )}
@@ -243,7 +243,7 @@ function InvoiceTable({
                     onClick={() => onView(inv)}
                   >
                     <td
-                      className="px-4 py-3"
+                      className="px-4 py-5"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <input

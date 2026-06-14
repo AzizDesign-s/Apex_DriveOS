@@ -120,7 +120,7 @@ function CarFormPage({ isOpen, onClose, onSave, editCar = null }) {
   const Tab0 = (
     <>
       <FormSection title="Car Identity">
-        <div className="grid lg:grid-cols-3 grid-cols-1 gap-4">
+        <div className="grid sm:grid-cols-3 grid-cols-1 gap-4">
           <Field label="Car Brand" required error={errors.brand}>
             <Select
               value={form.brand}
@@ -202,7 +202,7 @@ function CarFormPage({ isOpen, onClose, onSave, editCar = null }) {
       </FormSection>
 
       <FormSection title="Registration & Colors">
-        <div className="grid lg:grid-cols-3 grid-cols-1 gap-4">
+        <div className="grid sm:grid-cols-3 grid-cols-1 gap-4">
           <Field label="Plate Number" required error={errors.plate}>
             <Input
               placeholder="e.g. AXG-2024"
@@ -351,7 +351,7 @@ function CarFormPage({ isOpen, onClose, onSave, editCar = null }) {
 
       {/* Photo grid */}
       {form.photos?.length > 0 && (
-        <div className="grid grid-cols-4 gap-3 mb-4">
+        <div className="grid sm:grid-cols-4 grid-cols-1 gap-3 mb-4">
           {form.photos.map((photo) => (
             <div key={photo.id} className="relative group">
               <div className="aspect-[4/3] rounded-xl overflow-hidden border border-border">
@@ -427,7 +427,7 @@ function CarFormPage({ isOpen, onClose, onSave, editCar = null }) {
   const Tab2 = (
     <>
       <FormSection title="Pricing">
-        <div className="grid lg:grid-cols-2 grid-cols-1 gap-4">
+        <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
           <Field label="Car Price" required error={errors.price}>
             <div className="flex gap-2">
               <Select
