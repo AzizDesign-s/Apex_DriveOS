@@ -863,3 +863,245 @@ export const testDrives = [
     createdAt: "2026-06-02",
   },
 ];
+
+// Add to src/data/mockData.js
+
+// ── INVOICE CONFIG ────────────────────────────────────────────────────────────
+export const PAYMENT_METHODS = ["Cash", "Bank Transfer", "Card", "Cheque"];
+
+export const DEFAULT_INVOICE_COLUMNS = [
+  { id: "invoiceId", label: "Invoice", visible: true, canHide: false },
+  { id: "customer", label: "Customer", visible: true, canHide: false },
+  { id: "amount", label: "Amount", visible: true, canHide: true },
+  { id: "status", label: "Status", visible: true, canHide: true },
+  { id: "method", label: "Payment", visible: true, canHide: true },
+  { id: "dueDate", label: "Due Date", visible: true, canHide: true },
+  { id: "issuedDate", label: "Issued", visible: false, canHide: true },
+  { id: "car", label: "Car", visible: false, canHide: true },
+];
+
+export const generateInvoiceId = (existing) => {
+  const max = existing.reduce((acc, inv) => {
+    const num = parseInt(inv.invoiceId?.replace("INV-", "") || "0");
+    return Math.max(acc, num);
+  }, 0);
+  return `INV-${String(max + 1).padStart(4, "0")}`;
+};
+
+// ── INVOICE DATA ──────────────────────────────────────────────────────────────
+export const invoices = [
+  {
+    id: 1,
+    invoiceId: "INV-0042",
+    customerId: 1,
+    customerName: "Mohammed Al-Rashid",
+    customerEmail: "mo.rashid@email.com",
+    carId: 1,
+    carName: "Mercedes AMG GT 63S",
+    carPlate: "AXG-2024",
+    issuedDate: "2026-06-01",
+    dueDate: "2026-06-20",
+    status: "paid",
+    method: "Cash",
+    notes: "Full payment received. Thank you.",
+    items: [
+      {
+        id: 1,
+        desc: "Mercedes AMG GT 63S — 2024",
+        type: "car",
+        qty: 1,
+        unitPrice: 680000,
+      },
+      {
+        id: 2,
+        desc: "Registration & Documentation",
+        type: "service",
+        qty: 1,
+        unitPrice: 2500,
+      },
+      {
+        id: 3,
+        desc: "Delivery & Inspection",
+        type: "service",
+        qty: 1,
+        unitPrice: 1500,
+      },
+    ],
+    discount: 15000,
+    vatRate: 5,
+  },
+  {
+    id: 2,
+    invoiceId: "INV-0041",
+    customerId: 4,
+    customerName: "Emma Williams",
+    customerEmail: "emma.w@email.com",
+    carId: 4,
+    carName: "Rolls Royce Ghost EWB",
+    carPlate: "RRG-2024",
+    issuedDate: "2026-05-20",
+    dueDate: "2026-06-10",
+    status: "overdue",
+    method: "Bank Transfer",
+    notes: "Follow up required. Customer has not responded.",
+    items: [
+      {
+        id: 1,
+        desc: "Rolls Royce Ghost EWB — 2024",
+        type: "car",
+        qty: 1,
+        unitPrice: 1800000,
+      },
+      {
+        id: 2,
+        desc: "VIP Delivery & Concierge",
+        type: "service",
+        qty: 1,
+        unitPrice: 5000,
+      },
+    ],
+    discount: 0,
+    vatRate: 5,
+  },
+  {
+    id: 3,
+    invoiceId: "INV-0040",
+    customerId: 3,
+    customerName: "Khalid Al-Mansoori",
+    customerEmail: "k.mansoori@email.com",
+    carId: 5,
+    carName: "Lamborghini Urus Performante",
+    carPlate: "LMB-URS",
+    issuedDate: "2026-05-15",
+    dueDate: "2026-06-15",
+    status: "partially_paid",
+    method: "Cheque",
+    notes: "First cheque AED 400,000 received. Balance pending.",
+    items: [
+      {
+        id: 1,
+        desc: "Lamborghini Urus Performante — 2024",
+        type: "car",
+        qty: 1,
+        unitPrice: 750000,
+      },
+      {
+        id: 2,
+        desc: "Extended Warranty — 3 Years",
+        type: "service",
+        qty: 1,
+        unitPrice: 12000,
+      },
+    ],
+    discount: 20000,
+    vatRate: 5,
+  },
+  {
+    id: 4,
+    invoiceId: "INV-0039",
+    customerId: 2,
+    customerName: "Sarah Johnson",
+    customerEmail: "sarah.j@email.com",
+    carId: 6,
+    carName: "Porsche 911 Turbo S",
+    carPlate: "PCH-911",
+    issuedDate: "2026-06-05",
+    dueDate: "2026-06-30",
+    status: "sent",
+    method: "Card",
+    notes: "",
+    items: [
+      {
+        id: 1,
+        desc: "Porsche 911 Turbo S — 2024",
+        type: "car",
+        qty: 1,
+        unitPrice: 620000,
+      },
+      {
+        id: 2,
+        desc: "Ceramic Coating Package",
+        type: "service",
+        qty: 1,
+        unitPrice: 3500,
+      },
+      {
+        id: 3,
+        desc: "Floor Mats & Accessories",
+        type: "custom",
+        qty: 1,
+        unitPrice: 800,
+      },
+    ],
+    discount: 0,
+    vatRate: 5,
+  },
+  {
+    id: 5,
+    invoiceId: "INV-0038",
+    customerId: 1,
+    customerName: "Mohammed Al-Rashid",
+    customerEmail: "mo.rashid@email.com",
+    carId: 2,
+    carName: "BMW M8 Competition",
+    carPlate: "BMW-M8X",
+    issuedDate: "2026-04-10",
+    dueDate: "2026-04-30",
+    status: "paid",
+    method: "Cash",
+    notes: "",
+    items: [
+      {
+        id: 1,
+        desc: "BMW M8 Competition — 2024",
+        type: "car",
+        qty: 1,
+        unitPrice: 380000,
+      },
+    ],
+    discount: 0,
+    vatRate: 5,
+  },
+  {
+    id: 6,
+    invoiceId: "INV-0037",
+    customerId: 4,
+    customerName: "Emma Williams",
+    customerEmail: "emma.w@email.com",
+    carId: 3,
+    carName: "Ferrari 488 Pista",
+    carPlate: "FER-488",
+    issuedDate: "2026-03-01",
+    dueDate: "2026-03-20",
+    status: "refunded",
+    method: "Bank Transfer",
+    notes: "Customer returned vehicle. Full refund processed.",
+    items: [
+      {
+        id: 1,
+        desc: "Ferrari 488 Pista — 2023",
+        type: "car",
+        qty: 1,
+        unitPrice: 920000,
+      },
+      {
+        id: 2,
+        desc: "Full Service Package",
+        type: "service",
+        qty: 1,
+        unitPrice: 3500,
+      },
+    ],
+    discount: 50000,
+    vatRate: 5,
+  },
+];
+
+// ── Invoice calculation helpers ───────────────────────────────────────────────
+export const calcInvoice = (items = [], discount = 0, vatRate = 5) => {
+  const subtotal = items.reduce((sum, i) => sum + i.qty * i.unitPrice, 0);
+  const afterDisc = subtotal - discount;
+  const vat = Math.round(afterDisc * (vatRate / 100));
+  const total = afterDisc + vat;
+  return { subtotal, afterDisc, vat, total };
+};

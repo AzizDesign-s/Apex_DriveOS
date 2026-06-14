@@ -187,6 +187,22 @@ function getCellValue(colId, row) {
     case "source":
       return row.source || "";
 
+    // Add these cases to getCellValue():
+    case "invoiceId":
+      return row.invoiceId || "";
+    case "customerName":
+      return row.customerName || "";
+    case "carName":
+      return row.carName || "";
+    case "issuedDate":
+      return row.issuedDate || "";
+    case "dueDate":
+      return row.dueDate || "";
+    case "method":
+      return row.method || "";
+    case "total":
+      return row.total ? `AED ${Number(row.total).toLocaleString()}` : "";
+
     // ── Generic fallback ──
     default:
       return row[colId] !== undefined ? String(row[colId]) : "";
