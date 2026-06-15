@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ToastConfig from "./components/ui/ToastConfig";
 import { TooltipProvider } from "./components/ui/Tooltip";
@@ -45,6 +46,7 @@ const App = () => {
 
           {/* ── Fallback — unknown URLs go to login ── */}
           <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </TooltipProvider>
     </BrowserRouter>

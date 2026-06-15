@@ -13,6 +13,7 @@
 //   - Responsive: on mobile it slides in as a drawer with a backdrop overlay
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Tooltip from "../ui/Tooltip";
@@ -68,6 +69,13 @@ function Sidebar({ isMobile = false }) {
 
   // On mobile, sidebar is always 'open' width — it's a full drawer
   // On desktop, width is controlled by sidebarOpen state
+
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      // Only collapse if it's currently open
+      if (sidebarOpen) toggleSidebar();
+    }
+  }, [location.pathname]);
 
   const NAV_SECTIONS = [
     {
