@@ -183,7 +183,7 @@ function Analytics() {
   return (
     <div className="flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-6">
       {/* ── Page Header + Date Range Filter ── */}
-      <div className="flex items-center justify-between flex-shrink-0">
+      <div className="flex items-center justify-between flex-wrap gap-4 flex-shrink-0">
         <div>
           <h1 className="text-lg font-extrabold text-text-primary">
             Analytics
@@ -194,7 +194,7 @@ function Analytics() {
         </div>
 
         {/* Range selector */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center flex-wrap gap-4">
           {/* Preset buttons */}
           <div className="flex bg-card border border-border rounded-xl overflow-hidden">
             {RANGES.map((r) => (

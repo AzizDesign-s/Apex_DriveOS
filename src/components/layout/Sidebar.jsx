@@ -30,6 +30,7 @@ import {
   LogOut,
 } from "lucide-react";
 import useAppStore from "../../store/useAppStore";
+import { notifications as notifData } from "../../data/mockData";
 import apexToast from "../../utils/toast";
 import clsx from "clsx";
 
@@ -49,6 +50,8 @@ const sidebarVariants = {
   open: { width: 240 },
   closed: { width: 72 },
 };
+
+const unreadCount = notifData.filter((n) => !n.isRead).length;
 
 // Drawer (mobile) slides in from left
 const drawerVariants = {
@@ -110,7 +113,7 @@ function Sidebar({ isMobile = false }) {
           icon: Bell,
           label: "Notifications",
           path: "/notifications",
-          badge: "5",
+          badge: unreadCount > 0 ? String(unreadCount) : null,
         },
         { icon: Settings, label: "Settings", path: "/settings", badge: null },
       ],

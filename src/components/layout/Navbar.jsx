@@ -1,9 +1,10 @@
 // src/components/layout/Navbar.jsx
 // Add these imports at the top:
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, Sun, Moon, Bell, ChevronDown, Search, X } from "lucide-react";
+import { notifications as notifData } from "../../data/mockData";
 import useAppStore from "../../store/useAppStore";
 
 const PAGE_TITLES = {
@@ -33,6 +34,11 @@ function Navbar() {
     if (h < 17) return "Good afternoon";
     return "Good evening";
   };
+
+  const unreadCount = useMemo(
+    () => notifData.filter((n) => !n.isRead).length,
+    [],
+  );
 
   const handleSearchClose = () => {
     setSearchOpen(false);
@@ -226,10 +232,12 @@ function Navbar() {
               aria-label="Notifications"
             >
               <Bell size={15} />
-              <span
-                className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full
-                               bg-gold border border-card"
-              />
+              {unreadCount > 0 && (
+                <span
+                  className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full
+                   bg-gold border border-card"
+                />
+              )}
             </button>
 
             {/* Notification dropdown */}
@@ -255,11 +263,8 @@ function Navbar() {
                       <p className="text-sm font-semibold text-text-primary">
                         Notifications
                       </p>
-                      <span
-                        className="text-[10px] bg-gold/15 text-gold
-                                       px-2 py-0.5 rounded-full font-bold"
-                      >
-                        5 new
+                      <span className="text-[10px] bg-gold/15 text-gold px-2 py-0.5 rounded-full font-bold">
+                        {unreadCount} new
                       </span>
                     </div>
 

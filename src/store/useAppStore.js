@@ -49,6 +49,13 @@ const useAppStore = create(
       // and you'll see "apex-gt-store" saved there after login
       name: "apex-gt-store",
 
+      user: {
+        name: "Admin User",
+        email: "admin@apexgt.ae",
+        role: "Super Admin",
+      },
+      setUser: (userData) => set({ user: userData }),
+
       // ── IMPORTANT: Only persist what matters ──────────────────────────────
       // We don't want to persist sidebarOpen because on mobile a closed
       // sidebar on refresh feels broken. We only persist auth + theme.
