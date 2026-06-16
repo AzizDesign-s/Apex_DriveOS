@@ -3,7 +3,6 @@
 //   Left tab  → Top cars by units sold (bar)
 //   Right tab → Payment method breakdown (donut)
 
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BarChart,
@@ -69,9 +68,13 @@ function PaymentTooltip({ active, payload }) {
 
 const TABS = ["Top Cars", "Test Drive Conversion", "Payment Methods"];
 
-function TopCarsChart({ topCars = [], conversionData = [], paymentData = [] }) {
-  const [tab, setTab] = useState(0);
-
+function TopCarsChart({
+  topCars = [],
+  conversionData = [],
+  paymentData = [],
+  activeTab = 0, // ← BUG-043 FIX: controlled from parent
+  onTabChange,
+}) {
   return (
     <motion.div
       className="bg-card border border-border rounded-2xl p-5"
@@ -84,10 +87,10 @@ function TopCarsChart({ topCars = [], conversionData = [], paymentData = [] }) {
         {TABS.map((t, i) => (
           <button
             key={t}
-            onClick={() => setTab(i)}
+            onClick={() => onTabChange(i)}
             className={clsx(
               "px-4 py-2 text-[11px] font-semibold border-b-2 transition-all -mb-px",
-              tab === i
+              activeTab === i
                 ? "border-gold text-gold"
                 : "border-transparent text-text-subtle hover:text-text-muted",
             )}
@@ -100,14 +103,14 @@ function TopCarsChart({ topCars = [], conversionData = [], paymentData = [] }) {
       {/* Tab content */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={tab}
+          key={activeTab}
           initial={{ opacity: 0, x: 8 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -8 }}
           transition={{ duration: 0.18 }}
         >
           {/* ── Top Cars ── */}
-          {tab === 0 && (
+          {activeTab === 0 && (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart
                 data={topCars}
@@ -166,7 +169,7 @@ function TopCarsChart({ topCars = [], conversionData = [], paymentData = [] }) {
           )}
 
           {/* ── Test Drive Conversion ── */}
-          {tab === 1 && (
+          {activeTab === 1 && (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart
                 data={conversionData}
@@ -220,7 +223,7 @@ function TopCarsChart({ topCars = [], conversionData = [], paymentData = [] }) {
           )}
 
           {/* ── Payment Methods ── */}
-          {tab === 2 && (
+          {activeTab === 2 && (
             <div className="flex items-center gap-5">
               <div className="flex-shrink-0">
                 <ResponsiveContainer width={150} height={150}>

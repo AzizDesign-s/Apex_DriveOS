@@ -4,7 +4,7 @@
 //   Row 2 — Full-width Revenue chart
 //   Row 3 — 2x2 chart grid
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   DollarSign,
@@ -15,6 +15,24 @@ import {
   Car,
   FileText,
 } from "lucide-react";
+
+import {
+  getLiveCars,
+  getLiveCustomers,
+  getLiveInvoices,
+  getLiveBookings,
+  filterInvoicesByRange,
+  filterBookingsByRange,
+  filterCustomersByRange,
+  computeMonthlyRevenue,
+  computeSalesByBrand,
+  computeCustomerGrowth,
+  computeInventoryStatus,
+  computeTopCars,
+  computeTestDriveConversion,
+  computePaymentMethods,
+  computeAnalyticsKPIs,
+} from "../utils/analyticsUtils";
 import {
   MONTHLY_REVENUE,
   SALES_BY_BRAND,
@@ -32,12 +50,7 @@ import CustomerGrowthChart from "../components/analytics/CustomerGrowthChart";
 import TopCarsChart from "../components/analytics/TopCarsChart";
 
 // ── Date range options ────────────────────────────────────────────────────────
-const RANGES = [
-  { label: "7D", months: 0.25 },
-  { label: "30D", months: 1 },
-  { label: "90D", months: 3 },
-  { label: "This Year", months: 12 },
-];
+const RANGES = ["7D", "30D", "90D", "This Year"];
 
 // ── Format helpers ────────────────────────────────────────────────────────────
 const fmtAED = (n) => {
@@ -52,82 +65,145 @@ function Analytics() {
   const [customTo, setCustomTo] = useState("");
   const [showCustom, setShowCustom] = useState(false);
 
-  // Filter monthly data by range
-  const revenueData = useMemo(() => {
-    const range = RANGES.find((r) => r.label === activeRange);
-    if (!range) return MONTHLY_REVENUE;
-    const months = Math.ceil(range.months);
-    return MONTHLY_REVENUE.slice(-months || MONTHLY_REVENUE.length);
-  }, [activeRange]);
+  // BUG-043 FIX: lift TopCarsChart tab state to Analytics level
+  // so it doesn't reset when parent re-renders due to range change
+  const [topCarsTab, setTopCarsTab] = useState(0);
 
-  const customerData = useMemo(() => {
-    const range = RANGES.find((r) => r.label === activeRange);
-    if (!range) return CUSTOMER_GROWTH;
-    const months = Math.ceil(range.months);
-    return CUSTOMER_GROWTH.slice(-Math.min(months, CUSTOMER_GROWTH.length));
-  }, [activeRange]);
+  // ── Load live data ──────────────────────────────────────────────────────────
+  // BUG-040 FIX: read from localStorage not hardcoded arrays
+  const [liveCars, setLiveCars] = useState(getLiveCars);
+  const [liveCustomers, setLiveCustomers] = useState(getLiveCustomers);
+  const [liveInvoices, setLiveInvoices] = useState(getLiveInvoices);
+  const [liveBookings, setLiveBookings] = useState(getLiveBookings);
 
-  const conversionData = useMemo(() => {
-    const range = RANGES.find((r) => r.label === activeRange);
-    if (!range) return TESTDRIVE_CONVERSION;
-    const months = Math.ceil(range.months);
-    return TESTDRIVE_CONVERSION.slice(
-      -Math.min(months, TESTDRIVE_CONVERSION.length),
-    );
-  }, [activeRange]);
+  useEffect(() => {
+    const onCars = (e) => {
+      if (e.detail?.cars) setLiveCars(e.detail.cars);
+    };
+    const onCustomers = (e) => {
+      if (e.detail?.customers) setLiveCustomers(e.detail.customers);
+    };
+    const onInvoices = (e) => {
+      if (e.detail?.invoices) setLiveInvoices(e.detail.invoices);
+    };
+    const onBookings = (e) => {
+      if (e.detail?.bookings) setLiveBookings(e.detail.bookings);
+    };
+
+    window.addEventListener("apex-gt-cars-updated", onCars);
+    window.addEventListener("apex-gt-customers-updated", onCustomers);
+    window.addEventListener("apex-gt-invoices-updated", onInvoices);
+    window.addEventListener("apex-gt-bookings-updated", onBookings);
+
+    return () => {
+      window.removeEventListener("apex-gt-cars-updated", onCars);
+      window.removeEventListener("apex-gt-customers-updated", onCustomers);
+      window.removeEventListener("apex-gt-invoices-updated", onInvoices);
+      window.removeEventListener("apex-gt-bookings-updated", onBookings);
+    };
+  }, []);
+
+  const rangeInvoices = useMemo(
+    () =>
+      filterInvoicesByRange(liveInvoices, activeRange, customFrom, customTo),
+    [liveInvoices, activeRange, customFrom, customTo],
+  );
+
+  const rangeBookings = useMemo(
+    () =>
+      filterBookingsByRange(liveBookings, activeRange, customFrom, customTo),
+    [liveBookings, activeRange, customFrom, customTo],
+  );
+
+  const rangeCustomers = useMemo(
+    () =>
+      filterCustomersByRange(liveCustomers, activeRange, customFrom, customTo),
+    [liveCustomers, activeRange, customFrom, customTo],
+  );
+
+  // Previous period — for trend comparison (BUG-042)
+  const prevRangeInvoices = useMemo(() => {
+    // Previous period = same length of time, before the current range start
+    const currentFiltered = rangeInvoices;
+    if (currentFiltered.length === 0) return [];
+
+    // Get the date range of current period
+    const dates = currentFiltered
+      .map((inv) => new Date(inv.issuedDate))
+      .filter((d) => !isNaN(d));
+
+    if (dates.length === 0) return [];
+
+    const minDate = new Date(Math.min(...dates));
+    const maxDate = new Date(Math.max(...dates));
+    const periodMs = maxDate - minDate || 86400000;
+
+    // Previous period ends at minDate - 1ms, starts periodMs before that
+    const prevEnd = new Date(minDate.getTime() - 1);
+    const prevStart = new Date(prevEnd.getTime() - periodMs);
+
+    return liveInvoices.filter((inv) => {
+      if (!inv.issuedDate) return false;
+      const d = new Date(inv.issuedDate);
+      return d >= prevStart && d <= prevEnd;
+    });
+  }, [rangeInvoices, liveInvoices]);
+
+  const revenueData = useMemo(
+    () => computeMonthlyRevenue(rangeInvoices),
+    [rangeInvoices],
+  );
+  const brandData = useMemo(
+    () => computeSalesByBrand(rangeInvoices, liveCars),
+    [rangeInvoices, liveCars],
+  );
+  const customerData = useMemo(
+    () => computeCustomerGrowth(rangeCustomers),
+    [rangeCustomers],
+  );
+  const inventoryData = useMemo(
+    () => computeInventoryStatus(liveCars),
+    [liveCars],
+  );
+  const topCarsData = useMemo(
+    () => computeTopCars(rangeInvoices, liveCars),
+    [rangeInvoices, liveCars],
+  );
+  const conversionData = useMemo(
+    () => computeTestDriveConversion(rangeBookings, rangeInvoices),
+    [rangeBookings, rangeInvoices],
+  );
+  const paymentData = useMemo(
+    () => computePaymentMethods(rangeInvoices),
+    [rangeInvoices],
+  );
 
   // KPI computations from revenue data
-  const kpis = useMemo(() => {
-    const totalRev = revenueData.reduce((s, d) => s + d.revenue, 0);
-    const prevRev =
-      revenueData.length > 1
-        ? revenueData.slice(0, -1).reduce((s, d) => s + d.revenue, 0)
-        : totalRev;
-
-    const totalInvoices = revenueData.reduce((s, d) => s + d.invoices, 0);
-    const avgOrder =
-      totalInvoices > 0 ? Math.round(totalRev / totalInvoices) : 0;
-    const totalCars = INVENTORY_STATUS_DATA.reduce((s, d) => s + d.value, 0);
-    const soldCars =
-      INVENTORY_STATUS_DATA.find((d) => d.name === "Sold")?.value || 0;
-    const totalCustomers =
-      CUSTOMER_GROWTH[CUSTOMER_GROWTH.length - 1]?.total || 0;
-    const prevCustomers =
-      CUSTOMER_GROWTH[CUSTOMER_GROWTH.length - 2]?.total || totalCustomers;
-    const convRate =
-      conversionData.reduce((s, d) => s + d.drives, 0) > 0
-        ? Math.round(
-            (conversionData.reduce((s, d) => s + d.converted, 0) /
-              conversionData.reduce((s, d) => s + d.drives, 0)) *
-              100,
-          )
-        : 0;
-
-    const revTrend =
-      prevRev > 0 ? Math.round(((totalRev - prevRev) / prevRev) * 100) : 0;
-    const custTrend =
-      prevCustomers > 0
-        ? Math.round(((totalCustomers - prevCustomers) / prevCustomers) * 100)
-        : 0;
-
-    return {
-      totalRev,
-      totalInvoices,
-      avgOrder,
-      totalCars,
-      soldCars,
-      totalCustomers,
-      convRate,
-      revTrend,
-      custTrend,
-    };
-  }, [revenueData, conversionData]);
+  const kpis = useMemo(
+    () =>
+      computeAnalyticsKPIs(
+        liveCars,
+        rangeCustomers,
+        rangeInvoices,
+        rangeBookings,
+        prevRangeInvoices,
+        liveCustomers,
+      ),
+    [
+      liveCars,
+      rangeCustomers,
+      rangeInvoices,
+      rangeBookings,
+      prevRangeInvoices,
+      liveCustomers,
+    ],
+  );
 
   const KPI_CARDS = [
     {
       label: "Total Revenue",
-      value: fmtAED(kpis.totalRev),
-      sub: `${kpis.totalInvoices} invoices`,
+      value: fmtAED(kpis.totalRevenue),
+      sub: `${kpis.paidInvoicesCount} paid invoices`,
       icon: DollarSign,
       iconClass: "bg-gold/10 text-gold",
       trend: kpis.revTrend,
@@ -139,13 +215,13 @@ function Analytics() {
       sub: `${kpis.totalCars} total inventory`,
       icon: Car,
       iconClass: "bg-sky-accent/10 text-sky-accent",
-      trend: 12,
-      trendLabel: "vs prev period",
+      trend: null,
+      trendLabel: "",
     },
     {
       label: "Total Customers",
       value: String(kpis.totalCustomers),
-      sub: "across all statuses",
+      sub: "in selected period",
       icon: Users,
       iconClass: "bg-emerald-400/10 text-emerald-400",
       trend: kpis.custTrend,
@@ -154,68 +230,75 @@ function Analytics() {
     {
       label: "Avg. Order Value",
       value: fmtAED(kpis.avgOrder),
-      sub: "per invoice",
+      sub: "per paid invoice",
       icon: TrendingUp,
       iconClass: "bg-violet-400/10 text-violet-400",
-      trend: 8,
-      trendLabel: "vs prev period",
+      trend: null,
+      trendLabel: "",
     },
     {
       label: "Test Drive Conversion",
       value: `${kpis.convRate}%`,
-      sub: "drives → sales",
+      sub: "drives that led to sales",
       icon: CalendarCheck,
       iconClass: "bg-amber-400/10 text-amber-400",
-      trend: 5,
-      trendLabel: "vs prev period",
+      trend: null,
+      trendLabel: "",
     },
     {
       label: "Active Invoices",
-      value: String(kpis.totalInvoices),
-      sub: "in selected period",
+      value: String(kpis.paidInvoicesCount),
+      sub: "paid in period",
       icon: FileText,
       iconClass: "bg-rose-400/10 text-rose-400",
-      trend: 0,
+      trend: null,
       trendLabel: "",
     },
   ];
 
+  const revenueCellColors = useMemo(
+    () =>
+      revenueData.map((entry) =>
+        entry.revenue >= entry.target ? "#D4AF37" : "rgba(251,113,133,0.7)",
+      ),
+    [revenueData],
+  );
+
   return (
     <div className="flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-6">
       {/* ── Page Header + Date Range Filter ── */}
-      <div className="flex items-center justify-between flex-wrap gap-4 flex-shrink-0">
+      <div className="flex items-center justify-between flex-shrink-0 flex-wrap gap-y-4">
         <div>
           <h1 className="text-lg font-extrabold text-text-primary">
             Analytics
           </h1>
           <p className="text-[10px] text-text-subtle mt-0.5 tracking-wide">
-            Executive overview · APEX GT Dubai
+            Live data · {rangeInvoices.length} invoices · {rangeBookings.length}{" "}
+            bookings · {rangeCustomers.length} customers in period
           </p>
         </div>
 
         {/* Range selector */}
-        <div className="flex items-center flex-wrap gap-4">
-          {/* Preset buttons */}
+        <div className="flex items-center gap-2 flex-wrap gap-y-4 ">
           <div className="flex bg-card border border-border rounded-xl overflow-hidden">
             {RANGES.map((r) => (
               <button
-                key={r.label}
+                key={r}
                 onClick={() => {
-                  setActiveRange(r.label);
+                  setActiveRange(r);
                   setShowCustom(false);
                 }}
                 className={`px-3 py-1.5 text-[11px] font-semibold transition-all ${
-                  activeRange === r.label && !showCustom
+                  activeRange === r && !showCustom
                     ? "bg-gold/10 text-gold"
                     : "text-text-muted hover:text-text-primary"
                 }`}
               >
-                {r.label}
+                {r}
               </button>
             ))}
           </div>
 
-          {/* Custom range */}
           <button
             onClick={() => {
               setShowCustom((p) => !p);
@@ -230,6 +313,7 @@ function Analytics() {
           >
             Custom
           </button>
+
           {showCustom && (
             <motion.div
               className="flex items-center gap-2"
@@ -254,27 +338,28 @@ function Analytics() {
         </div>
       </div>
 
-      {/* ── Row 1: KPI Cards ── */}
+      {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 flex-shrink-0">
         {KPI_CARDS.map((card, i) => (
           <AnalyticsStatCard key={card.label} {...card} delay={i * 0.05} />
         ))}
       </div>
 
-      {/* ── Row 2: Full-width Revenue Chart ── */}
-      {/* <div className="flex-shrink-0">
-        <RevenueChart data={revenueData} />
-      </div> */}
+      {/* ── Revenue Chart ── */}
 
-      {/* ── Row 3: 2×2 chart grid ── */}
+      {/* ── 2×2 Chart Grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-shrink-0">
-        <SalesPerformanceChart data={SALES_BY_BRAND} />
-        <InventoryStatusChart data={INVENTORY_STATUS_DATA} />
+        <SalesPerformanceChart data={brandData} />
+        <InventoryStatusChart data={inventoryData} />
         <CustomerGrowthChart data={customerData} />
+
+        {/* BUG-043 FIX: controlled tab state so it doesn't reset on re-render */}
         <TopCarsChart
-          topCars={TOP_CARS}
+          topCars={topCarsData}
           conversionData={conversionData}
-          paymentData={PAYMENT_METHOD_DATA}
+          paymentData={paymentData}
+          activeTab={topCarsTab}
+          onTabChange={setTopCarsTab}
         />
       </div>
     </div>

@@ -72,7 +72,7 @@ const useAppStore = create(
       setInventoryCount: (n) => set({ inventoryCount: n }),
 
       testDriveCount: 0,
-      setTestDriveCount: (b) => set({ testDriveCount: b }),
+      setTestDriveCount: (m) => set({ testDriveCount: m }),
     }),
     {
       name: "apex-gt-store",
