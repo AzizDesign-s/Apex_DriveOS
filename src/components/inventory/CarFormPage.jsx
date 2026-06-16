@@ -2,7 +2,7 @@
 // Full-screen slide-up form for Add / Edit car.
 // 3 tabs: Basic Details → Media → Price & Features
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Check, Car, Image, DollarSign, X } from "lucide-react";
 import { Button, Input, Select } from "../ui";
@@ -76,6 +76,9 @@ function CarFormPage({ isOpen, onClose, onSave, editCar = null }) {
   const [tab, setTab] = useState(0);
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
+
+  const extColorRef = useRef();
+  const intColorRef = useRef();
 
   // Sync form when opening for edit
   useEffect(() => {
@@ -243,15 +246,13 @@ function CarFormPage({ isOpen, onClose, onSave, editCar = null }) {
               <div className="relative flex-shrink-0">
                 <div
                   className="w-10 h-10 rounded-xl border border-border cursor-pointer
-                             hover:scale-105 transition-transform"
+                   hover:scale-105 transition-transform"
                   style={{ background: form.exteriorColor }}
-                  onClick={() =>
-                    document.getElementById("ext-color-input").click()
-                  }
+                  onClick={() => extColorRef.current?.click()}
                   title="Pick color"
                 />
                 <input
-                  id="ext-color-input"
+                  ref={extColorRef}
                   type="color"
                   className="absolute opacity-0 w-0 h-0"
                   value={form.exteriorColor}
@@ -272,15 +273,13 @@ function CarFormPage({ isOpen, onClose, onSave, editCar = null }) {
               <div className="relative flex-shrink-0">
                 <div
                   className="w-10 h-10 rounded-xl border border-border cursor-pointer
-                             hover:scale-105 transition-transform"
+                   hover:scale-105 transition-transform"
                   style={{ background: form.interiorColor }}
-                  onClick={() =>
-                    document.getElementById("int-color-input").click()
-                  }
+                  onClick={() => intColorRef.current?.click()}
                   title="Pick color"
                 />
                 <input
-                  id="int-color-input"
+                  ref={intColorRef}
                   type="color"
                   className="absolute opacity-0 w-0 h-0"
                   value={form.interiorColor}

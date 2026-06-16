@@ -15,6 +15,7 @@
 //   sortField, sortDir, onSort
 //   onView, onEdit, onDelete
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Car, Eye, Edit, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { Badge, EmptyState, Button } from "../ui";
@@ -122,6 +123,32 @@ function Pagination({ page, totalPages, total, perPage, onPage }) {
           ›
         </button>
       </div>
+    </div>
+  );
+}
+
+function CarThumbnail({ src, alt }) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed || !src) {
+    return (
+      <div
+        className="w-11 h-10 rounded-lg bg-base border border-border
+                      flex items-center justify-center text-xl flex-shrink-0"
+      >
+        🚗
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-11 h-10 rounded-lg overflow-hidden border border-border flex-shrink-0">
+      <img
+        src={src}
+        alt={alt}
+        className="w-full h-full object-cover"
+        onError={() => setFailed(true)}
+      />
     </div>
   );
 }
@@ -273,32 +300,13 @@ function InventoryTable({
                       className="px-4 py-3 text-xs text-text-muted align-middle"
                     >
                       {/* Image thumbnail */}
-                      {col.id === "image" &&
-                        (() => {
-                          const firstImage = car.images?.[0] || car.photos?.[0];
-                          return firstImage ? (
-                            <div className="w-10 h-10 rounded-lg overflow-hidden border border-border flex-shrink-0">
-                              <img
-                                src={firstImage.url}
-                                alt={`${car.brand} ${car.model}`}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  // Fallback to emoji if image fails to load
-                                  e.currentTarget.style.display = "none";
-                                  e.currentTarget.parentElement.innerHTML =
-                                    '<span style="font-size:20px">🚗</span>';
-                                }}
-                              />
-                            </div>
-                          ) : (
-                            <div
-                              className="w-10 h-10 rounded-lg bg-base border border-border
-                              flex items-center justify-center text-xl flex-shrink-0"
-                            >
-                              🚗
-                            </div>
-                          );
-                        })()}
+
+                      {col.id === "image" && (
+                        <CarThumbnail
+                          src={(car.images?.[0] || car.photos?.[0])?.url}
+                          alt={`${car.brand} ${car.model}`}
+                        />
+                      )}
 
                       {/* Car name + meta */}
                       {col.id === "car" && (

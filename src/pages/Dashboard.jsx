@@ -9,7 +9,7 @@
 // Phase 2 note: replace direct mockData imports with store selectors.
 // The computation logic below stays unchanged — only the data source swaps.
 
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -225,6 +225,65 @@ function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAppStore();
 
+  const [liveCars, setLiveCars] = useState(() => {
+    try {
+      const saved = localStorage.getItem("apex-gt-cars");
+      return saved ? JSON.parse(saved) : cars; // cars from mockData as fallback
+    } catch {
+      return cars;
+    }
+  });
+
+  const [liveCustomers, setLiveCustomers] = useState(() => {
+    try {
+      const saved = localStorage.getItem("apex-gt-customers");
+      return saved ? JSON.parse(saved) : customers;
+    } catch {
+      return customers;
+    }
+  });
+
+  const [liveInvoices, setLiveInvoices] = useState(() => {
+    try {
+      const saved = localStorage.getItem("apex-gt-invoices");
+      return saved ? JSON.parse(saved) : invoices;
+    } catch {
+      return invoices;
+    }
+  });
+
+  const [liveBookings, setLiveBookings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("apex-gt-bookings");
+      return saved ? JSON.parse(saved) : testDrives;
+    } catch {
+      return testDrives;
+    }
+  });
+
+  useEffect(() => {
+    const onCarsUpdate = (e) => setLiveBookings(e.detail?.cars || liveBookings);
+    const onCarsUpdated = (e) => setLiveCars(e.detail?.cars || liveCars);
+    const onCustomerUpdate = (e) =>
+      setLiveCustomers(e.detail?.customers || liveCustomers);
+    const onInvoiceUpdate = (e) =>
+      setLiveInvoices(e.detail?.invoices || liveInvoices);
+    const onBookingUpdate = (e) =>
+      setLiveBookings(e.detail?.bookings || liveBookings);
+
+    window.addEventListener("apex-gt-cars-updated", onCarsUpdated);
+    window.addEventListener("apex-gt-customers-updated", onCustomerUpdate);
+    window.addEventListener("apex-gt-invoices-updated", onInvoiceUpdate);
+    window.addEventListener("apex-gt-bookings-updated", onBookingUpdate);
+
+    return () => {
+      window.removeEventListener("apex-gt-cars-updated", onCarsUpdated);
+      window.removeEventListener("apex-gt-customers-updated", onCustomerUpdate);
+      window.removeEventListener("apex-gt-invoices-updated", onInvoiceUpdate);
+      window.removeEventListener("apex-gt-bookings-updated", onBookingUpdate);
+    };
+  }, []);
+
   const greeting = useMemo(() => {
     const h = new Date().getHours();
     if (h < 12) return "Good morning";
@@ -235,20 +294,22 @@ function Dashboard() {
   // ── BUG-006 FIX: Derive all KPIs from real data ───────────────────────────
   const kpis = useMemo(() => {
     // Revenue — only paid invoices
-    const paidInvoices = invoices.filter((i) => i.status === "paid");
+    const paidInvoices = liveInvoices.filter((i) => i.status === "paid");
     const totalRevenue = paidInvoices.reduce((sum, inv) => {
       const { total } = calcInvoice(inv.items, inv.discount, inv.vatRate);
       return sum + total;
     }, 0);
 
     // Cars
-    const availableCars = cars.filter((c) => c.status === "available").length;
-    const soldCars = cars.filter((c) => c.status === "sold").length;
-    const totalCars = cars.length;
+    const availableCars = liveCars.filter(
+      (c) => c.status === "available",
+    ).length;
+    const soldCars = liveCars.filter((c) => c.status === "sold").length;
+    const totalCars = liveCars.length;
 
     // Customers
-    const totalCustomers = customers.length;
-    const newThisMonth = customers.filter((c) => {
+    const totalCustomers = liveCustomers.length;
+    const newThisMonth = liveCustomers.filter((c) => {
       if (!c.createdAt) return false;
       const d = new Date(c.createdAt);
       const now = new Date();
@@ -258,19 +319,20 @@ function Dashboard() {
     }).length;
 
     // Bookings
-    const pendingBookings = testDrives.filter(
+    const pendingBookings = liveBookings.filter(
       (b) => b.status === "pending",
     ).length;
-    const completedBookings = testDrives.filter(
+    const completedBookings = liveBookings.filter(
       (b) => b.status === "completed",
     ).length;
     const conversionRate =
-      testDrives.length > 0
-        ? Math.round((completedBookings / testDrives.length) * 100)
+      liveBookings.length > 0
+        ? Math.round((completedBookings / liveBookings.length) * 100)
         : 0;
 
-    // Overdue invoices
-    const overdueCount = invoices.filter((i) => i.status === "overdue").length;
+    const overdueCount = liveInvoices.filter(
+      (i) => i.status === "overdue",
+    ).length;
 
     return {
       totalRevenue,
@@ -285,7 +347,7 @@ function Dashboard() {
       conversionRate,
       overdueCount,
     };
-  }, []);
+  }, [liveCars, liveCustomers, liveInvoices, liveBookings]);
 
   // ── BUG-009 FIX: Showroom status from live inventory ─────────────────────
   const showroomStatus = useMemo(() => {
@@ -307,26 +369,24 @@ function Dashboard() {
 
   // ── BUG-007 FIX: Revenue chart derived from invoices ─────────────────────
   const revenueChartData = useMemo(() => {
-    // Group paid invoices by month
     const monthlyRevenue = Array(12).fill(0);
     const monthlyTarget = [
       1000000, 1000000, 1200000, 1200000, 1500000, 1500000, 1800000, 1800000,
       2000000, 2000000, 2200000, 2200000,
     ];
-
-    invoices.forEach((inv) => {
+    liveInvoices.forEach((inv) => {
+      // ← was: invoices
       if (!inv.issuedDate) return;
       const month = new Date(inv.issuedDate).getMonth();
       const { total } = calcInvoice(inv.items, inv.discount, inv.vatRate);
       monthlyRevenue[month] += total;
     });
-
     return MONTH_LABELS.map((month, i) => ({
       month,
       revenue: monthlyRevenue[i],
       target: monthlyTarget[i],
     })).filter((d) => d.revenue > 0 || d.target > 0);
-  }, []);
+  }, [liveInvoices]);
 
   // ── Inventory status donut ────────────────────────────────────────────────
   const inventoryDonutData = useMemo(
@@ -334,34 +394,33 @@ function Dashboard() {
       [
         {
           name: "Available",
-          value: cars.filter((c) => c.status === "available").length,
+          value: liveCars.filter((c) => c.status === "available").length,
           color: "#10B981",
         },
         {
           name: "Reserved",
-          value: cars.filter((c) => c.status === "reserved").length,
+          value: liveCars.filter((c) => c.status === "reserved").length,
           color: "#38BDF8",
         },
         {
           name: "Sold",
-          value: cars.filter((c) => c.status === "sold").length,
+          value: liveCars.filter((c) => c.status === "sold").length,
           color: "#D4AF37",
         },
         {
           name: "Maintenance",
-          value: cars.filter((c) => c.status === "maintenance").length,
+          value: liveCars.filter((c) => c.status === "maintenance").length,
           color: "#FB7185",
         },
       ].filter((d) => d.value > 0),
-    [],
+    [liveCars],
   );
 
   // ── BUG-008 FIX: Activity feed built from real module data ────────────────
   const recentActivity = useMemo(() => {
     const events = [];
 
-    // Sold cars
-    cars
+    liveCars
       .filter((c) => c.status === "sold")
       .slice(0, 2)
       .forEach((c) =>
@@ -375,8 +434,7 @@ function Dashboard() {
         }),
       );
 
-    // Latest customers
-    customers
+    liveCustomers
       .slice(-2)
       .reverse()
       .forEach((c) =>
@@ -395,8 +453,7 @@ function Dashboard() {
         }),
       );
 
-    // Paid invoices
-    invoices
+    liveInvoices
       .filter((i) => i.status === "paid")
       .slice(0, 2)
       .forEach((i) => {
@@ -416,8 +473,7 @@ function Dashboard() {
         });
       });
 
-    // Approved / completed bookings
-    testDrives
+    liveBookings
       .filter((b) => b.status === "approved" || b.status === "completed")
       .slice(0, 2)
       .forEach((b) =>
@@ -436,10 +492,8 @@ function Dashboard() {
         }),
       );
 
-    // Sort newest first, take 6
     return events.sort((a, b) => b.sort - a.sort).slice(0, 6);
-  }, []);
-
+  }, [liveCars, liveCustomers, liveInvoices, liveBookings]);
   // ── BUG-010 FIX: Quick actions with real navigation ───────────────────────
   const quickActions = [
     {

@@ -20,6 +20,7 @@ import clsx from "clsx";
 
 // ── Avatar ────────────────────────────────────────────────────────────────────
 function Avatar({ name, index, size = "lg" }) {
+  // BUG-024 FIX: index is always stable now — comes from filtered list position
   const { bg, text } = AVATAR_PALETTE[index % AVATAR_PALETTE.length];
   const initials = name
     .split(" ")
@@ -314,9 +315,20 @@ function CustomerDetailDrawer({
                   />
                 ))
               ) : (
-                <p className="text-xs text-text-subtle py-2">
-                  No purchases yet.
-                </p>
+                <div className="flex flex-col items-center py-4 text-center">
+                  <div
+                    className="w-8 h-8 rounded-lg bg-base border border-border
+                    flex items-center justify-center mb-2"
+                  >
+                    <Car size={14} className="text-text-subtle/40" />
+                  </div>
+                  <p className="text-[11px] text-text-subtle">
+                    No purchases yet
+                  </p>
+                  <p className="text-[10px] text-text-subtle/60 mt-0.5">
+                    Will update when an invoice is linked to this customer
+                  </p>
+                </div>
               )}
 
               {/* Inquiry + test drive history */}
@@ -341,9 +353,20 @@ function CustomerDetailDrawer({
                   />
                 ))
               ) : (
-                <p className="text-xs text-text-subtle py-2">
-                  No inquiries yet.
-                </p>
+                <div className="flex flex-col items-center py-4 text-center">
+                  <div
+                    className="w-8 h-8 rounded-lg bg-base border border-border
+                    flex items-center justify-center mb-2"
+                  >
+                    <Calendar size={14} className="text-text-subtle/40" />
+                  </div>
+                  <p className="text-[11px] text-text-subtle">
+                    No inquiries yet
+                  </p>
+                  <p className="text-[10px] text-text-subtle/60 mt-0.5">
+                    Test drives and inquiries will appear here when linked
+                  </p>
+                </div>
               )}
             </div>
 

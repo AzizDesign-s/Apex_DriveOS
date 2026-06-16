@@ -1,7 +1,7 @@
 // src/components/inventory/FilterDrawer.jsx
 // Slides in from the right. All filter state is local — applied on confirm.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, SlidersHorizontal, Check } from "lucide-react";
 import { Button, Select } from "../ui";
@@ -61,6 +61,18 @@ function FilterDrawer({
   const [brand, setBrand] = useState("");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      setStatus([]);
+      setFuel([]);
+      setBodyType([]);
+      setTransmission([]);
+      setBrand("");
+      setPriceMin("");
+      setPriceMax("");
+    }
+  }, [isOpen]);
 
   const toggle = (arr, setArr, val) =>
     setArr(arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]);

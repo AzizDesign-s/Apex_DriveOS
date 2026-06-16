@@ -6,13 +6,31 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Check } from "lucide-react";
 import { Button, Input, Select } from "../ui";
 import {
-  customers,
-  cars,
+  customers as seedCustomers,
+  cars as seedCars,
   SALES_EXECUTIVES,
   TIME_SLOTS,
   generateBookingId,
 } from "../../data/mockData";
 import apexToast from "../../utils/toast";
+
+const getLiveCustomers = () => {
+  try {
+    const saved = localStorage.getItem("apex-gt-customers");
+    return saved ? JSON.parse(saved) : seedCustomers;
+  } catch {
+    return seedCustomers;
+  }
+};
+
+const getLiveCars = () => {
+  try {
+    const saved = localStorage.getItem("apex-gt-cars");
+    return saved ? JSON.parse(saved) : seedCars;
+  } catch {
+    return seedCars;
+  }
+};
 
 const EMPTY = {
   bookingId: "",
@@ -65,26 +83,38 @@ function TestDriveFormPage({
   onSave,
   editBooking = null,
   allBookings = [],
+  prefilledDate = "",
 }) {
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
 
+  const [liveCustomers, setLiveCustomers] = useState(getLiveCustomers);
+  const [liveCars, setLiveCars] = useState(getLiveCars);
+
   useEffect(() => {
     if (isOpen) {
+      setLiveCustomers(getLiveCustomers());
+      setLiveCars(getLiveCars());
+
       if (editBooking) {
         setForm({ ...EMPTY, ...editBooking });
       } else {
-        setForm({ ...EMPTY, bookingId: generateBookingId(allBookings) });
+        setForm({
+          ...EMPTY,
+          bookingId: generateBookingId(allBookings),
+          // BUG-031 FIX: pre-fill date if coming from calendar day click
+          date: prefilledDate || "",
+        });
       }
       setErrors({});
     }
-  }, [isOpen, editBooking, allBookings]);
+  }, [isOpen, editBooking, allBookings, prefilledDate]);
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
   // When customer is selected — auto-fill their details
   const handleCustomerChange = (customerId) => {
-    const customer = customers.find((c) => c.id === Number(customerId));
+    const customer = liveCustomers.find((c) => c.id === Number(customerId));
     if (customer) {
       set("customerId", customerId);
       set("customerName", customer.name);
@@ -98,7 +128,7 @@ function TestDriveFormPage({
 
   // When car is selected — auto-fill car details
   const handleCarChange = (carId) => {
-    const car = cars.find((c) => c.id === Number(carId));
+    const car = liveCars.find((c) => c.id === Number(carId));
     if (car) {
       set("carId", carId);
       set("carName", `${car.brand} ${car.model}`);
@@ -109,6 +139,13 @@ function TestDriveFormPage({
       set("carPlate", "");
     }
   };
+
+  const availableCars = liveCars.filter(
+    (c) =>
+      c.status === "available" ||
+      c.status === "reserved" ||
+      c.id === Number(form.carId), // always include currently-selected car when editing
+  );
 
   const validate = () => {
     const e = {};
@@ -137,14 +174,6 @@ function TestDriveFormPage({
     );
     onClose();
   };
-
-  // Only show available cars (not sold/maintenance)
-  const availableCars = cars.filter(
-    (c) =>
-      c.status === "available" ||
-      c.status === "reserved" ||
-      c.id === Number(form.carId),
-  );
 
   return (
     <AnimatePresence>
@@ -252,7 +281,7 @@ function TestDriveFormPage({
                     <Select
                       value={form.customerId}
                       onChange={(e) => handleCustomerChange(e.target.value)}
-                      options={customers.map((c) => ({
+                      options={liveCustomers.map((c) => ({
                         value: String(c.id),
                         label: `${c.name} (${c.customerId})`,
                       }))}

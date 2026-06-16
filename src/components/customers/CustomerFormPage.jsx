@@ -123,6 +123,9 @@ function CustomerFormPage({
       if (editCustomer) {
         setForm({ ...EMPTY, ...editCustomer });
       } else {
+        // BUG-023 FIX: generate ID from the full live customers array
+        // allCustomers comes from the parent Customers.jsx state
+        // so it always reflects the current count including unsaved additions
         setForm({
           ...EMPTY,
           customerId: generateCustomerId(allCustomers),
@@ -155,6 +158,7 @@ function CustomerFormPage({
     onSave({
       ...form,
       id: editCustomer?.id || Date.now(),
+      // BUG-021 FIX: always initialize history arrays — never undefined
       purchases: editCustomer?.purchases || [],
       inquiries: editCustomer?.inquiries || [],
       createdAt:

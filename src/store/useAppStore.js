@@ -70,6 +70,9 @@ const useAppStore = create(
       // Phase 2 will derive these from domain stores.
       inventoryCount: 0,
       setInventoryCount: (n) => set({ inventoryCount: n }),
+
+      testDriveCount: 0,
+      setTestDriveCount: (b) => set({ testDriveCount: b }),
     }),
     {
       name: "apex-gt-store",

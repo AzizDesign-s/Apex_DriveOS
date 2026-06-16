@@ -15,6 +15,17 @@ import { Badge, EmptyState, Button } from "../ui";
 import { AVATAR_PALETTE } from "../../data/mockData";
 import clsx from "clsx";
 
+const COL_WIDTH = {
+  customer: "290px",
+  status: "120px",
+  mobile: "160px",
+  source: "120px",
+  purchases: "120px",
+  spent: "120px",
+  dob: "120px",
+  instagram: "120px",
+};
+
 // ── Avatar initials ───────────────────────────────────────────────────────────
 function Avatar({ name, index }) {
   const { bg, text } = AVATAR_PALETTE[index % AVATAR_PALETTE.length];
@@ -144,12 +155,21 @@ function CustomerTable({
   onDelete,
   onClearFilters,
 }) {
+  const visibleCols = columns.filter((c) => c.visible);
   const allSelected = data.length > 0 && data.every((c) => selected.has(c.id));
   const totalPages = Math.ceil(total / perPage);
-  const visibleCols = columns.filter((c) => c.visible);
 
   const totalSpent = (customer) =>
     customer.purchases?.reduce((sum, p) => sum + p.amount, 0) || 0;
+
+  const fmtDob = (dob) => {
+    if (!dob) return "—";
+    return new Date(dob).toLocaleDateString("en-AE", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
 
   return (
     <div
@@ -164,29 +184,7 @@ function CustomerTable({
           <colgroup>
             <col style={{ width: "50px" }} />
             {visibleCols.map((col) => (
-              <col
-                key={col.id}
-                style={{
-                  width:
-                    col.id === "customer"
-                      ? "290px"
-                      : col.id === "status"
-                        ? "120px"
-                        : col.id === "mobile"
-                          ? "160px"
-                          : col.id === "source"
-                            ? "120px"
-                            : col.id === "purchases"
-                              ? "120px"
-                              : col.id === "spent"
-                                ? "120px"
-                                : col.id === "dob"
-                                  ? "120px"
-                                  : col.id === "instagram"
-                                    ? "120px"
-                                    : "100px",
-                }}
-              />
+              <col key={col.id} style={{ width: COL_WIDTH[col.id] }} />
             ))}
             <col style={{ width: "140px" }} />
           </colgroup>
@@ -212,6 +210,7 @@ function CustomerTable({
                   onClick={() => onSort(col.id)}
                 >
                   {col.label}
+
                   <SortIcon active={sortField === col.id} dir={sortDir} />
                 </th>
               ))}

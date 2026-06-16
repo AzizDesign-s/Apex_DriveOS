@@ -456,11 +456,16 @@ export const AVATAR_PALETTE = [
 ];
 
 // Auto-generate next customer ID
-export const generateCustomerId = (existingCustomers) => {
-  const max = existingCustomers.reduce((acc, c) => {
-    const num = parseInt(c.customerId?.replace("CUST-", "") || "0");
-    return Math.max(acc, num);
-  }, 0);
+export const generateCustomerId = (existingCustomers = []) => {
+  // Extract all numeric parts from existing IDs
+  const nums = existingCustomers
+    .map((c) => {
+      const match = (c.customerId || "").match(/CUST-(\d+)/);
+      return match ? parseInt(match[1], 10) : 0;
+    })
+    .filter((n) => !isNaN(n));
+
+  const max = nums.length > 0 ? Math.max(...nums) : 0;
   return `CUST-${String(max + 1).padStart(3, "0")}`;
 };
 

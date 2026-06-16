@@ -110,12 +110,11 @@ function ColumnManager({ columns, onColumnsChange, isOpen, onClose }) {
     <AnimatePresence>
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-10" onClick={onClose} />
+          <div className="fixed inset-0 z-[34]" onClick={onClose} />
           <motion.div
             ref={popupRef}
-            className="absolute right-0 top-[calc(100%+6px)] w-64 z-20
-           bg-card border border-border rounded-xl shadow-glass overflow-hidden
-           max-[400px]:right-auto max-[400px]:left-0"
+            className="absolute right-0 top-[calc(100%+6px)] w-64 z-[35]
+             bg-card border border-border rounded-xl shadow-glass overflow-hidden"
             initial={{ opacity: 0, y: -8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}

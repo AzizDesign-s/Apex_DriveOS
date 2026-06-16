@@ -2,8 +2,11 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
-import { customers as initialCustomers } from "../data/mockData";
-import { DEFAULT_CUSTOMER_COLUMNS } from "../data/mockData";
+import {
+  customers as initialCustomers,
+  DEFAULT_CUSTOMER_COLUMNS,
+} from "../data/mockData";
+
 import { DeleteConfirm, ChangeStatusModal } from "../components/ui";
 import CustomerStats from "../components/customers/CustomerStats";
 import CustomerToolbar from "../components/customers/CustomerToolbar";
@@ -19,7 +22,14 @@ const EMPTY_FILTERS = { status: [], source: "" };
 
 function Customers() {
   // ── Data ──────────────────────────────────────────────────────────────────
-  const [customers, setCustomers] = useState(initialCustomers);
+  const [customers, setCustomers] = useState(() => {
+    try {
+      const saved = localStorage.getItem("apex-gt-customers");
+      return saved ? JSON.parse(saved) : initialCustomers;
+    } catch {
+      return initialCustomers;
+    }
+  });
 
   // ── Search + filters ──────────────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -46,6 +56,15 @@ function Customers() {
       return DEFAULT_CUSTOMER_COLUMNS;
     }
   });
+
+  useEffect(() => {
+    localStorage.setItem("apex-gt-customers", JSON.stringify(customers));
+    window.dispatchEvent(
+      new CustomEvent("apex-gt-customers-updated", {
+        detail: { customers },
+      }),
+    );
+  }, [customers]);
 
   useEffect(() => {
     localStorage.setItem("apex-gt-customer-cols", JSON.stringify(columns));
@@ -158,7 +177,7 @@ function Customers() {
 
   const handleDelete = useCallback((customer) => {
     setCustomers((prev) => prev.filter((c) => c.id !== customer.id));
-    setDeleteCustomer(null);
+    setDeleteCustomer(null); // ← this closes the modal
     setViewCustomer(null);
     apexToast.info(
       "Customer Removed",
@@ -239,10 +258,10 @@ function Customers() {
 
   const openView = useCallback(
     (customer) => {
-      // Find the index in filtered so avatar color matches table row
+      // Find position in the current FILTERED list so color matches table row
       const idx = filtered.findIndex((c) => c.id === customer.id);
-      setViewIndex(idx >= 0 ? idx % 6 : 0);
-      setViewCustomer(customer);
+      // Attach _displayIndex to the object — underscore prefix = UI-only field
+      setViewCustomer({ ...customer, _displayIndex: idx >= 0 ? idx : 0 });
     },
     [filtered],
   );
@@ -322,7 +341,7 @@ function Customers() {
       <CustomerDetailDrawer
         customer={viewCustomer}
         isOpen={!!viewCustomer}
-        index={viewIndex}
+        index={viewCustomer?._displayIndex ?? 0}
         onClose={() => setViewCustomer(null)}
         onEdit={openEditForm}
         onDelete={openDeleteFromDrawer}
@@ -336,7 +355,7 @@ function Customers() {
         }}
         onSave={handleSave}
         editCustomer={editCustomer}
-        allCustomers={customers}
+        allCustomers={customers} // ← must be the live state array, not mockData import
       />
 
       <DeleteConfirm

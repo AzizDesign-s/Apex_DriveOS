@@ -52,7 +52,14 @@ const EXPORT_COLS = [
 ];
 
 function Invoices() {
-  const [invoices, setInvoices] = useState(initialInvoices);
+  const [invoices, setInvoices] = useState(() => {
+    try {
+      const saved = localStorage.getItem("apex-gt-invoices");
+      return saved ? JSON.parse(saved) : initialInvoices;
+    } catch {
+      return initialInvoices;
+    }
+  });
 
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
 
@@ -92,6 +99,15 @@ function Invoices() {
   useEffect(() => {
     localStorage.setItem(LS_KEY, JSON.stringify(columns));
   }, [columns]);
+
+  useEffect(() => {
+    localStorage.setItem("apex-gt-invoices", JSON.stringify(invoices));
+    window.dispatchEvent(
+      new CustomEvent("apex-gt-invoices-updated", {
+        detail: { invoices },
+      }),
+    );
+  }, [invoices]);
 
   // Preview panel — which invoice is selected
   const [activeInvoice, setActiveInvoice] = useState(invoices[0] || null);

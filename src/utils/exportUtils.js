@@ -132,10 +132,21 @@ function getCellValue(colId, row) {
       return "";
     case "status":
       return row.status || "";
-    case "price":
+    case "price": {
+      // Export the final price after discount, not just unit price
+      const discount = Number(row.discount || 0);
+      const price = Number(row.price || 0);
+      const finalPrice = price - discount;
       return row.price
-        ? `${row.currency || "AED"} ${Number(row.price).toLocaleString()}`
+        ? `${row.currency || "AED"} ${finalPrice.toLocaleString()}`
         : "";
+    }
+
+    case "finalPrice": {
+      const discount = Number(row.discount || 0);
+      const price = Number(row.price || 0);
+      return `${row.currency || "AED"} ${(price - discount).toLocaleString()}`;
+    }
     case "fuel":
       return row.fuel || row.fuelType || "";
     case "mileage":

@@ -15,6 +15,7 @@ import TestDriveFormPage from "../components/testdrives/TestDriveFormPage";
 import TestDriveDetailDrawer from "../components/testdrives/TestDriveDetailDrawer";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import apexToast from "../utils/toast";
+import useAppStore from "../store/useAppStore";
 
 const PER_PAGE = 10;
 const LS_KEY = "apex-gt-testdrive-cols";
@@ -42,11 +43,20 @@ const EXPORT_COLS = [
 ];
 
 function TestDrives() {
-  const [bookings, setBookings] = useState(initialBookings);
+  const [bookings, setBookings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("apex-gt-bookings");
+      return saved ? JSON.parse(saved) : initialBookings;
+    } catch {
+      return initialBookings;
+    }
+  });
 
   // Search + filters
   const [search, setSearch] = useState("");
   const [activeFilters, setActiveFilters] = useState(EMPTY_FILTERS);
+
+  const [prefilledDate, setPrefilledDate] = useState("");
 
   const filterCount = useMemo(() => {
     const f = activeFilters;
@@ -76,8 +86,21 @@ function TestDrives() {
     localStorage.setItem(LS_KEY, JSON.stringify(columns));
   }, [columns]);
 
+  useEffect(() => {
+    localStorage.setItem("apex-gt-bookings", JSON.stringify(bookings));
+    window.dispatchEvent(
+      new CustomEvent("apex-gt-bookings-updated", {
+        detail: { bookings },
+      }),
+    );
+  }, [bookings]);
+
   // View: table | calendar
   const [view, setView] = useState("table");
+
+  const today = new Date();
+  const [calYear, setCalYear] = useState(today.getFullYear());
+  const [calMonth, setCalMonth] = useState(today.getMonth());
 
   // UI state
   const [filterOpen, setFilterOpen] = useState(false);
@@ -134,6 +157,11 @@ function TestDrives() {
 
   const pageData = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
+
+  const { setTestDriveCount } = useAppStore();
+  useEffect(() => {
+    setTestDriveCount(bookings.length);
+  }, [bookings, setTestDriveCount]);
 
   // Handlers
   const handleSort = useCallback((field) => {
@@ -209,19 +237,85 @@ function TestDrives() {
     [selected],
   );
 
-  // ── Quick status change (single booking) ──────────────────────────────────
-  const updateSingleStatus = useCallback((booking, newStatus) => {
-    setBookings((prev) =>
-      prev.map((b) => (b.id === booking.id ? { ...b, status: newStatus } : b)),
-    );
-    setViewBooking((prev) =>
-      prev?.id === booking.id ? { ...prev, status: newStatus } : prev,
-    );
-    apexToast.success(
-      "Status Updated",
-      `${booking.bookingId} marked as ${newStatus}.`,
-    );
+  const syncBookingToCustomer = useCallback((booking, newStatus) => {
+    try {
+      const saved = localStorage.getItem("apex-gt-customers");
+      if (!saved) return;
+
+      const allCustomers = JSON.parse(saved);
+      const updated = allCustomers.map((customer) => {
+        if (customer.id !== booking.customerId) return customer;
+
+        // Update the matching inquiry entry if it exists
+        const existingInquiries = customer.inquiries || [];
+        const hasEntry = existingInquiries.some(
+          (inq) => inq.bookingId === booking.bookingId,
+        );
+
+        const updatedInquiries = hasEntry
+          ? // Update existing entry
+            existingInquiries.map((inq) =>
+              inq.bookingId === booking.bookingId
+                ? {
+                    ...inq,
+                    status:
+                      newStatus.charAt(0).toUpperCase() + newStatus.slice(1),
+                  }
+                : inq,
+            )
+          : // Add new entry if it didn't exist yet
+            [
+              ...existingInquiries,
+              {
+                type: "test_drive",
+                car: booking.carName,
+                bookingId: booking.bookingId,
+                status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1),
+                note: `Assigned: ${booking.exec || "Unassigned"}`,
+                date: booking.date
+                  ? new Date(booking.date).toLocaleDateString("en-AE", {
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "Recent",
+              },
+            ];
+
+        return { ...customer, inquiries: updatedInquiries };
+      });
+
+      localStorage.setItem("apex-gt-customers", JSON.stringify(updated));
+      // Notify Customers page if it's mounted
+      window.dispatchEvent(
+        new CustomEvent("apex-gt-customers-updated", {
+          detail: { customers: updated },
+        }),
+      );
+    } catch (err) {
+      console.error("Failed to sync booking to customer:", err);
+    }
   }, []);
+
+  // ── Quick status change (single booking) ──────────────────────────────────
+  const updateSingleStatus = useCallback(
+    (booking, newStatus) => {
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === booking.id ? { ...b, status: newStatus } : b,
+        ),
+      );
+      setViewBooking((prev) =>
+        prev?.id === booking.id ? { ...prev, status: newStatus } : prev,
+      );
+      // BUG-028 FIX: sync status back to customer timeline
+      syncBookingToCustomer(booking, newStatus);
+      apexToast.success(
+        "Status Updated",
+        `${booking.bookingId} marked as ${newStatus}.`,
+      );
+    },
+    [syncBookingToCustomer],
+  );
 
   const handleApprove = useCallback(
     (b) => updateSingleStatus(b, "approved"),
@@ -335,14 +429,27 @@ function TestDrives() {
           bookings={filtered}
           onBookingClick={setViewBooking}
           onDayClick={(dateStr, dayBookings) => {
-            // If clicking a day with bookings → show first
-            // If empty day → open form pre-filled with that date
             if (dayBookings.length > 0) {
               setViewBooking(dayBookings[0]);
             } else {
               setEditBooking(null);
+              setPrefilledDate(dateStr); // BUG-031 FIX: store clicked date
               setFormOpen(true);
             }
+          }}
+          calYear={calYear}
+          calMonth={calMonth}
+          onPrevMonth={() => {
+            if (calMonth === 0) {
+              setCalMonth(11);
+              setCalYear((y) => y - 1);
+            } else setCalMonth((m) => m - 1);
+          }}
+          onNextMonth={() => {
+            if (calMonth === 11) {
+              setCalMonth(0);
+              setCalYear((y) => y + 1);
+            } else setCalMonth((m) => m + 1);
           }}
         />
       )}
@@ -382,10 +489,12 @@ function TestDrives() {
         onClose={() => {
           setFormOpen(false);
           setEditBooking(null);
+          setPrefilledDate(""); // BUG-031 FIX: clear on close
         }}
         onSave={handleSave}
         editBooking={editBooking}
         allBookings={bookings}
+        prefilledDate={prefilledDate} // ← BUG-031 FIX: new prop
       />
 
       <DeleteConfirm

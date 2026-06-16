@@ -35,7 +35,14 @@ const EMPTY_FILTERS = {
 
 function Inventory() {
   // ── Core data ────────────────────────────────────────────────────────────
-  const [cars, setCars] = useState(initialCars);
+  const [cars, setCars] = useState(() => {
+    try {
+      const saved = localStorage.getItem("apex-gt-cars");
+      return saved ? JSON.parse(saved) : initialCars;
+    } catch {
+      return initialCars;
+    }
+  });
 
   // ── Search + filters ─────────────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -77,6 +84,17 @@ function Inventory() {
   useEffect(() => {
     localStorage.setItem("apex-gt-inventory-cols", JSON.stringify(columns));
   }, [columns]);
+
+  useEffect(() => {
+    localStorage.setItem("apex-gt-cars", JSON.stringify(cars));
+    // BUG-012 + BUG-013 FIX: dispatch a custom event so other modules can react
+    // Phase 2 will replace this with Zustand store subscription
+    window.dispatchEvent(
+      new CustomEvent("apex-gt-cars-updated", {
+        detail: { cars },
+      }),
+    );
+  }, [cars]);
 
   // ── UI panel state ────────────────────────────────────────────────────────
   const [filterOpen, setFilterOpen] = useState(false);
@@ -241,20 +259,29 @@ function Inventory() {
 
   const handleExport = useCallback(
     (type) => {
-      // Only export visible columns (skip image column for exports)
-      const exportCols = columns.filter(
-        (col) => col.visible && col.id !== "image",
-      );
+      const exportCols = columns
+        .filter((col) => col.visible && col.id !== "image")
+        .map((col) => {
+          // Rename 'price' column to show it's the final price
+          if (col.id === "price") return { ...col, label: "Final Price (AED)" };
+          return col;
+        });
+
+      // Inject finalPrice into each row for clean export
+      const exportData = filtered.map((car) => ({
+        ...car,
+        price: Number(car.price || 0) - Number(car.discount || 0),
+      }));
 
       if (type === "Excel") {
-        exportToExcel(filtered, exportCols, "apex-gt-inventory");
+        exportToExcel(exportData, exportCols, "apex-gt-inventory");
         apexToast.success(
           "Excel Exported",
           `${filtered.length} cars exported successfully.`,
         );
       } else {
         exportToPDF(
-          filtered,
+          exportData,
           exportCols,
           "Inventory Report",
           "apex-gt-inventory",

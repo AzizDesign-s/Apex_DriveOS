@@ -31,23 +31,18 @@ const STATUS_COLORS = {
   cancelled: "bg-text-subtle/15 text-text-subtle",
 };
 
-function TestDriveCalendar({ bookings = [], onBookingClick, onDayClick }) {
+function TestDriveCalendar({
+  bookings = [],
+  onBookingClick,
+  onDayClick,
+  calYear,
+  calMonth,
+  onPrevMonth,
+  onNextMonth,
+}) {
+  const year = calYear;
+  const month = calMonth;
   const today = new Date();
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth());
-
-  const prevMonth = () => {
-    if (month === 0) {
-      setMonth(11);
-      setYear((y) => y - 1);
-    } else setMonth((m) => m - 1);
-  };
-  const nextMonth = () => {
-    if (month === 11) {
-      setMonth(0);
-      setYear((y) => y + 1);
-    } else setMonth((m) => m + 1);
-  };
 
   // Build calendar grid
   const firstDay = new Date(year, month, 1).getDay();
@@ -60,14 +55,10 @@ function TestDriveCalendar({ bookings = [], onBookingClick, onDayClick }) {
   for (let i = firstDay - 1; i >= 0; i--) {
     cells.push({ day: prevDays - i, current: false, dateStr: null });
   }
-
-  // Current month
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     cells.push({ day: d, current: true, dateStr });
   }
-
-  // Next month padding
   const remaining = 42 - cells.length;
   for (let d = 1; d <= remaining; d++) {
     cells.push({ day: d, current: false, dateStr: null });
@@ -84,7 +75,7 @@ function TestDriveCalendar({ bookings = [], onBookingClick, onDayClick }) {
       {/* Calendar header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
         <button
-          onClick={prevMonth}
+          onClick={onPrevMonth}
           className="w-8 h-8 rounded-xl border border-border flex items-center justify-center
                      text-text-muted hover:text-gold hover:border-gold/30 transition-all"
           aria-label="Previous month"
@@ -106,7 +97,7 @@ function TestDriveCalendar({ bookings = [], onBookingClick, onDayClick }) {
           </p>
         </div>
         <button
-          onClick={nextMonth}
+          onClick={onNextMonth}
           className="w-8 h-8 rounded-xl border border-border flex items-center justify-center
                      text-text-muted hover:text-gold hover:border-gold/30 transition-all"
           aria-label="Next month"

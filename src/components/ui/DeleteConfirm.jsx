@@ -74,7 +74,9 @@ function DeleteConfirm({
           onClick={() => {
             if (canConfirm) {
               onConfirm();
-              onClose();
+              // BUG-057 FIX: removed onClose() here — parent handles closing
+              // Previously: onConfirm(); onClose()
+              // This caused double state update when parent's onConfirm set deleteCar(null)
             }
           }}
           disabled={!canConfirm}

@@ -65,7 +65,8 @@ const drawerVariants = {
 function Sidebar({ isMobile = false }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { sidebarOpen, toggleSidebar, logout, inventoryCount } = useAppStore();
+  const { sidebarOpen, toggleSidebar, logout, inventoryCount, testDriveCount } =
+    useAppStore();
 
   // On mobile, sidebar is always 'open' width — it's a full drawer
   // On desktop, width is controlled by sidebarOpen state
@@ -98,7 +99,7 @@ function Sidebar({ isMobile = false }) {
           icon: CalendarCheck,
           label: "Test Drives",
           path: "/test-drives",
-          badge: "3",
+          badge: testDriveCount > 0 ? String(testDriveCount) : null,
         },
       ],
     },
