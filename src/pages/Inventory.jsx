@@ -96,6 +96,18 @@ function Inventory() {
     );
   }, [cars]);
 
+  useEffect(() => {
+    const onCarsUpdated = (e) => {
+      if (e.detail?.cars) {
+        setCars(e.detail.cars);
+      }
+    };
+
+    window.addEventListener("apex-gt-cars-updated", onCarsUpdated);
+    return () =>
+      window.removeEventListener("apex-gt-cars-updated", onCarsUpdated);
+  }, []);
+
   // ── UI panel state ────────────────────────────────────────────────────────
   const [filterOpen, setFilterOpen] = useState(false);
   const [colMgrOpen, setColMgrOpen] = useState(false);

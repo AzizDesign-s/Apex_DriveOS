@@ -96,6 +96,7 @@ function Invoices() {
       return DEFAULT_INVOICE_COLUMNS;
     }
   });
+
   useEffect(() => {
     localStorage.setItem(LS_KEY, JSON.stringify(columns));
   }, [columns]);
@@ -223,20 +224,139 @@ function Invoices() {
 
   const clearSelected = useCallback(() => setSelected(new Set()), []);
 
-  const handleSave = useCallback((data) => {
-    setInvoices((prev) =>
-      prev.find((i) => i.id === data.id)
-        ? prev.map((i) => (i.id === data.id ? data : i))
-        : [data, ...prev],
-    );
-    setActiveInvoice(data);
-    setPage(1);
+  const syncInvoicePaidToCar = useCallback((invoice) => {
+    if (!invoice.carId) return;
+
+    try {
+      const saved = localStorage.getItem("apex-gt-cars");
+      if (!saved) return;
+
+      const allCars = JSON.parse(saved);
+      const updated = allCars.map((car) =>
+        car.id === Number(invoice.carId) ? { ...car, status: "sold" } : car,
+      );
+
+      localStorage.setItem("apex-gt-cars", JSON.stringify(updated));
+      // Notify Inventory page if mounted
+      window.dispatchEvent(
+        new CustomEvent("apex-gt-cars-updated", {
+          detail: { cars: updated },
+        }),
+      );
+    } catch (err) {
+      console.error("Failed to sync invoice paid to car:", err);
+    }
   }, []);
+
+  const syncInvoiceRefundedToCar = useCallback((invoice) => {
+    if (!invoice.carId) return;
+
+    try {
+      const saved = localStorage.getItem("apex-gt-cars");
+      if (!saved) return;
+
+      const allCars = JSON.parse(saved);
+      const updated = allCars.map((car) =>
+        car.id === Number(invoice.carId)
+          ? { ...car, status: "available" }
+          : car,
+      );
+
+      localStorage.setItem("apex-gt-cars", JSON.stringify(updated));
+      window.dispatchEvent(
+        new CustomEvent("apex-gt-cars-updated", {
+          detail: { cars: updated },
+        }),
+      );
+    } catch (err) {
+      console.error("Failed to sync invoice refunded to car:", err);
+    }
+  }, []);
+
+  const syncInvoicePaidToCustomer = useCallback((invoice) => {
+    if (!invoice.customerId) return;
+
+    try {
+      const saved = localStorage.getItem("apex-gt-customers");
+      if (!saved) return;
+
+      const { total } = calcInvoice(
+        invoice.items,
+        invoice.discount,
+        invoice.vatRate,
+      );
+      const allCustomers = JSON.parse(saved);
+
+      const updated = allCustomers.map((customer) => {
+        if (customer.id !== Number(invoice.customerId)) return customer;
+
+        const existingPurchases = customer.purchases || [];
+        const alreadyExists = existingPurchases.some(
+          (p) => p.invoice === invoice.invoiceId,
+        );
+
+        if (alreadyExists) return customer;
+
+        return {
+          ...customer,
+          purchases: [
+            ...existingPurchases,
+            {
+              car: invoice.carName || "Vehicle Purchase",
+              amount: total,
+              invoice: invoice.invoiceId,
+              method: invoice.method,
+              date: invoice.issuedDate
+                ? new Date(invoice.issuedDate).toLocaleDateString("en-AE", {
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "Recent",
+            },
+          ],
+        };
+      });
+
+      localStorage.setItem("apex-gt-customers", JSON.stringify(updated));
+      window.dispatchEvent(
+        new CustomEvent("apex-gt-customers-updated", {
+          detail: { customers: updated },
+        }),
+      );
+    } catch (err) {
+      console.error("Failed to sync invoice to customer purchases:", err);
+    }
+  }, []);
+
+  const handleSave = useCallback(
+    (data) => {
+      setInvoices((prev) => {
+        const exists = prev.find((i) => i.id === data.id);
+        const updated = exists
+          ? prev.map((i) => (i.id === data.id ? data : i))
+          : [data, ...prev];
+        return updated;
+      });
+
+      // BUG-035 FIX: if invoice is created/saved as paid, sync immediately
+      if (data.status === "paid") {
+        syncInvoicePaidToCar(data);
+        syncInvoicePaidToCustomer(data);
+      }
+
+      setActiveInvoice(data);
+      setPage(1);
+    },
+    [syncInvoicePaidToCar, syncInvoicePaidToCustomer],
+  );
 
   const handleDelete = useCallback(
     (invoice) => {
       setInvoices((prev) => prev.filter((i) => i.id !== invoice.id));
-      if (activeInvoice?.id === invoice.id) setActiveInvoice(null);
+      if (activeInvoice?.id === invoice.id) {
+        setActiveInvoice(null);
+        setMobilePreviewOpen(false); // BUG-037 FIX: close sheet if active invoice deleted
+      }
       setDeleteInvoice(null);
       apexToast.info("Invoice Removed", `${invoice.invoiceId} deleted.`);
     },
@@ -259,12 +379,25 @@ function Invoices() {
     (newStatus) => {
       if (!newStatus) return;
       const count = selected.size;
+
       setInvoices((prev) =>
-        prev.map((i) => (selected.has(i.id) ? { ...i, status: newStatus } : i)),
+        prev.map((i) => {
+          if (!selected.has(i.id)) return i;
+          const updated = { ...i, status: newStatus };
+
+          // BUG-035 FIX: sync car and customer when status changes
+          if (newStatus === "paid") {
+            syncInvoicePaidToCar(updated);
+            syncInvoicePaidToCustomer(updated);
+          }
+          if (newStatus === "refunded") {
+            syncInvoiceRefundedToCar(updated);
+          }
+
+          return updated;
+        }),
       );
-      if (activeInvoice && selected.has(activeInvoice.id)) {
-        setActiveInvoice((prev) => ({ ...prev, status: newStatus }));
-      }
+
       setSelected(new Set());
       setStatusModal(false);
       apexToast.success(
@@ -272,7 +405,12 @@ function Invoices() {
         `${count} invoice${count > 1 ? "s" : ""} marked as ${newStatus}.`,
       );
     },
-    [selected, activeInvoice],
+    [
+      selected,
+      syncInvoicePaidToCar,
+      syncInvoicePaidToCustomer,
+      syncInvoiceRefundedToCar,
+    ],
   );
 
   const handleReset = useCallback(() => {
@@ -319,17 +457,31 @@ function Invoices() {
     );
   }, []);
 
-  const handleSend = useCallback((invoice) => {
-    setInvoices((prev) =>
-      prev.map((i) => (i.id === invoice.id ? { ...i, status: "sent" } : i)),
-    );
-    apexToast.success("Invoice Sent", `${invoice.invoiceId} marked as sent.`);
-  }, []);
+  const handleSend = useCallback(
+    (invoice) => {
+      const updated = { ...invoice, status: "sent" };
+
+      setInvoices((prev) =>
+        prev.map((i) => (i.id === invoice.id ? updated : i)),
+      );
+
+      // BUG-038 FIX: sync activeInvoice so preview panel updates immediately
+      if (activeInvoice?.id === invoice.id) {
+        setActiveInvoice(updated);
+      }
+
+      apexToast.success("Invoice Sent", `${invoice.invoiceId} marked as sent.`);
+    },
+    [activeInvoice],
+  );
 
   // Update handleView:
   const handleView = useCallback((invoice) => {
     setActiveInvoice(invoice);
-    setMobilePreviewOpen(true); // ← opens bottom sheet on mobile
+    // Open bottom sheet on mobile (lg breakpoint = 1024px)
+    if (window.innerWidth < 1024) {
+      setMobilePreviewOpen(true);
+    }
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────

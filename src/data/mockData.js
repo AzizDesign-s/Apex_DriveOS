@@ -885,11 +885,15 @@ export const DEFAULT_INVOICE_COLUMNS = [
   { id: "car", label: "Car", visible: false, canHide: true },
 ];
 
-export const generateInvoiceId = (existing) => {
-  const max = existing.reduce((acc, inv) => {
-    const num = parseInt(inv.invoiceId?.replace("INV-", "") || "0");
-    return Math.max(acc, num);
-  }, 0);
+export const generateInvoiceId = (existingInvoices = []) => {
+  const nums = existingInvoices
+    .map((inv) => {
+      const match = (inv.invoiceId || "").match(/INV-(\d+)/);
+      return match ? parseInt(match[1], 10) : 0;
+    })
+    .filter((n) => !isNaN(n));
+
+  const max = nums.length > 0 ? Math.max(...nums) : 0;
   return `INV-${String(max + 1).padStart(4, "0")}`;
 };
 

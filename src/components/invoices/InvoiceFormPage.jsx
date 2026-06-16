@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Check, Plus, Trash2 } from "lucide-react";
 import { Button, Input, Select } from "../ui";
 import {
-  customers,
-  cars,
+  customers as seedCustomers,
+  cars as seedCars,
   PAYMENT_METHODS,
   generateInvoiceId,
   calcInvoice,
@@ -69,6 +69,24 @@ function Field({ label, required, error, children, className = "" }) {
   );
 }
 
+const getLiveCustomers = () => {
+  try {
+    const saved = localStorage.getItem("apex-gt-customers");
+    return saved ? JSON.parse(saved) : seedCustomers;
+  } catch {
+    return seedCustomers;
+  }
+};
+
+const getLiveCars = () => {
+  try {
+    const saved = localStorage.getItem("apex-gt-cars");
+    return saved ? JSON.parse(saved) : seedCars;
+  } catch {
+    return seedCars;
+  }
+};
+
 function InvoiceFormPage({
   isOpen,
   onClose,
@@ -79,8 +97,15 @@ function InvoiceFormPage({
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
 
+  const [liveCustomers, setLiveCustomers] = useState(getLiveCustomers);
+  const [liveCars, setLiveCars] = useState(getLiveCars);
+
   useEffect(() => {
     if (isOpen) {
+      // Refresh live data so dropdowns always reflect latest
+      setLiveCustomers(getLiveCustomers());
+      setLiveCars(getLiveCars());
+
       if (editInvoice) {
         setForm({ ...EMPTY_FORM, ...editInvoice });
       } else {
@@ -88,7 +113,6 @@ function InvoiceFormPage({
           ...EMPTY_FORM,
           invoiceId: generateInvoiceId(allInvoices),
           items: [
-            // Start with one car sale line
             { id: Date.now(), desc: "", type: "car", qty: 1, unitPrice: 0 },
           ],
         });
@@ -101,7 +125,7 @@ function InvoiceFormPage({
 
   // Auto-fill customer
   const handleCustomerChange = (cid) => {
-    const c = customers.find((x) => x.id === Number(cid));
+    const c = liveCustomers.find((x) => x.id === Number(cid));
     set("customerId", cid);
     set("customerName", c?.name || "");
     set("customerEmail", c?.email || "");
@@ -109,11 +133,10 @@ function InvoiceFormPage({
 
   // Auto-fill car + create car line item
   const handleCarChange = (cid) => {
-    const c = cars.find((x) => x.id === Number(cid));
+    const c = liveCars.find((x) => x.id === Number(cid));
     set("carId", cid);
     set("carName", c ? `${c.brand} ${c.model}` : "");
     set("carPlate", c?.plate || "");
-    // Update the first 'car' type line item automatically
     if (c) {
       setForm((f) => ({
         ...f,
@@ -124,7 +147,7 @@ function InvoiceFormPage({
           item.type === "car" && i === 0
             ? {
                 ...item,
-                desc: `${c.brand} ${c.model} — ${c.year}`,
+                desc: `${c.brand} ${c.model} — ${c.year || 2024}`,
                 unitPrice: c.price,
               }
             : item,
@@ -181,6 +204,10 @@ function InvoiceFormPage({
     );
     onClose();
   };
+
+  const availableCars = liveCars.filter(
+    (c) => c.status !== "sold" || c.id === Number(form.carId),
+  );
 
   return (
     <AnimatePresence>
@@ -305,7 +332,7 @@ function InvoiceFormPage({
                       <Select
                         value={form.customerId}
                         onChange={(e) => handleCustomerChange(e.target.value)}
-                        options={customers.map((c) => ({
+                        options={liveCustomers.map((c) => ({
                           value: String(c.id),
                           label: `${c.name} (${c.customerId})`,
                         }))}
@@ -323,7 +350,7 @@ function InvoiceFormPage({
                       <Select
                         value={form.carId}
                         onChange={(e) => handleCarChange(e.target.value)}
-                        options={cars.map((c) => ({
+                        options={availableCars.map((c) => ({
                           value: String(c.id),
                           label: `${c.brand} ${c.model} · ${c.plate}`,
                         }))}
