@@ -21,17 +21,38 @@ export const loadNotifications = () => {
   }
 };
 
+const syncCountToStore = (notifications) => {
+  try {
+    // Dynamic import avoids circular dependency
+    // useAppStore → notificationUtils → useAppStore
+    const unread = notifications.filter((n) => !n.isRead).length;
+    // Dispatch a separate count event that Sidebar listens to
+    window.dispatchEvent(
+      new CustomEvent("apex-gt-notif-count-updated", {
+        detail: { count: unread },
+      }),
+    );
+  } catch {
+    /* silent */
+  }
+};
+
 // ── Save all notifications ────────────────────────────────────────────────────
 export const saveNotifications = (notifications) => {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify(notifications));
-    // BUG-045 FIX: dispatch event so Navbar and Notifications page
-    // both react to the same update
+  } catch {
+    /* silent */
+  }
+
+  try {
     window.dispatchEvent(
       new CustomEvent("apex-gt-notifications-updated", {
         detail: { notifications },
       }),
     );
+    // BUG-2 FIX: also dispatch count update for Sidebar badge
+    syncCountToStore(notifications);
   } catch {
     /* silent */
   }

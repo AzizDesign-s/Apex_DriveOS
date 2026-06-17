@@ -59,6 +59,23 @@ function Navbar() {
     );
   }, [readIds]);
 
+  useEffect(() => {
+    const reload = () => setNotifItems(loadNotifications());
+
+    // Custom event — same tab actions (add car, approve booking, etc.)
+    window.addEventListener("apex-gt-notifications-updated", reload);
+
+    // Storage event — cross-tab sync (future)
+    window.addEventListener("storage", (e) => {
+      if (e.key === "apex-gt-notifications") reload();
+    });
+
+    return () => {
+      window.removeEventListener("apex-gt-notifications-updated", reload);
+      window.removeEventListener("storage", reload);
+    };
+  }, []);
+
   const unreadCount = useMemo(
     () => notifItems.filter((n) => !n.isRead).length,
     [notifItems],
@@ -75,6 +92,10 @@ function Navbar() {
         .slice(0, 4),
     [notifItems],
   );
+  const markNavRead = (id) => {
+    markNotificationRead(id);
+    setNotifItems(loadNotifications());
+  };
 
   const markAllNavRead = () => {
     markAllNotificationsRead();
@@ -390,11 +411,23 @@ function Navbar() {
           {/* User profile */}
           <div className="flex items-center gap-2 pl-2 border-l border-border ml-1">
             <div
-              className="w-7 h-7 rounded-lg bg-gradient-to-br from-gold-dark to-gold
-                            flex items-center justify-center text-xs font-bold
-                            text-base flex-shrink-0"
+              className="w-7 h-7 rounded-lg overflow-hidden flex-shrink-0 flex items-center
+                  justify-center text-xs font-bold text-[#0B0F14]"
+              style={{
+                background: user?.avatar
+                  ? "transparent"
+                  : "linear-gradient(135deg,#B8931F,#D4AF37,#E8C84A)",
+              }}
             >
-              {user?.name?.[0] || "A"}
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                user?.name?.[0] || "A"
+              )}
             </div>
             <div className="hidden sm:block">
               <p className="text-xs font-semibold text-text-primary leading-none">

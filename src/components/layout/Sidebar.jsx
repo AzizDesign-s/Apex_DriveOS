@@ -13,9 +13,10 @@
 //   - Responsive: on mobile it slides in as a drawer with a backdrop overlay
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { loadNotifications } from "../../utils/notificationUtils";
 import Tooltip from "../ui/Tooltip";
 import {
   LayoutDashboard,
@@ -72,6 +73,7 @@ function Sidebar({ isMobile = false }) {
     inventoryCount,
     testDriveCount,
     user,
+    notificationCount,
   } = useAppStore();
 
   // On mobile, sidebar is always 'open' width — it's a full drawer
@@ -83,6 +85,34 @@ function Sidebar({ isMobile = false }) {
       if (sidebarOpen) toggleSidebar();
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    const onCountUpdate = (e) => {
+      if (e.detail?.count !== undefined) {
+        setNotifCount(e.detail.count);
+      }
+    };
+
+    const onStorageUpdate = (e) => {
+      if (e.key === "apex-gt-notifications") {
+        const notifs = loadNotifications();
+        setNotifCount(notifs.filter((n) => !n.isRead).length);
+      }
+    };
+
+    window.addEventListener("apex-gt-notif-count-updated", onCountUpdate);
+    window.addEventListener("storage", onStorageUpdate);
+
+    return () => {
+      window.removeEventListener("apex-gt-notif-count-updated", onCountUpdate);
+      window.removeEventListener("storage", onStorageUpdate);
+    };
+  }, []);
+
+  const [notifCount, setNotifCount] = useState(() => {
+    const notifs = loadNotifications();
+    return notifs.filter((n) => !n.isRead).length;
+  });
 
   const NAV_SECTIONS = [
     {
@@ -128,7 +158,7 @@ function Sidebar({ isMobile = false }) {
           icon: Bell,
           label: "Notifications",
           path: "/notifications",
-          badge: unreadCount > 0 ? String(unreadCount) : null,
+          badge: notificationCount > 0 ? String(notificationCount) : null,
         },
         { icon: Settings, label: "Settings", path: "/settings", badge: null },
       ],
@@ -323,11 +353,23 @@ function Sidebar({ isMobile = false }) {
           >
             {/* Avatar */}
             <div
-              className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-dark to-gold
-                          flex items-center justify-center text-xs font-bold
-                          text-base flex-shrink-0"
+              className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0
+                  flex items-center justify-center text-sm font-bold text-[#0B0F14]"
+              style={{
+                background: user?.avatar
+                  ? "transparent"
+                  : "linear-gradient(135deg,#B8931F,#D4AF37,#E8C84A)",
+              }}
             >
-              A
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user?.name || "Admin"}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                user?.name?.[0] || "A"
+              )}
             </div>
 
             <AnimatePresence>

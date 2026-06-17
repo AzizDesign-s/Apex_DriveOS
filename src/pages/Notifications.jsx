@@ -34,14 +34,19 @@ function Notifications() {
 
   // BUG-045 FIX: listen for updates from other modules and Navbar
   useEffect(() => {
-    const onUpdate = (e) => {
-      if (e.detail?.notifications) {
-        setItems(e.detail.notifications);
-      }
+    // BUG-1 FIX: reload from localStorage on every update event
+    // Don't trust event.detail — read source of truth directly
+    const reload = () => setItems(loadNotifications());
+
+    window.addEventListener("apex-gt-notifications-updated", reload);
+    window.addEventListener("storage", (e) => {
+      if (e.key === "apex-gt-notifications") reload();
+    });
+
+    return () => {
+      window.removeEventListener("apex-gt-notifications-updated", reload);
+      window.removeEventListener("storage", reload);
     };
-    window.addEventListener("apex-gt-notifications-updated", onUpdate);
-    return () =>
-      window.removeEventListener("apex-gt-notifications-updated", onUpdate);
   }, []);
 
   // Counts for filter badges

@@ -151,7 +151,7 @@ export function DesktopSidebar({ active, onChange }) {
 // ── Mobile bottom tab bar ─────────────────────────────────────────────────────
 export function MobileSettingsNav({ active, onChange }) {
   return (
-    <div className="lg:hidden flex-shrink-0 fixed z-50 left-1/2 -translate-x-1/2 bottom-6 w-full ">
+    <div className="lg:hidden flex-shrink-0 fixed z-20 left-1/2 -translate-x-1/2 bottom-6 w-full ">
       {/* Active section label */}
       <div className="px-4 py-3 bg-card border border-border">
         <p className="text-[9px] font-bold tracking-[0.2em] text-text-subtle uppercase mb-0.5">

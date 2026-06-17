@@ -40,7 +40,6 @@ function ProfileSettings() {
     email: user?.email || "admin@apexgt.ae",
     role: user?.role || "Super Admin",
     phone: user?.phone || "+971 50 000 0000",
-    avatar: user?.avatar || null,
   });
 
   const [passwords, setPasswords] = useState({
@@ -53,7 +52,7 @@ function ProfileSettings() {
     newPwd: false,
     confirm: false,
   });
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
   const fileRef = useRef();
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -63,16 +62,29 @@ function ProfileSettings() {
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    setAvatarPreview(url);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target.result;
+      setAvatarPreview(dataUrl);
+      // BUG-3 FIX: update Zustand store immediately on photo select
+      // so Navbar and Sidebar update instantly — no need to wait for Save
+      setUser({ avatar: dataUrl });
+    };
+    // BUG-3 FIX: use FileReader to get a stable data URL (not object URL)
+    // Object URLs expire when the component unmounts — data URLs persist in Zustand
+    reader.readAsDataURL(file);
   };
 
   const handleSaveProfile = () => {
-    setUser?.({ ...user, ...form, avatar: avatarPreview || form.avatar });
-    apexToast.success(
-      "Profile Updated",
-      "Your profile has been saved successfully.",
-    );
+    // BUG-3 FIX: save full profile including avatar to Zustand store
+    setUser({
+      name: form.name,
+      email: form.email,
+      role: form.role,
+      phone: form.phone,
+      avatar: avatarPreview,
+    });
+    apexToast.success("Profile Updated", "Your profile has been saved.");
   };
 
   const handleChangePassword = () => {
