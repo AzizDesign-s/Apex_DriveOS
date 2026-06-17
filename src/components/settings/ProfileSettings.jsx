@@ -110,7 +110,7 @@ function ProfileSettings() {
         title="Profile Photo"
         desc="Upload a photo to personalise your account"
       >
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-5 flex-wrap">
           {/* Avatar circle */}
           <div className="relative flex-shrink-0">
             <div
@@ -166,7 +166,7 @@ function ProfileSettings() {
         title="Personal Information"
         desc="Update your name, email and contact number"
       >
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <Field label="Full Name">
             <Input
               value={form.name}
@@ -197,7 +197,7 @@ function ProfileSettings() {
         </div>
         <Button
           variant="primary"
-          size="sm"
+          size="md"
           icon={Check}
           onClick={handleSaveProfile}
         >
@@ -210,7 +210,7 @@ function ProfileSettings() {
         title="Change Password"
         desc="Use a strong password with letters, numbers and symbols"
       >
-        <div className="grid grid-cols-1 gap-4 mb-4 max-w-sm">
+        <div className="grid grid-cols-1 gap-4 mb-4 sm:max-w-sm">
           {[
             { key: "current", label: "Current Password" },
             { key: "newPwd", label: "New Password" },

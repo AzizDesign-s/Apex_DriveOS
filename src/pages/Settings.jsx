@@ -2,8 +2,11 @@
 // Left sidebar nav + right panel layout
 
 import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
-import SettingsSidebar from "../components/settings/SettingsSidebar";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  DesktopSidebar,
+  MobileSettingsNav,
+} from "../components/settings/SettingsSidebar";
 import ProfileSettings from "../components/settings/ProfileSettings";
 import AppearanceSettings from "../components/settings/AppearanceSettings";
 import NotificationSettings from "../components/settings/NotificationSettings";
@@ -27,14 +30,24 @@ function Settings() {
   const ActivePanel = SECTION_MAP[activeSection] || ProfileSettings;
 
   return (
-    <div className="flex gap-4 h-full min-h-0 pb-3">
+    <div className="flex flex-col h-full min-h-0  gap-3 lg:flex-row lg:gap-4 lg:pb-3 pb-48">
       {/* ── Left sidebar ── */}
-      <SettingsSidebar active={activeSection} onChange={setActiveSection} />
+      <MobileSettingsNav active={activeSection} onChange={setActiveSection} />
+
+      <DesktopSidebar active={activeSection} onChange={setActiveSection} />
 
       {/* ── Right content panel ── */}
-      <div className="flex-1 overflow-y-auto scrollbar-none min-w-0">
+      <div className="flex-1 overflow-y-auto scrollbar-none min-w-0 min-h-0">
         <AnimatePresence mode="wait">
-          <ActivePanel key={activeSection} />
+          <motion.div
+            key={activeSection}
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ActivePanel />
+          </motion.div>
         </AnimatePresence>
       </div>
     </div>

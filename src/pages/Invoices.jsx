@@ -2,6 +2,7 @@
 // Split layout: invoice list left + live preview right
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { notify } from "../utils/notificationUtils";
 import {
   invoices as initialInvoices,
   DEFAULT_INVOICE_COLUMNS,
@@ -328,27 +329,27 @@ function Invoices() {
     }
   }, []);
 
-  const handleSave = useCallback(
-    (data) => {
-      setInvoices((prev) => {
-        const exists = prev.find((i) => i.id === data.id);
-        const updated = exists
-          ? prev.map((i) => (i.id === data.id ? data : i))
-          : [data, ...prev];
-        return updated;
-      });
-
-      // BUG-035 FIX: if invoice is created/saved as paid, sync immediately
+  const handleSave = useCallback((data) => {
+    setInvoices((prev) => {
+      const exists = prev.find((i) => i.id === data.id);
+      if (!exists) {
+        // New invoice created
+        notify.invoiceCreated(data);
+      }
+      // If created/saved as paid, notify
       if (data.status === "paid") {
+        const { total } = calcInvoice(data.items, data.discount, data.vatRate);
+        notify.invoicePaid(data, total);
         syncInvoicePaidToCar(data);
         syncInvoicePaidToCustomer(data);
       }
-
-      setActiveInvoice(data);
-      setPage(1);
-    },
-    [syncInvoicePaidToCar, syncInvoicePaidToCustomer],
-  );
+      return exists
+        ? prev.map((i) => (i.id === data.id ? data : i))
+        : [data, ...prev];
+    });
+    setActiveInvoice(data);
+    setPage(1);
+  }, []);
 
   const handleDelete = useCallback(
     (invoice) => {
@@ -379,25 +380,21 @@ function Invoices() {
     (newStatus) => {
       if (!newStatus) return;
       const count = selected.size;
-
       setInvoices((prev) =>
         prev.map((i) => {
           if (!selected.has(i.id)) return i;
           const updated = { ...i, status: newStatus };
-
-          // BUG-035 FIX: sync car and customer when status changes
           if (newStatus === "paid") {
+            const { total } = calcInvoice(i.items, i.discount, i.vatRate);
+            notify.invoicePaid(i, total);
             syncInvoicePaidToCar(updated);
             syncInvoicePaidToCustomer(updated);
           }
-          if (newStatus === "refunded") {
-            syncInvoiceRefundedToCar(updated);
-          }
-
+          if (newStatus === "overdue") notify.invoiceOverdue(i);
+          if (newStatus === "refunded") syncInvoiceRefundedToCar(updated);
           return updated;
         }),
       );
-
       setSelected(new Set());
       setStatusModal(false);
       apexToast.success(
@@ -405,12 +402,7 @@ function Invoices() {
         `${count} invoice${count > 1 ? "s" : ""} marked as ${newStatus}.`,
       );
     },
-    [
-      selected,
-      syncInvoicePaidToCar,
-      syncInvoicePaidToCustomer,
-      syncInvoiceRefundedToCar,
-    ],
+    [selected],
   );
 
   const handleReset = useCallback(() => {
@@ -460,16 +452,12 @@ function Invoices() {
   const handleSend = useCallback(
     (invoice) => {
       const updated = { ...invoice, status: "sent" };
-
       setInvoices((prev) =>
         prev.map((i) => (i.id === invoice.id ? updated : i)),
       );
-
-      // BUG-038 FIX: sync activeInvoice so preview panel updates immediately
-      if (activeInvoice?.id === invoice.id) {
-        setActiveInvoice(updated);
-      }
-
+      if (activeInvoice?.id === invoice.id) setActiveInvoice(updated);
+      // BUG-048 FIX: notify on send
+      notify.invoiceSent(invoice);
       apexToast.success("Invoice Sent", `${invoice.invoiceId} marked as sent.`);
     },
     [activeInvoice],

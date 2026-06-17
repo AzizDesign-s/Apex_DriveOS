@@ -4,6 +4,9 @@ export default {
   darkMode: "class",
   theme: {
     extend: {
+      screens: {
+        xs: "400px",
+      },
       colors: {
         // These now point to CSS variables — not hardcoded hex
         // When .dark is on <html>, the variables change → everything updates

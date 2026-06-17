@@ -3,6 +3,7 @@
 // Phase 5 final file.
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { notify } from "../utils/notificationUtils";
 import { cars as initialCars, DEFAULT_COLUMNS } from "../data/mockData";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 
@@ -224,9 +225,20 @@ function Inventory() {
   const handleSave = useCallback((carData) => {
     setCars((prev) => {
       const exists = prev.find((c) => c.id === carData.id);
-      return exists
-        ? prev.map((c) => (c.id === carData.id ? carData : c))
-        : [carData, ...prev];
+      if (exists) {
+        // BUG-048 FIX: notify on car update
+        notify.carUpdated(carData);
+        return prev.map((c) => (c.id === carData.id ? carData : c));
+      }
+      // BUG-048 FIX: notify on car add
+      notify.carAdded(carData);
+      // Check if inventory is now low after adding
+      const newCars = [carData, ...prev];
+      const availableNow = newCars.filter(
+        (c) => c.status === "available",
+      ).length;
+      if (availableNow <= 3) notify.lowInventory(availableNow);
+      return [carData, ...prev];
     });
     setPage(1);
   }, []);
@@ -256,9 +268,15 @@ function Inventory() {
     (newStatus) => {
       if (!newStatus) return;
       const count = selected.size;
-      setCars((prev) =>
-        prev.map((c) => (selected.has(c.id) ? { ...c, status: newStatus } : c)),
-      );
+      setCars((prev) => {
+        const updated = prev.map((c) => {
+          if (!selected.has(c.id)) return c;
+          // BUG-048 FIX: notify per car status change
+          notify.carStatusChanged(c, newStatus);
+          return { ...c, status: newStatus };
+        });
+        return updated;
+      });
       setSelected(new Set());
       setStatusModal(false);
       apexToast.success(

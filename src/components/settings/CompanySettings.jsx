@@ -1,6 +1,6 @@
 // src/components/settings/CompanySettings.jsx
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Check, Upload, Building2 } from "lucide-react";
 import { Button, Input, Select } from "../ui";
@@ -32,30 +32,49 @@ function Field({ label, required, children }) {
   );
 }
 
+const LS_KEY = "apex-gt-company-settings";
+
+const DEFAULT_COMPANY = {
+  name: "APEX GT Cars LLC",
+  tagline: "Luxury Automotive · Dubai",
+  email: "info@apexgt.ae",
+  phone: "+971 4 000 0000",
+  website: "apexgt.ae",
+  address: "Sheikh Zayed Road",
+  city: "Dubai",
+  country: "United Arab Emirates",
+  trn: "100432687000003",
+  bankName: "Emirates NBD",
+  iban: "AE07 0260 0010 0246 8003 6",
+  swift: "EBILAEAD",
+  account: "1002468003-6",
+};
+
 function CompanySettings() {
-  const [form, setForm] = useState({
-    name: "APEX GT Cars LLC",
-    tagline: "Luxury Automotive · Dubai",
-    email: "info@apexgt.ae",
-    phone: "+971 4 000 0000",
-    website: "apexgt.ae",
-    address: "Sheikh Zayed Road",
-    city: "Dubai",
-    country: "United Arab Emirates",
-    trn: "100432687000003",
-    // Bank
-    bankName: "Emirates NBD",
-    iban: "AE07 0260 0010 0246 8003 6",
-    swift: "EBILAEAD",
-    account: "1002468003-6",
+  // BUG-053 FIX: initialize from localStorage
+  const [form, setForm] = useState(() => {
+    try {
+      const saved = localStorage.getItem(LS_KEY);
+      return saved ? JSON.parse(saved) : DEFAULT_COMPANY;
+    } catch {
+      return DEFAULT_COMPANY;
+    }
   });
 
-  const [logoPreview, setLogoPreview] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(() => {
+    return localStorage.getItem("apex-gt-company-logo") || null;
+  });
+
   const logoRef = useRef();
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleSave = () => {
+    // BUG-053 FIX: persist to localStorage
+    localStorage.setItem(LS_KEY, JSON.stringify(form));
+    if (logoPreview) {
+      localStorage.setItem("apex-gt-company-logo", logoPreview);
+    }
     apexToast.success(
       "Company Info Saved",
       "Company details updated successfully.",
@@ -65,7 +84,8 @@ function CompanySettings() {
   const handleLogoChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setLogoPreview(URL.createObjectURL(file));
+    const url = URL.createObjectURL(file);
+    setLogoPreview(url);
   };
 
   return (
@@ -79,7 +99,7 @@ function CompanySettings() {
         title="Company Logo"
         desc="Used on invoices, documents and the dashboard header"
       >
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-5 flex-wrap">
           <div
             className="w-20 h-20 rounded-2xl bg-card border border-border
                         flex items-center justify-center overflow-hidden flex-shrink-0"
@@ -133,7 +153,7 @@ function CompanySettings() {
         title="Company Information"
         desc="Appears on invoices and all official documents"
       >
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <Field label="Company Name" required>
             <Input
               value={form.name}
@@ -183,7 +203,7 @@ function CompanySettings() {
               onChange={(e) => set("city", e.target.value)}
             />
           </Field>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Field label="Country">
               <Select
                 value={form.country}
@@ -207,7 +227,7 @@ function CompanySettings() {
         title="Bank Details"
         desc="Printed on every invoice for customer payment"
       >
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <Field label="Bank Name">
             <Input
               value={form.bankName}
@@ -233,7 +253,7 @@ function CompanySettings() {
             />
           </Field>
         </div>
-        <Button variant="primary" size="sm" icon={Check} onClick={handleSave}>
+        <Button variant="primary" size="md" icon={Check} onClick={handleSave}>
           Save Company Info
         </Button>
       </SectionCard>

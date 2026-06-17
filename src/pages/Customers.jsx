@@ -1,6 +1,7 @@
 // src/pages/Customers.jsx
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { notify } from "../utils/notificationUtils";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import {
   customers as initialCustomers,
@@ -168,9 +169,12 @@ function Customers() {
   const handleSave = useCallback((data) => {
     setCustomers((prev) => {
       const exists = prev.find((c) => c.id === data.id);
-      return exists
-        ? prev.map((c) => (c.id === data.id ? data : c))
-        : [data, ...prev];
+      if (exists) {
+        notify.customerUpdated(data);
+        return prev.map((c) => (c.id === data.id ? data : c));
+      }
+      notify.customerAdded(data);
+      return [data, ...prev];
     });
     setPage(1);
   }, []);

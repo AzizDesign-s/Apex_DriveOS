@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { loadInvoiceSettings } from "../settings/InvoiceSettings";
 import { ArrowLeft, Check, Plus, Trash2 } from "lucide-react";
 import { Button, Input, Select } from "../ui";
 import {
@@ -24,22 +25,26 @@ const EMPTY_ITEM = () => ({
   unitPrice: 0,
 });
 
-const EMPTY_FORM = {
-  invoiceId: "",
-  customerId: "",
-  customerName: "",
-  customerEmail: "",
-  carId: "",
-  carName: "",
-  carPlate: "",
-  issuedDate: new Date().toISOString().split("T")[0],
-  dueDate: "",
-  status: "draft",
-  method: "Cash",
-  vatRate: 5,
-  discount: 0,
-  notes: "",
-  items: [],
+const getEmptyForm = () => {
+  const settings = loadInvoiceSettings();
+  return {
+    invoiceId: "",
+    customerId: "",
+    customerName: "",
+    customerEmail: "",
+    carId: "",
+    carName: "",
+    carPlate: "",
+    issuedDate: new Date().toISOString().split("T")[0],
+    dueDate: "",
+    status: "draft",
+    method: "Cash",
+    // BUG-054 FIX: use saved defaults from Settings
+    vatRate: Number(settings.defaultVat) || 5,
+    currency: settings.defaultCurrency || "AED",
+    notes: settings.footerText || "",
+    items: [],
+  };
 };
 
 function FormSection({ title, children }) {
@@ -94,7 +99,7 @@ function InvoiceFormPage({
   editInvoice = null,
   allInvoices = [],
 }) {
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState(getEmptyForm);
   const [errors, setErrors] = useState({});
 
   const [liveCustomers, setLiveCustomers] = useState(getLiveCustomers);
@@ -102,15 +107,13 @@ function InvoiceFormPage({
 
   useEffect(() => {
     if (isOpen) {
-      // Refresh live data so dropdowns always reflect latest
       setLiveCustomers(getLiveCustomers());
       setLiveCars(getLiveCars());
-
       if (editInvoice) {
-        setForm({ ...EMPTY_FORM, ...editInvoice });
+        setForm({ ...getEmptyForm(), ...editInvoice });
       } else {
         setForm({
-          ...EMPTY_FORM,
+          ...getEmptyForm(),
           invoiceId: generateInvoiceId(allInvoices),
           items: [
             { id: Date.now(), desc: "", type: "car", qty: 1, unitPrice: 0 },

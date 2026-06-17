@@ -56,28 +56,41 @@ const TEMPLATE_STYLES = [
   },
 ];
 
+const LS_KEY = "apex-gt-invoice-settings";
+
+const DEFAULT_INVOICE_SETTINGS = {
+  defaultVat: "5",
+  defaultCurrency: "AED",
+  defaultDueDays: "14",
+  invoicePrefix: "INV-",
+  footerText:
+    "Thank you for your business. Payment is due within the specified terms.",
+  termsText:
+    "All sales are final. Prices are inclusive of VAT where applicable.",
+  showBankDetails: true,
+  showQrCode: true,
+  templateStyle: "classic",
+};
+
+export const loadInvoiceSettings = () => {
+  try {
+    const saved = localStorage.getItem(LS_KEY);
+    return saved ? JSON.parse(saved) : DEFAULT_INVOICE_SETTINGS;
+  } catch {
+    return DEFAULT_INVOICE_SETTINGS;
+  }
+};
+
 function InvoiceSettings() {
-  const [form, setForm] = useState({
-    defaultVat: "5",
-    defaultCurrency: "AED",
-    defaultDueDays: "14",
-    invoicePrefix: "INV-",
-    footerText:
-      "Thank you for your business. Payment is due within the specified terms.",
-    termsText:
-      "All sales are final. Prices are inclusive of VAT where applicable. Vehicles are subject to availability.",
-    showBankDetails: true,
-    showQrCode: true,
-    templateStyle: "classic",
-  });
+  // BUG-054 FIX: initialize from localStorage
+  const [form, setForm] = useState(() => loadInvoiceSettings());
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleSave = () => {
-    apexToast.success(
-      "Invoice Settings Saved",
-      "Invoice defaults have been updated.",
-    );
+    // BUG-054 FIX: persist to localStorage
+    localStorage.setItem(LS_KEY, JSON.stringify(form));
+    apexToast.success("Invoice Settings Saved", "Invoice defaults updated.");
   };
 
   return (
@@ -91,7 +104,7 @@ function InvoiceSettings() {
         title="Invoice Defaults"
         desc="Pre-filled values when creating a new invoice"
       >
-        <div className="grid grid-cols-2 gap-4 mb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
           <Field label="Default VAT Rate (%)">
             <Input
               type="number"
@@ -135,7 +148,7 @@ function InvoiceSettings() {
         title="Invoice Template Style"
         desc="Visual style of the printed invoice PDF. More styles coming soon."
       >
-        <div className="grid grid-cols-3 gap-3 mb-2">
+        <div className="grid sm:grid-cols-3 grid-cols-1 gap-3 mb-2">
           {TEMPLATE_STYLES.map((t) => (
             <button
               key={t.id}
@@ -281,7 +294,7 @@ function InvoiceSettings() {
         ].map(({ key, label, desc }) => (
           <div
             key={key}
-            className="flex items-center justify-between py-3 border-b border-border/40 last:border-0"
+            className="flex items-center justify-between py-3 border-b border-border last:border-0"
           >
             <div>
               <p className="text-xs font-semibold text-text-primary">{label}</p>
@@ -307,7 +320,7 @@ function InvoiceSettings() {
         ))}
       </SectionCard>
 
-      <Button variant="primary" size="sm" icon={Check} onClick={handleSave}>
+      <Button variant="primary" size="md" icon={Check} onClick={handleSave}>
         Save Invoice Settings
       </Button>
     </motion.div>

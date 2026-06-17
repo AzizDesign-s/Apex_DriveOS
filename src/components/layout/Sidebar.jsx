@@ -65,8 +65,14 @@ const drawerVariants = {
 function Sidebar({ isMobile = false }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { sidebarOpen, toggleSidebar, logout, inventoryCount, testDriveCount } =
-    useAppStore();
+  const {
+    sidebarOpen,
+    toggleSidebar,
+    logout,
+    inventoryCount,
+    testDriveCount,
+    user,
+  } = useAppStore();
 
   // On mobile, sidebar is always 'open' width — it's a full drawer
   // On desktop, width is controlled by sidebarOpen state
@@ -333,10 +339,10 @@ function Sidebar({ isMobile = false }) {
                   className="overflow-hidden"
                 >
                   <p className="text-xs font-semibold text-text-primary whitespace-nowrap">
-                    Admin
+                    {user?.name || "Admin"}
                   </p>
                   <p className="text-[10px] text-text-subtle whitespace-nowrap">
-                    Super Admin
+                    Admin
                   </p>
                 </motion.div>
               )}

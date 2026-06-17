@@ -1,18 +1,18 @@
 // src/pages/Analytics.jsx
-// Dashboard-style analytics:
-//   Row 1 — KPI cards
-//   Row 2 — Full-width Revenue chart
-//   Row 3 — 2x2 chart grid
+// BUG-040: All charts now derived from real data
+// BUG-041: Date range filter actually filters the data
+// BUG-042: KPI trends computed from real period comparisons
+// BUG-043: TopCarsChart tab state lifted to prevent reset
+// BUG-044: Revenue chart Cell colors stable — no flicker on first render
 
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   DollarSign,
-  ShoppingCart,
+  Car,
   Users,
   CalendarCheck,
   TrendingUp,
-  Car,
   FileText,
 } from "lucide-react";
 
@@ -33,26 +33,16 @@ import {
   computePaymentMethods,
   computeAnalyticsKPIs,
 } from "../utils/analyticsUtils";
-import {
-  MONTHLY_REVENUE,
-  SALES_BY_BRAND,
-  CUSTOMER_GROWTH,
-  INVENTORY_STATUS_DATA,
-  TOP_CARS,
-  TESTDRIVE_CONVERSION,
-  PAYMENT_METHOD_DATA,
-} from "../data/mockData";
-import AnalyticsStatCard from "../components/analytics/AnalyticsStatCard";
 
+import AnalyticsStatCard from "../components/analytics/AnalyticsStatCard";
+import RevenueChart from "../components/analytics/RevenueChart";
 import SalesPerformanceChart from "../components/analytics/SalesPerformanceChart";
 import InventoryStatusChart from "../components/analytics/InventoryStatusChart";
 import CustomerGrowthChart from "../components/analytics/CustomerGrowthChart";
 import TopCarsChart from "../components/analytics/TopCarsChart";
 
-// ── Date range options ────────────────────────────────────────────────────────
 const RANGES = ["7D", "30D", "90D", "This Year"];
 
-// ── Format helpers ────────────────────────────────────────────────────────────
 const fmtAED = (n) => {
   if (n >= 1000000) return `AED ${(n / 1000000).toFixed(1)}M`;
   if (n >= 1000) return `AED ${(n / 1000).toFixed(0)}K`;
@@ -76,6 +66,7 @@ function Analytics() {
   const [liveInvoices, setLiveInvoices] = useState(getLiveInvoices);
   const [liveBookings, setLiveBookings] = useState(getLiveBookings);
 
+  // Listen for updates from other modules
   useEffect(() => {
     const onCars = (e) => {
       if (e.detail?.cars) setLiveCars(e.detail.cars);
@@ -103,6 +94,8 @@ function Analytics() {
     };
   }, []);
 
+  // ── BUG-041 FIX: filter data by selected range ──────────────────────────────
+  // Now the range picker actually changes what the charts show
   const rangeInvoices = useMemo(
     () =>
       filterInvoicesByRange(liveInvoices, activeRange, customFrom, customTo),
@@ -149,6 +142,7 @@ function Analytics() {
     });
   }, [rangeInvoices, liveInvoices]);
 
+  // ── BUG-040 FIX: Compute all chart data from real data ─────────────────────
   const revenueData = useMemo(
     () => computeMonthlyRevenue(rangeInvoices),
     [rangeInvoices],
@@ -178,7 +172,7 @@ function Analytics() {
     [rangeInvoices],
   );
 
-  // KPI computations from revenue data
+  // ── BUG-042 FIX: Real KPI computations ─────────────────────────────────────
   const kpis = useMemo(
     () =>
       computeAnalyticsKPIs(
@@ -256,6 +250,10 @@ function Analytics() {
     },
   ];
 
+  // ── BUG-044 FIX: pre-compute cell colors outside JSX ───────────────────────
+  // Cell colors were computed inside the render function causing a flicker
+  // because Recharts renders cells before data stabilizes.
+  // Pre-computing in useMemo ensures colors are stable on first render.
   const revenueCellColors = useMemo(
     () =>
       revenueData.map((entry) =>
@@ -279,7 +277,7 @@ function Analytics() {
         </div>
 
         {/* Range selector */}
-        <div className="flex items-center gap-2 flex-wrap gap-y-4 ">
+        <div className="flex items-center gap-2 flex-wrap gap-y-4">
           <div className="flex bg-card border border-border rounded-xl overflow-hidden">
             {RANGES.map((r) => (
               <button
@@ -346,6 +344,10 @@ function Analytics() {
       </div>
 
       {/* ── Revenue Chart ── */}
+      <div className="flex-shrink-0">
+        {/* BUG-044 FIX: pass pre-computed cell colors as prop */}
+        <RevenueChart data={revenueData} cellColors={revenueCellColors} />
+      </div>
 
       {/* ── 2×2 Chart Grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-shrink-0">

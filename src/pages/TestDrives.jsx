@@ -1,6 +1,7 @@
 // src/pages/TestDrives.jsx
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { notify } from "../utils/notificationUtils";
 import {
   testDrives as initialBookings,
   DEFAULT_TESTDRIVE_COLUMNS,
@@ -194,11 +195,16 @@ function TestDrives() {
   const clearSelected = useCallback(() => setSelected(new Set()), []);
 
   const handleSave = useCallback((data) => {
-    setBookings((prev) =>
-      prev.find((b) => b.id === data.id)
+    setBookings((prev) => {
+      const exists = prev.find((b) => b.id === data.id);
+      if (!exists) {
+        // New booking created
+        notify.bookingCreated(data);
+      }
+      return exists
         ? prev.map((b) => (b.id === data.id ? data : b))
-        : [data, ...prev],
-    );
+        : [data, ...prev];
+    });
     setPage(1);
   }, []);
 
@@ -297,25 +303,30 @@ function TestDrives() {
   }, []);
 
   // ── Quick status change (single booking) ──────────────────────────────────
-  const updateSingleStatus = useCallback(
-    (booking, newStatus) => {
-      setBookings((prev) =>
-        prev.map((b) =>
-          b.id === booking.id ? { ...b, status: newStatus } : b,
-        ),
-      );
-      setViewBooking((prev) =>
-        prev?.id === booking.id ? { ...prev, status: newStatus } : prev,
-      );
-      // BUG-028 FIX: sync status back to customer timeline
-      syncBookingToCustomer(booking, newStatus);
-      apexToast.success(
-        "Status Updated",
-        `${booking.bookingId} marked as ${newStatus}.`,
-      );
-    },
-    [syncBookingToCustomer],
-  );
+  const updateSingleStatus = useCallback((booking, newStatus) => {
+    setBookings((prev) =>
+      prev.map((b) => (b.id === booking.id ? { ...b, status: newStatus } : b)),
+    );
+    setViewBooking((prev) =>
+      prev?.id === booking.id ? { ...prev, status: newStatus } : prev,
+    );
+    syncBookingToCustomer(booking, newStatus);
+
+    // BUG-048 FIX: generate notification per status
+    if (newStatus === "approved")
+      notify.bookingApproved({ ...booking, status: newStatus });
+    if (newStatus === "completed")
+      notify.bookingCompleted({ ...booking, status: newStatus });
+    if (newStatus === "rejected")
+      notify.bookingRejected({ ...booking, status: newStatus });
+    if (newStatus === "cancelled")
+      notify.bookingCancelled({ ...booking, status: newStatus });
+
+    apexToast.success(
+      "Status Updated",
+      `${booking.bookingId} marked as ${newStatus}.`,
+    );
+  }, []);
 
   const handleApprove = useCallback(
     (b) => updateSingleStatus(b, "approved"),

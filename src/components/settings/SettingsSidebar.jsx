@@ -18,7 +18,7 @@ export const SETTINGS_SECTIONS = [
     id: "profile",
     label: "Profile",
     icon: User,
-    desc: "Name, email, password, avatar",
+    desc: "Name, email, password",
   },
   {
     id: "appearance",
@@ -36,13 +36,13 @@ export const SETTINGS_SECTIONS = [
     id: "company",
     label: "Company Info",
     icon: Building2,
-    desc: "Showroom, logo, address, TRN",
+    desc: "Showroom, logo, TRN",
   },
   {
     id: "invoice",
     label: "Invoice Settings",
     icon: FileText,
-    desc: "VAT, currency, template, footer",
+    desc: "VAT, currency, template",
   },
   {
     id: "users",
@@ -52,11 +52,12 @@ export const SETTINGS_SECTIONS = [
   },
 ];
 
-function SettingsSidebar({ active, onChange }) {
+// ── Desktop sidebar ───────────────────────────────────────────────────────────
+export function DesktopSidebar({ active, onChange }) {
   return (
     <motion.div
       className="w-56 flex-shrink-0 bg-card border border-border rounded-2xl
-                 overflow-hidden flex flex-col"
+                 overflow-hidden flex-col hidden lg:flex"
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.25 }}
@@ -85,13 +86,13 @@ function SettingsSidebar({ active, onChange }) {
               )}
               initial={{ opacity: 0, x: -6 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
+              transition={{ delay: i * 0.04 }}
             >
-              {/* Active indicator */}
+              {/* Active bar */}
               {isActive && (
                 <motion.div
                   className="absolute left-0 top-2 bottom-2 w-0.5 bg-gold rounded-full"
-                  layoutId="settings-active-bar"
+                  layoutId="settings-sidebar-active-indicator"
                 />
               )}
 
@@ -107,7 +108,7 @@ function SettingsSidebar({ active, onChange }) {
                 <s.icon size={15} />
               </div>
 
-              {/* Text */}
+              {/* Label */}
               <div className="flex-1 min-w-0">
                 <p
                   className={clsx(
@@ -136,7 +137,7 @@ function SettingsSidebar({ active, onChange }) {
         })}
       </div>
 
-      {/* Version footer */}
+      {/* Version */}
       <div className="px-4 py-3 border-t border-border">
         <p className="text-[9px] text-text-subtle">APEX GT Dashboard</p>
         <p className="text-[9px] text-text-subtle/50 mt-0.5">
@@ -144,6 +145,86 @@ function SettingsSidebar({ active, onChange }) {
         </p>
       </div>
     </motion.div>
+  );
+}
+
+// ── Mobile bottom tab bar ─────────────────────────────────────────────────────
+export function MobileSettingsNav({ active, onChange }) {
+  return (
+    <div className="lg:hidden flex-shrink-0 fixed z-50 left-1/2 -translate-x-1/2 bottom-6 w-full ">
+      {/* Active section label */}
+      <div className="px-4 py-3 bg-card border border-border">
+        <p className="text-[9px] font-bold tracking-[0.2em] text-text-subtle uppercase mb-0.5">
+          Settings
+        </p>
+        <p className="text-sm font-extrabold text-text-primary">
+          {SETTINGS_SECTIONS.find((s) => s.id === active)?.label || "Profile"}
+        </p>
+      </div>
+
+      {/* Bottom tab bar */}
+      <div className="bg-card border border-border  overflow-hidden">
+        <div className="flex">
+          {SETTINGS_SECTIONS.map((s, i) => {
+            const isActive = active === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => onChange(s.id)}
+                className={clsx(
+                  "flex-1 flex flex-col  items-center gap-1 py-3 px-1",
+                  "text-[9px] font-semibold transition-all relative",
+                  isActive
+                    ? "text-gold"
+                    : "text-text-subtle hover:text-text-muted",
+                )}
+                aria-label={s.label}
+                title={s.label}
+              >
+                {/* Active dot */}
+                {isActive && (
+                  <motion.div
+                    className="absolute top-0 left-1/2  -translate-x-1/2
+                               w-6 h-0.5 bg-gold rounded-full"
+                    layoutId="settings-mobile-active-bar"
+                  />
+                )}
+
+                {/* Icon */}
+                <div
+                  className={clsx(
+                    "w-8 h-8 rounded-xl flex items-center justify-center transition-all",
+                    isActive ? "bg-gold/15 text-gold" : "text-text-subtle",
+                  )}
+                >
+                  <s.icon size={17} />
+                </div>
+
+                {/* Label — hidden on very small screens */}
+                <span
+                  className={clsx(
+                    "hidden xs:block truncate max-w-[48px] text-center leading-tight",
+                    isActive ? "text-gold" : "text-text-subtle",
+                  )}
+                >
+                  {s.label.split(" ")[0]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Legacy default export for backward compatibility
+function SettingsSidebar({ active, onChange }) {
+  return (
+    <>
+      <DesktopSidebar active={active} onChange={onChange} />
+      <MobileSettingsNav active={active} onChange={onChange} />
+    </>
   );
 }
 

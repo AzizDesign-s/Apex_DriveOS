@@ -75,17 +75,29 @@ function AppearanceSettings() {
     >
       {/* Theme */}
       <SectionCard title="Theme" desc="Choose how APEX GT looks for you">
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           {THEMES.map((t) => {
-            const isActive = t.id === "system" ? false : theme === t.id;
+            // BUG-052 FIX: correct active state check
+            const isActive = theme === t.id;
+
             return (
               <button
                 key={t.id}
                 onClick={() => {
-                  if (t.id !== "system") toggleTheme();
+                  if (t.id === "system") {
+                    // System: detect OS preference and apply
+                    const prefersDark = window.matchMedia(
+                      "(prefers-color-scheme: dark)",
+                    ).matches;
+                    const osTheme = prefersDark ? "dark" : "light";
+                    if (theme !== osTheme) toggleTheme();
+                  } else if (theme !== t.id) {
+                    // Only toggle if not already this theme
+                    toggleTheme();
+                  }
                 }}
                 className={clsx(
-                  "flex flex-col items-start gap-2 p-4 rounded-xl border transition-all text-left",
+                  "flex flex-col items-start gap-2.5 p-4 rounded-xl border transition-all text-left",
                   isActive
                     ? "border-gold/50 bg-gold/8"
                     : "border-border hover:border-gold/25 bg-card",
@@ -102,21 +114,19 @@ function AppearanceSettings() {
                   <t.icon size={16} />
                 </div>
                 <div>
-                  <p
-                    className={clsx(
-                      "text-xs font-bold",
-                      isActive ? "text-gold" : "text-text-muted",
-                    )}
-                  >
-                    {t.label}
-                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p
+                      className={clsx(
+                        "text-xs font-bold",
+                        isActive ? "text-gold" : "text-text-muted",
+                      )}
+                    >
+                      {t.label}
+                    </p>
+                    {isActive && <Check size={11} className="text-gold" />}
+                  </div>
                   <p className="text-[9px] text-text-subtle mt-0.5">{t.desc}</p>
                 </div>
-                {isActive && (
-                  <div className="ml-auto -mt-1">
-                    <Check size={13} className="text-gold" />
-                  </div>
-                )}
               </button>
             );
           })}
@@ -203,7 +213,7 @@ function AppearanceSettings() {
             </button>
           ))}
         </div>
-        <Button variant="primary" size="sm" icon={Check} onClick={handleSave}>
+        <Button variant="primary" size="md" icon={Check} onClick={handleSave}>
           Save Appearance
         </Button>
       </SectionCard>

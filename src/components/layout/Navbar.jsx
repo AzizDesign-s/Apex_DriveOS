@@ -2,6 +2,12 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  loadNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  getUnreadCount,
+} from "../../utils/notificationUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, Sun, Moon, Bell, ChevronDown, Search, X } from "lucide-react";
 import useAppStore from "../../store/useAppStore";
@@ -27,9 +33,11 @@ function Navbar() {
   const navigate = useNavigate();
   const { theme, toggleTheme, toggleSidebar, user } = useAppStore();
 
+  const [notifItems, setNotifItems] = useState(() => loadNotifications());
+  const [notifOpen, setNotifOpen] = useState(false);
+
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [notifOpen, setNotifOpen] = useState(false);
 
   // BUG-002 FIX: Read from the same source as the Notifications page.
   // BUG-003 FIX: Track read state locally so bell clears when items are read.
@@ -51,30 +59,26 @@ function Navbar() {
     );
   }, [readIds]);
 
+  const unreadCount = useMemo(
+    () => notifItems.filter((n) => !n.isRead).length,
+    [notifItems],
+  );
+
   // BUG-001 FIX: unreadCount derived from the shared notifications array
   // minus the locally-tracked read IDs.
-  const unreadNotifs = useMemo(
-    () => rawNotifications.filter((n) => !readIds.has(n.id) && !n.isRead),
-    [readIds],
-  );
-  const unreadCount = unreadNotifs.length;
 
   // Latest 4 for the dropdown preview
   const previewNotifs = useMemo(
     () =>
-      rawNotifications
-        .slice()
+      [...notifItems]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 4),
-    [],
+    [notifItems],
   );
 
-  const markNavRead = (id) => {
-    setReadIds((prev) => new Set([...prev, id]));
-  };
-
   const markAllNavRead = () => {
-    setReadIds(new Set(rawNotifications.map((n) => n.id)));
+    markAllNotificationsRead();
+    setNotifItems(loadNotifications());
   };
 
   const handleSearchClose = () => {

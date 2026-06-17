@@ -328,7 +328,7 @@ function UserManagement() {
         title="Roles & Access Levels"
         desc="Planned permission structure for backend implementation"
       >
-        <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
           {Object.entries(ROLE_CONFIG).map(([key, cfg]) => {
             const RoleIcon = cfg.icon;
             return (
@@ -362,8 +362,8 @@ function UserManagement() {
         <p className="text-[9px] font-bold tracking-[0.2em] text-text-subtle uppercase mb-3">
           Permission Matrix
         </p>
-        <div className="overflow-x-auto">
-          <table className="w-full text-[10px]" style={{ minWidth: "380px" }}>
+        <div className="overflow-x-auto ">
+          <table className="w-full text-[10px]" style={{ minWidth: "320px" }}>
             <thead>
               <tr className="border-b border-border">
                 <th className="text-left py-2 text-text-subtle font-bold pr-4">

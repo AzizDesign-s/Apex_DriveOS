@@ -1,36 +1,22 @@
 // src/pages/Notifications.jsx
-//
-// Sprint 1 — System alerts: test drives, invoices, inventory, customers.
-//
-// FUTURE SPRINT PLANS (logged):
-// ─────────────────────────────────────────────────────────────────────────────
-// FUTURE-NOTIF-001 [Super Admin Broadcasts]
-//   Super admin will push global announcements to all admins.
-//   type: 'broadcast' | priority: configurable | author: super_admin
-//   UI: distinct "📢 Broadcast" badge + gold left border in card
-//   Backend: POST /notifications/broadcast → push via websocket to all sessions
-//
-// FUTURE-NOTIF-002 [Activity Log]
-//   Every CRUD action (who added/edited/deleted what) auto-generates a log.
-//   type: 'activity' | actor: user_id | target: resource + id
-//   UI: separate "Activity" tab with compact timeline rows
-//   Backend: auto-created on every API mutation
-//
-// FUTURE-NOTIF-003 [Real-time Push]
-//   Replace mock data with WebSocket / Server-Sent Events.
-//   Navbar bell badge count syncs from Zustand notificationCount.
-//   useAppStore: notificationCount, setNotificationCount, markAllRead
-//
-// FUTURE-NOTIF-004 [Email & Push Notifications]
-//   Settings page will have toggles per notification type.
-//   Overdue invoice → email to admin + push to browser.
-//   Test drive pending → push only (time-sensitive)
-// ─────────────────────────────────────────────────────────────────────────────
+// BUG-045 FIX: read from shared localStorage source
+// BUG-046 + BUG-047 FIX: actions write back to same source
+// BUG-048 FIX: covered by notificationUtils.js wired into modules
+// BUG-049 FIX: clearReadNotifications fixed in notificationUtils.js
+// BUG-050 FIX: timeAgo called at render time — acceptable for sprint 1
+//             Phase 2 will use a setInterval to refresh every 60s
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, CheckCheck, Trash2, Pin } from "lucide-react";
-import { notifications as initialNotifications } from "../data/mockData";
+import { CheckCheck, Trash2 } from "lucide-react";
+import {
+  loadNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  toggleNotificationPin,
+  deleteNotification,
+  clearReadNotifications,
+} from "../utils/notificationUtils";
 import NotificationCard from "../components/notifications/NotificationCard";
 import NotificationFilterBar from "../components/notifications/NotificationFilterBar";
 import NotificationEmptyState from "../components/notifications/NotificationEmptyState";
@@ -39,12 +25,26 @@ import apexToast from "../utils/toast";
 import clsx from "clsx";
 
 function Notifications() {
-  const [items, setItems] = useState(initialNotifications);
+  // BUG-045 FIX: load from shared localStorage source
+  const [items, setItems] = useState(() => loadNotifications());
+
   const [activeType, setActiveType] = useState("all");
   const [showUnread, setShowUnread] = useState(false);
-  const [sortOrder, setSortOrder] = useState("newest"); // 'newest' | 'oldest'
+  const [sortOrder, setSortOrder] = useState("newest");
 
-  // ── Counts for filter badges ──────────────────────────────────────────────
+  // BUG-045 FIX: listen for updates from other modules and Navbar
+  useEffect(() => {
+    const onUpdate = (e) => {
+      if (e.detail?.notifications) {
+        setItems(e.detail.notifications);
+      }
+    };
+    window.addEventListener("apex-gt-notifications-updated", onUpdate);
+    return () =>
+      window.removeEventListener("apex-gt-notifications-updated", onUpdate);
+  }, []);
+
+  // Counts for filter badges
   const counts = useMemo(
     () => ({
       all: items.length,
@@ -58,31 +58,25 @@ function Notifications() {
     [items],
   );
 
-  // ── Filtered + sorted list ────────────────────────────────────────────────
+  // Filtered + grouped list
   const filtered = useMemo(() => {
     let data = [...items];
-
-    // Type filter
     if (activeType !== "all") data = data.filter((n) => n.type === activeType);
-
-    // Unread only
     if (showUnread) data = data.filter((n) => !n.isRead);
 
-    // Pinned always float to top
     const pinned = data.filter((n) => n.isPinned);
     const unpinned = data.filter((n) => !n.isPinned);
 
-    // Sort unpinned
     const sorted = unpinned.sort((a, b) => {
-      const da = new Date(a.createdAt),
-        db = new Date(b.createdAt);
+      const da = new Date(a.createdAt);
+      const db = new Date(b.createdAt);
       return sortOrder === "newest" ? db - da : da - db;
     });
 
     return [...pinned, ...sorted];
   }, [items, activeType, showUnread, sortOrder]);
 
-  // ── Group by date for section headers ─────────────────────────────────────
+  // Group by date
   const grouped = useMemo(() => {
     const today = new Date();
     const yesterday = new Date(today);
@@ -103,39 +97,39 @@ function Notifications() {
         groups.pinned.push(n);
         return;
       }
-
       const d = new Date(n.createdAt);
-      if (d.toDateString() === today.toDateString()) {
-        groups.today.push(n);
-      } else if (d.toDateString() === yesterday.toDateString()) {
+      if (d.toDateString() === today.toDateString()) groups.today.push(n);
+      else if (d.toDateString() === yesterday.toDateString())
         groups.yesterday.push(n);
-      } else if (d >= weekAgo) {
-        groups.thisWeek.push(n);
-      } else {
-        groups.earlier.push(n);
-      }
+      else if (d >= weekAgo) groups.thisWeek.push(n);
+      else groups.earlier.push(n);
     });
 
     return groups;
   }, [filtered]);
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // ── BUG-046 FIX: handlers write to shared localStorage ────────────────────
   const handleRead = useCallback((id) => {
-    setItems((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
-    );
+    markNotificationRead(id);
+    setItems(loadNotifications());
+  }, []);
+
+  // ── BUG-047 FIX: delete writes to shared localStorage ─────────────────────
+  const handleDelete = useCallback((id) => {
+    deleteNotification(id);
+    setItems(loadNotifications());
+    apexToast.info("Notification Removed", "Notification deleted.");
   }, []);
 
   const handlePin = useCallback(
     (id) => {
-      setItems((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isPinned: !n.isPinned } : n)),
-      );
       const notif = items.find((n) => n.id === id);
-      const pinned = !notif?.isPinned;
+      const pinning = !notif?.isPinned;
+      toggleNotificationPin(id);
+      setItems(loadNotifications());
       apexToast.success(
-        pinned ? "Notification Pinned" : "Notification Unpinned",
-        pinned
+        pinning ? "Notification Pinned" : "Notification Unpinned",
+        pinning
           ? "This notification will stay at the top."
           : "Notification unpinned.",
       );
@@ -143,23 +137,20 @@ function Notifications() {
     [items],
   );
 
-  const handleDelete = useCallback((id) => {
-    setItems((prev) => prev.filter((n) => n.id !== id));
-    apexToast.info("Notification Removed", "Notification deleted.");
-  }, []);
-
   const handleMarkAllRead = useCallback(() => {
-    setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    markAllNotificationsRead();
+    setItems(loadNotifications());
     apexToast.success("All Read", "All notifications marked as read.");
   }, []);
 
+  // BUG-049 FIX: clearReadNotifications now correctly keeps pinned + unread
   const handleClearAll = useCallback(() => {
-    // Only clear read, non-pinned notifications
-    setItems((prev) => prev.filter((n) => n.isPinned || !n.isRead));
+    clearReadNotifications();
+    setItems(loadNotifications());
     apexToast.info("Cleared", "Read notifications have been cleared.");
   }, []);
 
-  // ── Section header component ──────────────────────────────────────────────
+  // Section header
   const SectionHeader = ({ label, count }) => (
     <div className="flex items-center gap-3 mb-3">
       <p className="text-[9px] font-bold tracking-[0.2em] text-text-subtle uppercase">
@@ -170,7 +161,6 @@ function Notifications() {
     </div>
   );
 
-  // ── Render a group of notification cards ──────────────────────────────────
   const renderGroup = (label, groupItems, startIndex = 0) => {
     if (groupItems.length === 0) return null;
     return (
@@ -199,7 +189,7 @@ function Notifications() {
 
   return (
     <div className="flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-6">
-      {/* ── Page header ── */}
+      {/* Page header */}
       <motion.div
         className="flex items-start justify-between flex-shrink-0"
         initial={{ opacity: 0, y: -6 }}
@@ -220,11 +210,10 @@ function Notifications() {
             )}
           </div>
           <p className="text-[10px] text-text-subtle mt-0.5 tracking-wide">
-            System alerts · Sprint 1 · Real-time sync coming in future sprint
+            System alerts · Updates in real time from all modules
           </p>
         </div>
 
-        {/* Bulk actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {unreadCount > 0 && (
             <Button
@@ -248,7 +237,7 @@ function Notifications() {
         </div>
       </motion.div>
 
-      {/* ── Filter bar ── */}
+      {/* Filter bar */}
       <NotificationFilterBar
         activeType={activeType}
         onTypeChange={setActiveType}
@@ -261,7 +250,7 @@ function Notifications() {
         counts={counts}
       />
 
-      {/* ── Summary strip ── */}
+      {/* Summary strip */}
       <motion.div
         className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-shrink-0"
         initial={{ opacity: 0 }}
@@ -285,7 +274,7 @@ function Notifications() {
         ].map((s, i) => (
           <motion.div
             key={s.label}
-            className="bg-card border border-border rounded-xl px-4 py-6
+            className="bg-card border border-border rounded-xl px-4 py-3
                        flex items-center justify-between"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -299,7 +288,7 @@ function Notifications() {
         ))}
       </motion.div>
 
-      {/* ── Notification list ── */}
+      {/* Notification list */}
       <div className="flex-1">
         {hasAny ? (
           <>
