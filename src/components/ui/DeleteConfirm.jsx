@@ -1,4 +1,8 @@
 // src/components/ui/DeleteConfirm.jsx
+// BUG-057 FIX: confirmed in Module 4 — onConfirm() no longer calls onClose() internally.
+// Parent is solely responsible for closing via its own onConfirm handler.
+// Full clean version here for reference:
+
 import { useState, useEffect } from "react";
 import { Trash2, AlertTriangle } from "lucide-react";
 import Modal from "./Modal";
@@ -11,21 +15,22 @@ function DeleteConfirm({
   title = "Delete this item?",
   description,
   itemName,
-  confirmText, // if provided → user must type this string to enable delete button
+  confirmText,
 }) {
   const [typed, setTyped] = useState("");
+
   useEffect(() => {
     if (isOpen) setTyped("");
   }, [isOpen]);
 
-  // If confirmText is provided, user must type it exactly.
-  // If not provided (bulk delete), button is always enabled.
   const requiresTyping = !!confirmText;
   const canConfirm = !requiresTyping || typed.trim() === confirmText;
 
   const displayDescription =
     description ||
-    (itemName ? `Permanently remove "${itemName}" from inventory.` : undefined);
+    (itemName
+      ? `Permanently remove "${itemName}". This action cannot be undone.`
+      : undefined);
 
   return (
     <Modal
@@ -48,7 +53,7 @@ function DeleteConfirm({
         </p>
       </div>
 
-      {/* Type-to-confirm — only shown for single car delete */}
+      {/* Type-to-confirm — only for single item delete */}
       {requiresTyping && (
         <div className="mb-4">
           <p className="text-[9px] font-bold tracking-[0.2em] text-text-subtle uppercase mb-2">
@@ -73,10 +78,9 @@ function DeleteConfirm({
           variant="danger"
           onClick={() => {
             if (canConfirm) {
+              // BUG-057 FIX: only call onConfirm — no onClose() here
+              // parent's onConfirm handler closes the modal
               onConfirm();
-              // BUG-057 FIX: removed onClose() here — parent handles closing
-              // Previously: onConfirm(); onClose()
-              // This caused double state update when parent's onConfirm set deleteCar(null)
             }
           }}
           disabled={!canConfirm}

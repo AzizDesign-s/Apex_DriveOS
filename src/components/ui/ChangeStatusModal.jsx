@@ -63,7 +63,7 @@ function ChangeStatusModal({
 
           {/* Modal — top center, z-[55] */}
           <div
-            className="fixed inset-0 z-[55] flex items-start justify-center pt-16 px-4"
+            className="fixed inset-0 z-[60] flex items-start justify-center pt-16 px-4"
             onClick={onClose}
           >
             <motion.div

@@ -161,7 +161,7 @@ function TestDrives() {
 
   const { setTestDriveCount } = useAppStore();
   useEffect(() => {
-    setTestDriveCount(bookings.length);
+    setTestDriveCount(bookings.legth);
   }, [bookings, setTestDriveCount]);
 
   // Handlers

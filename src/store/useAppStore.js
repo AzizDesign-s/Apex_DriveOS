@@ -1,12 +1,10 @@
 // src/store/useAppStore.js
-// BUG-005 FIX: theme toggle was calling toggleTheme which flips the stored value
-// but main.jsx was applying theme before hydration — race condition on some builds.
-// Fix: apply theme inside the store action itself, not just in main.jsx.
+// Complete file — all fixes from Module 1, Module 9, Module 10 applied
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-// Helper — apply theme class to <html>
+// ── Theme helper ──────────────────────────────────────────────────────────────
 const applyTheme = (theme) => {
   const root = document.documentElement;
   if (theme === "dark") {
@@ -18,10 +16,11 @@ const applyTheme = (theme) => {
   }
 };
 
+// ── Store ─────────────────────────────────────────────────────────────────────
 const useAppStore = create(
   persist(
     (set, get) => ({
-      // ── Auth ──────────────────────────────────────────────────────────────
+      // ── Auth ────────────────────────────────────────────────────────────────
       isAuthenticated: false,
       user: {
         name: "Admin User",
@@ -41,55 +40,68 @@ const useAppStore = create(
           },
         }),
 
-      logout: () => set({ isAuthenticated: false, user: null }),
+      logout: () =>
+        set({
+          isAuthenticated: false,
+          user: null,
+        }),
 
-      // BUG-051 FIX (preview): setUser now exists
+      // BUG-051 FIX: setUser merges partial updates
+      // BUG-3 FIX: avatar is included in user object and persisted
       setUser: (userData) =>
         set((state) => ({
           user: { ...state.user, ...userData },
         })),
 
-      // ── Sidebar ───────────────────────────────────────────────────────────
+      // ── Sidebar ─────────────────────────────────────────────────────────────
       sidebarOpen: true,
       toggleSidebar: () =>
         set((state) => ({ sidebarOpen: !state.sidebarOpen })),
       setSidebarOpen: (val) => set({ sidebarOpen: val }),
 
-      // ── Theme ─────────────────────────────────────────────────────────────
+      // ── Theme ────────────────────────────────────────────────────────────────
       theme: "dark",
       toggleTheme: () =>
         set((state) => {
-          const next = state.theme === "dark" ? "light" : "dark";
           // BUG-005 FIX: apply immediately inside the action
+          const next = state.theme === "dark" ? "light" : "dark";
           applyTheme(next);
           return { theme: next };
         }),
 
-      // ── Module counts for sidebar badges ──────────────────────────────────
-      // BUG-001 FIX (partial): inventoryCount was the only badge count.
-      // Phase 2 will derive these from domain stores.
+      // ── Module counts ────────────────────────────────────────────────────────
       inventoryCount: 0,
       setInventoryCount: (n) => set({ inventoryCount: n }),
 
-      testDriveCount: 0,
-      setTestDriveCount: (n) => set({ testDriveCount: n }),
-
+      // BUG-2 FIX: notification count for sidebar badge
       notificationCount: 0,
       setNotificationCount: (n) => set({ notificationCount: n }),
+
+      testDriveCount: 0,
+      setTestDriveCount: (n) => set({ testDriveCount: n }),
     }),
     {
       name: "apex-gt-store",
-      // BUG-061 FIX: version field — if schema changes, old localStorage is cleared
+
+      // BUG-061 FIX: version field — stale localStorage auto-migrates
       version: 1,
       migrate: (persistedState, version) => {
-        // If version is 0 (old store with no version), reset to defaults
-        if (version === 0) return {};
+        // Version 0 = old store without version field → reset to clean defaults
+        if (version === 0) {
+          return {
+            isAuthenticated: false,
+            user: null,
+            sidebarOpen: true,
+            theme: "dark",
+          };
+        }
         return persistedState;
       },
-      // Only persist what's needed — not derived/transient state
+
+      // Only persist what matters — never persist derived/transient counts
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
-        user: state.user,
+        user: state.user, // includes avatar as data URL
         sidebarOpen: state.sidebarOpen,
         theme: state.theme,
       }),
@@ -97,7 +109,7 @@ const useAppStore = create(
   ),
 );
 
-// Apply theme on initial load (before React renders)
+// Apply theme on initial load before React renders
 applyTheme(useAppStore.getState().theme);
 
 export default useAppStore;
