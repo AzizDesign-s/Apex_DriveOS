@@ -30,6 +30,8 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  Users as UsersIcon,
+  Shield,
 } from "lucide-react";
 import useAppStore from "../../store/useAppStore";
 import { notifications as notifData } from "../../data/mockData";
@@ -122,6 +124,18 @@ function Sidebar({ isMobile = false }) {
           icon: LayoutDashboard,
           label: "Dashboard",
           path: "/dashboard",
+          badge: null,
+        },
+        {
+          icon: UsersIcon,
+          label: "Users",
+          path: "/users",
+          badge: null,
+        },
+        {
+          icon: Shield,
+          label: "Roles",
+          path: "/roles",
           badge: null,
         },
         {

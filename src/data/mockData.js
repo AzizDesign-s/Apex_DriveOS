@@ -1397,3 +1397,147 @@ export const notifications = [
     createdAt: "2026-06-09T11:30:00",
   },
 ];
+
+// Add to src/data/mockData.js — Role Management data + config
+
+// ── PERMISSION MODULES ────────────────────────────────────────────────────────
+export const PERMISSION_MODULES = [
+  { id: "dashboard", label: "Dashboard", viewOnly: true },
+  { id: "inventory", label: "Inventory", viewOnly: false },
+  { id: "customers", label: "Customers", viewOnly: false },
+  { id: "testDrives", label: "Test Drives", viewOnly: false },
+  { id: "invoices", label: "Invoices", viewOnly: false },
+  { id: "analytics", label: "Analytics", viewOnly: true },
+  { id: "reports", label: "Reports", viewOnly: true },
+  { id: "settings", label: "Settings", viewOnly: false },
+  { id: "users", label: "Users", viewOnly: false },
+  { id: "future", label: "Future Module", disabled: true },
+];
+
+const emptyPerm = () => ({
+  view: false,
+  create: false,
+  edit: false,
+  delete: false,
+});
+
+const buildPermissions = (overrides = {}) => {
+  const perms = {};
+  PERMISSION_MODULES.forEach((m) => {
+    perms[m.id] = { ...emptyPerm(), ...(overrides[m.id] || {}) };
+  });
+  return perms;
+};
+
+// ── SEED ROLES ─────────────────────────────────────────────────────────────────
+export const roles = [
+  {
+    id: 1,
+    name: "Admin",
+    description: "Full access to all modules and settings.",
+    isSystemRole: true,
+    permissions: buildPermissions({
+      dashboard: { view: true },
+      inventory: { view: true, create: true, edit: true, delete: true },
+      customers: { view: true, create: true, edit: true, delete: true },
+      testDrives: { view: true, create: true, edit: true, delete: true },
+      invoices: { view: true, create: true, edit: true, delete: true },
+      analytics: { view: true },
+      reports: { view: true },
+      settings: { view: true, create: true, edit: true, delete: true },
+      users: { view: true, create: true, edit: true, delete: true },
+    }),
+    createdAt: "2024-01-01",
+  },
+  {
+    id: 2,
+    name: "Sales Executive",
+    description: "Manages customers, test drives, and views inventory.",
+    isSystemRole: true,
+    permissions: buildPermissions({
+      dashboard: { view: true },
+      inventory: { view: true },
+      customers: { view: true, create: true, edit: true },
+      testDrives: { view: true, create: true, edit: true },
+      invoices: { view: true },
+      analytics: { view: true },
+      reports: { view: true },
+    }),
+    createdAt: "2024-01-01",
+  },
+  {
+    id: 3,
+    name: "Finance Team",
+    description: "Manages invoices and views customer and inventory data.",
+    isSystemRole: true,
+    permissions: buildPermissions({
+      dashboard: { view: true },
+      inventory: { view: true },
+      customers: { view: true },
+      invoices: { view: true, create: true, edit: true },
+      analytics: { view: true },
+      reports: { view: true },
+    }),
+    createdAt: "2024-01-01",
+  },
+  {
+    id: 4,
+    name: "Inventory Manager",
+    description: "Full control over inventory, view-only on reports.",
+    isSystemRole: true,
+    permissions: buildPermissions({
+      dashboard: { view: true },
+      inventory: { view: true, create: true, edit: true, delete: true },
+      reports: { view: true },
+    }),
+    createdAt: "2024-01-01",
+  },
+];
+
+// ── ID GENERATOR ───────────────────────────────────────────────────────────────
+export const generateRoleId = (existingRoles) => {
+  const max = existingRoles.reduce((acc, r) => Math.max(acc, r.id || 0), 0);
+  return max + 1;
+};
+
+export const emptyPermissionSet = buildPermissions;
+
+// Add to src/data/mockData.js — User Management data
+
+export const DEPARTMENTS = [
+  "Sales",
+  "Finance",
+  "Inventory",
+  "Management",
+  "Support",
+];
+export const USER_STATUSES = ["active", "invited", "suspended", "inactive"];
+
+export const users = [
+  {
+    id: 1,
+    employeeId: "EMP-001",
+    fullName: "Admin User",
+    email: "admin@apexgt.ae",
+    phone: "+971 50 000 0000",
+    avatar: null,
+    roleId: 1,
+    department: "Management",
+    status: "active",
+    joinDate: "2024-01-01",
+    reportsTo: null,
+    lastLogin: new Date().toISOString(),
+    createdAt: "2024-01-01",
+  },
+];
+
+export const generateEmployeeId = (existingUsers) => {
+  const nums = existingUsers
+    .map((u) => {
+      const match = (u.employeeId || "").match(/EMP-(\d+)/);
+      return match ? parseInt(match[1], 10) : 0;
+    })
+    .filter((n) => !isNaN(n));
+  const max = nums.length > 0 ? Math.max(...nums) : 0;
+  return `EMP-${String(max + 1).padStart(3, "0")}`;
+};
