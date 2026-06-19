@@ -1400,6 +1400,8 @@ export const notifications = [
 
 // Add to src/data/mockData.js — Role Management data + config
 
+// Add to src/data/mockData.js
+
 // ── PERMISSION MODULES ────────────────────────────────────────────────────────
 export const PERMISSION_MODULES = [
   { id: "dashboard", label: "Dashboard", viewOnly: true },
@@ -1428,6 +1430,8 @@ const buildPermissions = (overrides = {}) => {
   });
   return perms;
 };
+
+export const emptyPermissionSet = buildPermissions;
 
 // ── SEED ROLES ─────────────────────────────────────────────────────────────────
 export const roles = [
@@ -1494,16 +1498,21 @@ export const roles = [
   },
 ];
 
-// ── ID GENERATOR ───────────────────────────────────────────────────────────────
 export const generateRoleId = (existingRoles) => {
   const max = existingRoles.reduce((acc, r) => Math.max(acc, r.id || 0), 0);
   return max + 1;
 };
 
-export const emptyPermissionSet = buildPermissions;
+// ── Bug 3 FIX: derive "customer-facing" purely from Customers permission ──────
+// A role qualifies if it has ANY of view/create/edit on the Customers module.
+// No separate toggle — this is computed wherever needed.
+export const isCustomerFacingRole = (role) => {
+  const perm = role?.permissions?.customers;
+  if (!perm) return false;
+  return !!(perm.view || perm.create || perm.edit);
+};
 
-// Add to src/data/mockData.js — User Management data
-
+// ── USER MANAGEMENT DATA ────────────────────────────────────────────────────────
 export const DEPARTMENTS = [
   "Sales",
   "Finance",
@@ -1541,3 +1550,12 @@ export const generateEmployeeId = (existingUsers) => {
   const max = nums.length > 0 ? Math.max(...nums) : 0;
   return `EMP-${String(max + 1).padStart(3, "0")}`;
 };
+
+export const DEFAULT_USER_COLUMNS = [
+  { id: "user", label: "User", visible: true },
+  { id: "role", label: "Role", visible: true },
+  { id: "department", label: "Department", visible: true },
+  { id: "status", label: "Status", visible: true },
+  { id: "lastLogin", label: "Last Login", visible: true },
+  { id: "joined", label: "Joined", visible: false },
+];

@@ -307,4 +307,40 @@ export const notify = {
       linkLabel: "View Invoice",
       meta: { invoiceId: invoice.invoiceId },
     }),
+
+  // Add to src/utils/notificationUtils.js, inside the `notify` object alongside
+  // notify.customerAdded, notify.carAdded, etc.
+
+  userAdded: (user) =>
+    createNotification({
+      type: "user",
+      priority: "low",
+      title: "New User Added",
+      message: `${user.fullName} (${user.employeeId}) has been added to the team.`,
+      link: "/users",
+      linkLabel: "View User",
+      meta: { userId: user.employeeId },
+    }),
+
+  userUpdated: (user) =>
+    createNotification({
+      type: "user",
+      priority: "low",
+      title: "User Updated",
+      message: `${user.fullName} (${user.employeeId}) profile has been updated.`,
+      link: "/users",
+      linkLabel: "View User",
+      meta: { userId: user.employeeId },
+    }),
+
+  userStatusChanged: (user, newStatus) =>
+    createNotification({
+      type: "user",
+      priority: newStatus === "suspended" ? "high" : "medium",
+      title: `User ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`,
+      message: `${user.fullName} (${user.employeeId}) status changed to ${newStatus}.`,
+      link: "/users",
+      linkLabel: "View User",
+      meta: { userId: user.employeeId, status: newStatus },
+    }),
 };

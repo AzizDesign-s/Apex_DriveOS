@@ -1,5 +1,4 @@
 // src/components/roles/RoleCard.jsx
-// Grid card showing one role — name, description, user count, permission summary, actions
 
 import { motion } from "framer-motion";
 import {
@@ -21,7 +20,6 @@ const ROLE_ICONS = {
   "Finance Team": DollarSign,
   "Inventory Manager": Package,
 };
-
 const ROLE_COLORS = {
   Admin: { bg: "bg-gold/10", text: "text-gold" },
   "Sales Executive": { bg: "bg-sky-accent/10", text: "text-sky-accent" },
@@ -48,8 +46,7 @@ function RoleCard({
 
   return (
     <motion.div
-      className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-4
-                 hover:border-gold/20 transition-all"
+      className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-4 hover:border-gold/20 transition-all"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
@@ -112,17 +109,15 @@ function RoleCard({
       <div className="flex items-center gap-2 pt-1 border-t border-border/60">
         <button
           onClick={() => onEdit(role)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl
-                     border border-border text-[11px] font-semibold text-text-muted
-                     hover:text-gold hover:border-gold/40 hover:bg-gold/5 transition-all"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-border
+                     text-[11px] font-semibold text-text-muted hover:text-gold hover:border-gold/40 hover:bg-gold/5 transition-all"
         >
           <Edit size={12} /> Edit
         </button>
         <button
           onClick={() => onDuplicate(role)}
-          className="w-9 h-9 rounded-xl border border-border flex items-center justify-center
-                     text-text-subtle hover:text-sky-accent hover:border-sky-accent/40
-                     hover:bg-sky-accent/8 transition-all flex-shrink-0"
+          className="w-9 h-9 rounded-xl border border-border flex items-center justify-center text-text-subtle
+                     hover:text-sky-accent hover:border-sky-accent/40 hover:bg-sky-accent/8 transition-all flex-shrink-0"
           title="Duplicate role"
           aria-label={`Duplicate ${role.name}`}
         >

@@ -11,6 +11,8 @@ import {
   SALES_EXECUTIVES,
   TIME_SLOTS,
   generateBookingId,
+  isCustomerFacingRole,
+  roles,
 } from "../../data/mockData";
 import apexToast from "../../utils/toast";
 
@@ -29,6 +31,24 @@ const getLiveCars = () => {
     return saved ? JSON.parse(saved) : seedCars;
   } catch {
     return seedCars;
+  }
+};
+
+const getLiveUsers = () => {
+  try {
+    const saved = localStorage.getItem("apex-gt-users");
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+};
+
+const getLiveRoles = () => {
+  try {
+    const saved = localStorage.getItem("apex-gt-roles");
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
   }
 };
 
@@ -90,6 +110,22 @@ function TestDriveFormPage({
 
   const [liveCustomers, setLiveCustomers] = useState(getLiveCustomers);
   const [liveCars, setLiveCars] = useState(getLiveCars);
+
+  const [liveUsers, setLiveUsers] = useState(getLiveUsers);
+  const [liveRoles, setLiveRoles] = useState(getLiveRoles);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLiveUsers(getLiveUsers());
+      setLiveRoles(getLiveRoles());
+    }
+  }, [isOpen]);
+
+  // Bug 3 FIX: only show users whose role qualifies as customer-facing
+  const assignableExecs = liveUsers.filter((u) => {
+    const role = liveRoles.find((r) => r.id === Number(u.roleId));
+    return role && isCustomerFacingRole(role) && u.status === "active";
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -365,8 +401,11 @@ function TestDriveFormPage({
                     <Select
                       value={form.exec}
                       onChange={(e) => set("exec", e.target.value)}
-                      options={SALES_EXECUTIVES}
-                      placeholder="Assign Executive"
+                      options={assignableExecs.map((u) => ({
+                        value: u.fullName,
+                        label: `${u.fullName} (${roles.find((r) => r.id === u.roleId)?.name || ""})`,
+                      }))}
+                      placeholder="Assign Sales Executive"
                     />
                   </Field>
                   <Field label="Notes">

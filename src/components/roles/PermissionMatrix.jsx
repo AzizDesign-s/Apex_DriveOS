@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Check, Eye, Plus, Edit2, Trash } from "lucide-react";
-import { PERMISSION_MODULES } from "../../data/mockData"; // ← Phase-1 path: mockData, not store
+import { PERMISSION_MODULES } from "../../data/mockData";
 import clsx from "clsx";
 
 const PERM_TYPES = [
@@ -59,10 +59,7 @@ function PermissionMatrix({ permissions, onChange, onColumnToggle }) {
               size={12}
               className="text-text-subtle group-hover:text-gold transition-colors"
             />
-            <span
-              className="text-[8px] font-bold tracking-wider text-text-subtle uppercase
-                             group-hover:text-gold transition-colors"
-            >
+            <span className="text-[8px] font-bold tracking-wider text-text-subtle uppercase group-hover:text-gold transition-colors">
               {pt.label}
             </span>
           </button>
@@ -99,7 +96,6 @@ function PermissionMatrix({ permissions, onChange, onColumnToggle }) {
                   </p>
                 )}
               </div>
-
               {PERM_TYPES.map((pt) => {
                 const isApplicable =
                   !mod.disabled && (!mod.viewOnly || pt.id === "view");

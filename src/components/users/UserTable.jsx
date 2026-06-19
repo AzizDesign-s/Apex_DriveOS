@@ -1,18 +1,27 @@
 // src/components/users/UserTable.jsx
+// Same architecture as CustomerTable.jsx — columns prop, ColumnManager-driven, same pagination
 
 import { motion } from "framer-motion";
-import { Eye, Edit, Trash2, Users as UsersIcon, Crown } from "lucide-react";
+import {
+  Users,
+  Eye,
+  Edit,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  Crown,
+} from "lucide-react";
 import { EmptyState, Button } from "../ui";
 import { AVATAR_PALETTE } from "../../data/mockData";
 import clsx from "clsx";
 
 const COL_WIDTH = {
-  user: undefined,
+  user: "290px",
   role: "160px",
   department: "130px",
-  status: "110px",
+  status: "120px",
   lastLogin: "130px",
-  joined: "110px",
+  joined: "120px",
 };
 
 const STATUS_STYLE = {
@@ -22,7 +31,7 @@ const STATUS_STYLE = {
   inactive: "text-text-subtle bg-text-subtle/10 border-border",
 };
 
-function UserAvatar({ name, avatar, index }) {
+function Avatar({ name, avatar, index }) {
   const { bg, text } = AVATAR_PALETTE[index % AVATAR_PALETTE.length];
   const initials = name
     .split(" ")
@@ -39,11 +48,21 @@ function UserAvatar({ name, avatar, index }) {
   }
   return (
     <div
-      className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0"
+      className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 tracking-wide"
       style={{ background: bg, color: text }}
     >
       {initials}
     </div>
+  );
+}
+
+function SortIcon({ active, dir }) {
+  if (!active)
+    return <span className="ml-1 text-text-subtle/25 text-[10px]">↕</span>;
+  return dir === "asc" ? (
+    <ChevronUp size={11} className="ml-0.5 text-gold inline" />
+  ) : (
+    <ChevronDown size={11} className="ml-0.5 text-gold inline" />
   );
 }
 
@@ -65,21 +84,19 @@ function Pagination({ page, totalPages, total, perPage, onPage }) {
     if (page < totalPages - 2) pages.push("…");
     pages.push(totalPages);
   }
-
   return (
     <div className="flex items-center justify-between px-4 py-3 border-t border-border flex-shrink-0">
       <p className="text-[10px] text-text-subtle">
         {total === 0
-          ? "No bookings found"
-          : `Showing ${start}–${end} of ${total} bookings`}
+          ? "No users found"
+          : `Showing ${start}–${end} of ${total} users`}
       </p>
       <div className="flex gap-1">
         <button
           onClick={() => onPage(page - 1)}
           disabled={page === 1}
-          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center
-                     text-text-muted hover:text-gold hover:border-gold/30 transition-all
-                     disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-text-muted
+                     hover:text-gold hover:border-gold/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed text-sm"
           aria-label="Previous page"
         >
           ‹
@@ -111,9 +128,8 @@ function Pagination({ page, totalPages, total, perPage, onPage }) {
         <button
           onClick={() => onPage(page + 1)}
           disabled={page >= totalPages || totalPages === 0}
-          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center
-                     text-text-muted hover:text-gold hover:border-gold/30 transition-all
-                     disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-text-muted
+                     hover:text-gold hover:border-gold/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed text-sm"
           aria-label="Next page"
         >
           ›
@@ -134,6 +150,7 @@ function lastLoginLabel(ts) {
 
 function UserTable({
   data = [],
+  columns = [],
   total = 0,
   page = 1,
   onPage,
@@ -150,19 +167,10 @@ function UserTable({
   onClearFilters,
   roles = [],
 }) {
-  const getRole = (roleId) => roles.find((r) => r.id === Number(roleId));
-
+  const visibleCols = columns.filter((c) => c.visible);
   const allSelected = data.length > 0 && data.every((u) => selected.has(u.id));
   const totalPages = Math.ceil(total / perPage);
-
-  const cols = [
-    { id: "user", label: "User" },
-    { id: "role", label: "Role" },
-    { id: "department", label: "Department" },
-    { id: "status", label: "Status" },
-    { id: "lastLogin", label: "Last Login" },
-    { id: "joined", label: "Joined" },
-  ];
+  const getRole = (roleId) => roles.find((r) => r.id === Number(roleId));
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col flex-1 min-h-0">
@@ -172,11 +180,11 @@ function UserTable({
           style={{ tableLayout: "fixed", minWidth: "760px" }}
         >
           <colgroup>
-            <col style={{ width: "40px" }} />
-            {cols.map((c) => (
-              <col key={c.id} style={{ width: COL_WIDTH[c.id] }} />
+            <col style={{ width: "50px" }} />
+            {visibleCols.map((col) => (
+              <col key={col.id} style={{ width: COL_WIDTH[col.id] }} />
             ))}
-            <col style={{ width: "96px" }} />
+            <col style={{ width: "140px" }} />
           </colgroup>
 
           <thead>
@@ -184,31 +192,21 @@ function UserTable({
               <th className="px-4 py-3 text-left">
                 <input
                   type="checkbox"
-                  className="appearance-none w-3.5 h-3.5 rounded border border-border bg-base
-                             cursor-pointer checked:bg-gold checked:border-gold transition-colors"
+                  className="appearance-none w-3.5 h-3.5 rounded border border-border bg-base cursor-pointer checked:bg-gold checked:border-gold transition-colors"
                   checked={allSelected}
                   onChange={(e) => onSelectAll(e.target.checked)}
                   aria-label="Select all"
                 />
               </th>
-              {cols.map((col) => (
+              {visibleCols.map((col) => (
                 <th
                   key={col.id}
-                  className="px-4 py-3 text-left text-[9px] font-bold tracking-[0.2em]
-                             text-text-subtle uppercase whitespace-nowrap select-none
-                             cursor-pointer hover:text-text-muted"
+                  className="px-4 py-3 text-left text-[9px] font-bold tracking-[0.2em] text-text-subtle uppercase
+                             whitespace-nowrap select-none cursor-pointer hover:text-text-muted"
                   onClick={() => onSort(col.id)}
                 >
                   {col.label}
-                  {sortField === col.id ? (
-                    <span className="ml-0.5 text-gold text-[10px]">
-                      {sortDir === "asc" ? "↑" : "↓"}
-                    </span>
-                  ) : (
-                    <span className="ml-1 text-text-subtle/25 text-[10px]">
-                      ↕
-                    </span>
-                  )}
+                  <SortIcon active={sortField === col.id} dir={sortDir} />
                 </th>
               ))}
               <th className="px-4 py-3 text-right text-[9px] font-bold tracking-[0.2em] text-text-subtle uppercase">
@@ -220,9 +218,9 @@ function UserTable({
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={cols.length + 2}>
+                <td colSpan={visibleCols.length + 2}>
                   <EmptyState
-                    icon={UsersIcon}
+                    icon={Users}
                     title="No users found"
                     subtitle="Try adjusting your search or filters"
                     action={
@@ -246,7 +244,7 @@ function UserTable({
                   <motion.tr
                     key={user.id}
                     className={clsx(
-                      "border-b border-border/50 last:border-0 cursor-pointer hover:bg-gold/[0.02] transition-colors",
+                      "border-b border-border last:border-0 cursor-pointer hover:bg-gold/[0.02] transition-colors",
                       selected.has(user.id) && "bg-gold/[0.04]",
                     )}
                     style={
@@ -260,79 +258,86 @@ function UserTable({
                     onClick={() => onView(user)}
                   >
                     <td
-                      className="px-4 py-3"
+                      className="px-4 py-5"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <input
                         type="checkbox"
-                        className="appearance-none w-3.5 h-3.5 rounded border border-border bg-base
-                                 cursor-pointer checked:bg-gold checked:border-gold transition-colors"
+                        className="appearance-none w-3.5 h-3.5 rounded border border-border bg-base cursor-pointer checked:bg-gold checked:border-gold transition-colors"
                         checked={selected.has(user.id)}
                         onChange={() => onToggleSelect(user.id)}
                         aria-label={`Select ${user.fullName}`}
                       />
                     </td>
 
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <UserAvatar
-                          name={user.fullName}
-                          avatar={user.avatar}
-                          index={i}
-                        />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-xs font-bold text-text-primary leading-tight truncate">
-                              {user.fullName}
-                            </p>
-                            {role?.name === "Admin" && (
-                              <Crown
-                                size={11}
-                                className="text-gold flex-shrink-0"
-                              />
-                            )}
+                    {visibleCols.map((col) => (
+                      <td key={col.id} className="px-4 py-3 align-middle">
+                        {col.id === "user" && (
+                          <div className="flex items-center gap-3">
+                            <Avatar
+                              name={user.fullName}
+                              avatar={user.avatar}
+                              index={i}
+                            />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-xs font-bold text-text-primary leading-tight truncate">
+                                  {user.fullName}
+                                </p>
+                                {role?.name === "Admin" && (
+                                  <Crown
+                                    size={11}
+                                    className="text-gold flex-shrink-0"
+                                  />
+                                )}
+                              </div>
+                              <p className="text-[10px] text-text-subtle mt-1.5 truncate">
+                                {user.employeeId} · {user.email}
+                              </p>
+                            </div>
                           </div>
-                          <p className="text-[10px] text-text-subtle mt-0.5 truncate">
-                            {user.employeeId} · {user.email}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <span className="text-xs font-semibold text-text-muted">
-                        {role?.name || "Unassigned"}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3 text-xs text-text-muted">
-                      {user.department || "—"}
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <span
-                        className={clsx(
-                          "text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full border ",
-                          STATUS_STYLE[user.status],
                         )}
-                      >
-                        {user.status}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3 text-xs text-text-subtle">
-                      {lastLoginLabel(user.lastLogin)}
-                    </td>
-
-                    <td className="px-4 py-3 text-xs text-text-subtle">
-                      {user.joinDate
-                        ? new Date(user.joinDate).toLocaleDateString("en-AE", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "—"}
-                    </td>
+                        {col.id === "role" && (
+                          <span className="text-xs font-semibold text-text-muted">
+                            {role?.name || "Unassigned"}
+                          </span>
+                        )}
+                        {col.id === "department" && (
+                          <span className="text-xs text-text-muted">
+                            {user.department || "—"}
+                          </span>
+                        )}
+                        {col.id === "status" && (
+                          <span
+                            className={clsx(
+                              "text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full border capitalize",
+                              STATUS_STYLE[user.status],
+                            )}
+                          >
+                            {user.status}
+                          </span>
+                        )}
+                        {col.id === "lastLogin" && (
+                          <span className="text-xs text-text-subtle">
+                            {lastLoginLabel(user.lastLogin)}
+                          </span>
+                        )}
+                        {col.id === "joined" && (
+                          <span className="text-xs text-text-subtle">
+                            {user.joinDate
+                              ? new Date(user.joinDate).toLocaleDateString(
+                                  "en-AE",
+                                  {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  },
+                                )
+                              : "—"}
+                          </span>
+                        )}
+                      </td>
+                    ))}
 
                     <td
                       className="px-4 py-3"
@@ -341,8 +346,8 @@ function UserTable({
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => onView(user)}
-                          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center
-                                   text-text-subtle hover:text-sky-accent hover:border-sky-accent/40 hover:bg-sky-accent/8 transition-all"
+                          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-text-subtle
+                                   hover:text-sky-accent hover:border-sky-accent/40 hover:bg-sky-accent/8 transition-all"
                           title="View profile"
                           aria-label={`View ${user.fullName}`}
                         >
@@ -350,8 +355,8 @@ function UserTable({
                         </button>
                         <button
                           onClick={() => onEdit(user)}
-                          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center
-                                   text-text-subtle hover:text-gold hover:border-gold/40 hover:bg-gold/8 transition-all"
+                          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-text-subtle
+                                   hover:text-gold hover:border-gold/40 hover:bg-gold/8 transition-all"
                           title="Edit user"
                           aria-label={`Edit ${user.fullName}`}
                         >
@@ -359,8 +364,8 @@ function UserTable({
                         </button>
                         <button
                           onClick={() => onDelete(user)}
-                          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center
-                                   text-text-subtle hover:text-rose-400 hover:border-rose-400/40 hover:bg-rose-400/8 transition-all"
+                          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-text-subtle
+                                   hover:text-rose-400 hover:border-rose-400/40 hover:bg-rose-400/8 transition-all"
                           title="Delete user"
                           aria-label={`Delete ${user.fullName}`}
                         >

@@ -19,6 +19,8 @@ import { notifications as rawNotifications } from "../../data/mockData";
 
 const PAGE_TITLES = {
   "/dashboard": "Dashboard",
+  "/users": "Users",
+  "/roles": "Roles",
   "/inventory": "Inventory",
   "/customers": "Customers",
   "/test-drives": "Test Drives",
@@ -26,6 +28,7 @@ const PAGE_TITLES = {
   "/analytics": "Analytics",
   "/notifications": "Notifications",
   "/settings": "Settings",
+  "/reports": "Reports",
 };
 
 function Navbar() {

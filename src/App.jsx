@@ -22,8 +22,9 @@ import Invoices from "./pages/Invoices";
 import Analytics from "./pages/Analytics";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
-import Roles from "./pages/Roles";
+
 import Users from "./pages/Users";
+import Reports from "./pages/Reports";
 
 // ── Auth guards ───────────────────────────────────────────────────────────────
 function ProtectedRoute({ children }) {
@@ -105,8 +106,9 @@ function App() {
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="notifications" element={<Notifications />} />
                 <Route path="settings" element={<Settings />} />
-                <Route path="roles" element={<Roles />} />
+
                 <Route path="users" element={<Users />} />
+                <Route path="reports" element={<Reports />} />
               </Route>
 
               {/* BUG-059 FIX: catch-all — redirect unknown routes to dashboard */}

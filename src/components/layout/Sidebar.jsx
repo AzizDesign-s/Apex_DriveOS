@@ -13,7 +13,7 @@
 //   - Responsive: on mobile it slides in as a drawer with a backdrop overlay
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadNotifications } from "../../utils/notificationUtils";
@@ -32,6 +32,7 @@ import {
   LogOut,
   Users as UsersIcon,
   Shield,
+  FileChartColumnIncreasing,
 } from "lucide-react";
 import useAppStore from "../../store/useAppStore";
 import { notifications as notifData } from "../../data/mockData";
@@ -116,6 +117,35 @@ function Sidebar({ isMobile = false }) {
     return notifs.filter((n) => !n.isRead).length;
   });
 
+  const [userCount, setUserCount] = useState(0);
+
+  const computeUserCount = useCallback(() => {
+    try {
+      const saved = localStorage.getItem("apex-gt-users");
+      const users = saved ? JSON.parse(saved) : [];
+      setUserCount(users.length);
+    } catch {
+      setUserCount(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    computeUserCount();
+    window.addEventListener("apex-gt-users-updated", computeUserCount);
+    return () =>
+      window.removeEventListener("apex-gt-users-updated", computeUserCount);
+  }, [computeUserCount]);
+
+  // In getBadge() (or wherever badges are resolved per nav item):
+  const getBadge = (item) => {
+    if (item.path === "/notifications")
+      return notifCount > 0 ? String(notifCount) : null;
+    if (item.path === "/inventory")
+      return inventoryCount > 0 ? String(inventoryCount) : null;
+    if (item.path === "/users") return userCount > 0 ? String(userCount) : null;
+    return item.badge || null;
+  };
+
   const NAV_SECTIONS = [
     {
       label: "Main",
@@ -132,12 +162,7 @@ function Sidebar({ isMobile = false }) {
           path: "/users",
           badge: null,
         },
-        {
-          icon: Shield,
-          label: "Roles",
-          path: "/roles",
-          badge: null,
-        },
+
         {
           icon: Car,
           label: "Inventory",
@@ -163,8 +188,15 @@ function Sidebar({ isMobile = false }) {
           path: "/analytics",
           badge: null,
         },
+        {
+          icon: FileChartColumnIncreasing,
+          label: "Reports",
+          path: "/reports",
+          badge: null,
+        },
       ],
     },
+
     {
       label: "System",
       items: [

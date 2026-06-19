@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Shield } from "lucide-react";
 import { Input, Button } from "../ui";
 import PermissionMatrix from "./PermissionMatrix";
-import { PERMISSION_MODULES, emptyPermissionSet } from "../../data/mockData"; // ← Phase-1 path
+import { PERMISSION_MODULES, emptyPermissionSet } from "../../data/mockData";
 import apexToast from "../../utils/toast";
 
 function RoleFormDrawer({ isOpen, onClose, onSave, editRole = null }) {
@@ -81,9 +81,7 @@ function RoleFormDrawer({ isOpen, onClose, onSave, editRole = null }) {
             onClick={onClose}
           />
           <motion.div
-            className="fixed top-0 right-0 bottom-0 w-full max-w-xl z-50
-                       bg-card border-l border-border shadow-glass
-                       flex flex-col"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-xl z-50 bg-card border-l border-border shadow-glass flex flex-col"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -115,10 +113,7 @@ function RoleFormDrawer({ isOpen, onClose, onSave, editRole = null }) {
 
             <div className="flex-1 overflow-y-auto scrollbar-none px-6 py-5">
               {editRole?.isSystemRole && (
-                <div
-                  className="flex items-start gap-2 bg-amber-400/8 border border-amber-400/15
-                                rounded-xl p-3 mb-5"
-                >
+                <div className="flex items-start gap-2 bg-amber-400/8 border border-amber-400/15 rounded-xl p-3 mb-5">
                   <Shield
                     size={13}
                     className="text-amber-400 flex-shrink-0 mt-0.5"
@@ -158,6 +153,20 @@ function RoleFormDrawer({ isOpen, onClose, onSave, editRole = null }) {
                   />
                 </div>
               </div>
+
+              {/* Bug 3: live indicator showing whether this role would be customer-facing */}
+              {permissions.customers &&
+                (permissions.customers.view ||
+                  permissions.customers.create ||
+                  permissions.customers.edit) && (
+                  <div className="flex items-center gap-2 bg-emerald-400/8 border border-emerald-400/20 rounded-xl px-3 py-2 mb-4">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+                    <p className="text-[10px] text-emerald-400/90">
+                      This role has Customer access, so its users will appear in
+                      customer-facing dropdowns (e.g. Test Drive assignment).
+                    </p>
+                  </div>
+                )}
 
               <p className="text-[9px] font-bold tracking-[0.2em] text-text-subtle uppercase mb-3">
                 Module Permissions
