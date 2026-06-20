@@ -658,10 +658,12 @@ function Dashboard() {
         />
       </div>
 
-      <AlertsPanel
-        alerts={activeAlerts}
-        onAction={(alert) => navigate(alert.link)}
-      />
+      {activeAlerts.length > 0 && (
+        <AlertsPanel
+          alerts={activeAlerts}
+          onAction={(alert) => navigate(alert.link)}
+        />
+      )}
 
       {/* ── NEW: Dashboard Insights row — Sprint 2 Step 4 ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 flex-shrink-0">

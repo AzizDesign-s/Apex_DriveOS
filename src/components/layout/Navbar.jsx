@@ -351,11 +351,11 @@ function Navbar() {
                     </div>
 
                     {/* Preview items — latest 4 */}
-                    {previewNotifs.map((n, i) => {
+                    {previewNotifs.map((n, idx) => {
                       const isUnread = !readIds.has(n.id) && !n.isRead;
                       return (
                         <div
-                          key={n.id}
+                          key={n.id ?? `notif-${idx}`}
                           className={`flex items-start gap-3 px-4 py-3 cursor-pointer
                                       hover:bg-gold/5 transition-colors
                                       border-b border-border last:border-0

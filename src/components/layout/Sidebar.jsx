@@ -73,10 +73,8 @@ function Sidebar({ isMobile = false }) {
     sidebarOpen,
     toggleSidebar,
     logout,
-    inventoryCount,
-    testDriveCount,
+
     user,
-    notificationCount,
   } = useAppStore();
 
   // On mobile, sidebar is always 'open' width — it's a full drawer
@@ -112,29 +110,54 @@ function Sidebar({ isMobile = false }) {
     };
   }, []);
 
-  const [notifCount, setNotifCount] = useState(() => {
-    const notifs = loadNotifications();
-    return notifs.filter((n) => !n.isRead).length;
-  });
-
-  const [userCount, setUserCount] = useState(0);
-
-  const computeUserCount = useCallback(() => {
+  const getLiveCount = (key, filterFn) => {
     try {
-      const saved = localStorage.getItem("apex-gt-users");
-      const users = saved ? JSON.parse(saved) : [];
-      setUserCount(users.length);
+      const saved = localStorage.getItem(key);
+      const arr = saved ? JSON.parse(saved) : [];
+      return filterFn ? arr.filter(filterFn).length : arr.length;
     } catch {
-      setUserCount(0);
+      return 0;
     }
-  }, []);
+  };
+
+  const [inventoryCount, setInventoryCount] = useState(() =>
+    getLiveCount("apex-gt-cars", (c) => c.status === "available"),
+  );
+  const [testDriveCount, setTestDriveCount] = useState(() =>
+    getLiveCount("apex-gt-bookings", (b) => b.status === "pending"),
+  );
+  const [userCount, setUserCount] = useState(() =>
+    getLiveCount("apex-gt-users"),
+  );
+  const [notifCount, setNotifCount] = useState(() =>
+    getLiveCount("apex-gt-notifications", (n) => !n.isRead),
+  );
 
   useEffect(() => {
-    computeUserCount();
-    window.addEventListener("apex-gt-users-updated", computeUserCount);
-    return () =>
-      window.removeEventListener("apex-gt-users-updated", computeUserCount);
-  }, [computeUserCount]);
+    const onCars = () =>
+      setInventoryCount(
+        getLiveCount("apex-gt-cars", (c) => c.status === "available"),
+      );
+    const onBookings = () =>
+      setTestDriveCount(
+        getLiveCount("apex-gt-bookings", (b) => b.status === "pending"),
+      );
+    const onUsers = () => setUserCount(getLiveCount("apex-gt-users"));
+    const onNotifs = () =>
+      setNotifCount(getLiveCount("apex-gt-notifications", (n) => !n.isRead));
+
+    window.addEventListener("apex-gt-cars-updated", onCars);
+    window.addEventListener("apex-gt-bookings-updated", onBookings);
+    window.addEventListener("apex-gt-users-updated", onUsers);
+    window.addEventListener("apex-gt-notifications-updated", onNotifs);
+
+    return () => {
+      window.removeEventListener("apex-gt-cars-updated", onCars);
+      window.removeEventListener("apex-gt-bookings-updated", onBookings);
+      window.removeEventListener("apex-gt-users-updated", onUsers);
+      window.removeEventListener("apex-gt-notifications-updated", onNotifs);
+    };
+  }, []);
 
   // In getBadge() (or wherever badges are resolved per nav item):
   const getBadge = (item) => {
@@ -142,6 +165,8 @@ function Sidebar({ isMobile = false }) {
       return notifCount > 0 ? String(notifCount) : null;
     if (item.path === "/inventory")
       return inventoryCount > 0 ? String(inventoryCount) : null;
+    if (item.path === "/test-drives")
+      return testDriveCount > 0 ? String(testDriveCount) : null;
     if (item.path === "/users") return userCount > 0 ? String(userCount) : null;
     return item.badge || null;
   };
@@ -160,7 +185,7 @@ function Sidebar({ isMobile = false }) {
           icon: UsersIcon,
           label: "Users",
           path: "/users",
-          badge: null,
+          badge: userCount > 0 ? String(userCount) : null,
         },
 
         {
@@ -204,7 +229,7 @@ function Sidebar({ isMobile = false }) {
           icon: Bell,
           label: "Notifications",
           path: "/notifications",
-          badge: notificationCount > 0 ? String(notificationCount) : null,
+          badge: notifCount > 0 ? String(notifCount) : null,
         },
         { icon: Settings, label: "Settings", path: "/settings", badge: null },
       ],

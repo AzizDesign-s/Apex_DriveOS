@@ -184,20 +184,24 @@ function Users() {
     );
   }, []);
 
-  const handleDelete = useCallback((user) => {
-    if (user.id === CURRENT_USER_ID) {
-      apexToast.error(
-        "Cannot Delete",
-        "You cannot delete your own account while logged in.",
-      );
+  const handleDelete = useCallback(
+    (user) => {
+      const role = roles.find((r) => r.id === Number(user.roleId));
+      if (user.id === CURRENT_USER_ID || role?.name === "Admin") {
+        apexToast.error(
+          "Cannot Delete",
+          "The Admin account is managed in Settings and cannot be deleted here.",
+        );
+        setDeleteUser(null);
+        return;
+      }
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
       setDeleteUser(null);
-      return;
-    }
-    setUsers((prev) => prev.filter((u) => u.id !== user.id));
-    setDeleteUser(null);
-    setViewUser(null);
-    apexToast.info("User Removed", `${user.fullName} removed successfully.`);
-  }, []);
+      setViewUser(null);
+      apexToast.info("User Removed", `${user.fullName} removed successfully.`);
+    },
+    [roles],
+  );
 
   const handleBulkDelete = useCallback(() => {
     const idsToDelete = new Set(selected);

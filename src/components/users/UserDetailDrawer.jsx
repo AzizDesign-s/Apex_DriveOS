@@ -1,5 +1,6 @@
 // src/components/users/UserDetailDrawer.jsx
 // Same chrome pattern as CustomerDetailDrawer.jsx
+import { useNavigate } from "react-router-dom";
 
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,6 +13,7 @@ import {
   Calendar,
   Briefcase,
   Shield,
+  Lock,
 } from "lucide-react";
 import { Button } from "../ui";
 import { AVATAR_PALETTE, PERMISSION_MODULES } from "../../data/mockData";
@@ -95,12 +97,18 @@ function UserDetailDrawer({
   onDelete,
   roles = [],
 }) {
+  const navigate = useNavigate();
   if (!user) return null;
 
   const role = roles.find((r) => r.id === Number(user.roleId));
   const grantedModules = PERMISSION_MODULES.filter(
     (m) => !m.disabled && role?.permissions?.[m.id]?.view,
   );
+
+  const isAdminUser = (user, roles) => {
+    const role = roles.find((r) => r.id === Number(user.roleId));
+    return role?.name === "Admin" && user.id === 1; // id 1 = seeded primary admin
+  };
 
   return (
     <AnimatePresence>
@@ -237,31 +245,51 @@ function UserDetailDrawer({
               </div>
             </div>
 
-            <div className="flex gap-2 px-5 py-4 border-t border-border flex-shrink-0">
-              <Button variant="ghost" size="sm" onClick={onClose} fullWidth>
-                <X size={13} /> Close
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                fullWidth
-                className="!border-gold/30 !text-gold hover:!bg-gold/5"
-                onClick={() => {
-                  onClose();
-                  onEdit(user);
-                }}
-              >
-                <Edit size={13} /> Edit
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                fullWidth
-                onClick={() => onDelete(user)}
-              >
-                <Trash2 size={13} /> Delete
-              </Button>
-            </div>
+            {isAdminUser(user, roles) ? (
+              <div className="flex gap-2 px-5 py-4 border-t border-border flex-shrink-0">
+                <Button variant="ghost" size="sm" onClick={onClose} fullWidth>
+                  <X size={13} /> Close
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  fullWidth
+                  className="!border-gold/30 !text-gold hover:!bg-gold/5"
+                  onClick={() => {
+                    onClose();
+                    navigate("/settings");
+                  }}
+                >
+                  <Lock size={13} /> Manage in Settings
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2 px-5 py-4 border-t border-border flex-shrink-0">
+                <Button variant="ghost" size="sm" onClick={onClose} fullWidth>
+                  <X size={13} /> Close
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  fullWidth
+                  className="!border-gold/30 !text-gold hover:!bg-gold/5"
+                  onClick={() => {
+                    onClose();
+                    onEdit(user);
+                  }}
+                >
+                  <Edit size={13} /> Edit
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  fullWidth
+                  onClick={() => onDelete(user)}
+                >
+                  <Trash2 size={13} /> Delete
+                </Button>
+              </div>
+            )}
           </motion.div>
         </>
       )}

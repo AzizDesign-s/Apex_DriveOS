@@ -58,6 +58,7 @@ export const saveNotifications = (notifications) => {
   }
 };
 
+let notifCounter = 0;
 // ── Create a single notification ──────────────────────────────────────────────
 // type: 'test_drive' | 'invoice' | 'inventory' | 'customer' | 'system'
 // priority: 'high' | 'medium' | 'low'
@@ -71,8 +72,9 @@ export const createNotification = ({
   meta = {},
 }) => {
   const existing = loadNotifications();
+  notifCounter += 1;
   const newNotif = {
-    id: Date.now(),
+    id: `${Date.now()}-${notifCounter}-${Math.random().toString(36).slice(2, 8)}`,
     type,
     priority,
     title,

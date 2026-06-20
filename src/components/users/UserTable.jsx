@@ -1,6 +1,7 @@
 // src/components/users/UserTable.jsx
 // Same architecture as CustomerTable.jsx — columns prop, ColumnManager-driven, same pagination
 
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Users,
@@ -10,6 +11,7 @@ import {
   ChevronUp,
   ChevronDown,
   Crown,
+  Lock,
 } from "lucide-react";
 import { EmptyState, Button } from "../ui";
 import { AVATAR_PALETTE } from "../../data/mockData";
@@ -171,6 +173,14 @@ function UserTable({
   const allSelected = data.length > 0 && data.every((u) => selected.has(u.id));
   const totalPages = Math.ceil(total / perPage);
   const getRole = (roleId) => roles.find((r) => r.id === Number(roleId));
+
+  const navigate = useNavigate();
+
+  // Helper to identify if a user is the system Admin
+  const isAdminUser = (user, roles) => {
+    const role = roles.find((r) => r.id === Number(user.roleId));
+    return role?.name === "Admin" && user.id === 1; // id 1 = seeded primary admin
+  };
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col flex-1 min-h-0">
@@ -343,35 +353,60 @@ function UserTable({
                       className="px-4 py-3"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => onView(user)}
-                          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-text-subtle
-                                   hover:text-sky-accent hover:border-sky-accent/40 hover:bg-sky-accent/8 transition-all"
-                          title="View profile"
-                          aria-label={`View ${user.fullName}`}
-                        >
-                          <Eye size={12} />
-                        </button>
-                        <button
-                          onClick={() => onEdit(user)}
-                          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-text-subtle
-                                   hover:text-gold hover:border-gold/40 hover:bg-gold/8 transition-all"
-                          title="Edit user"
-                          aria-label={`Edit ${user.fullName}`}
-                        >
-                          <Edit size={12} />
-                        </button>
-                        <button
-                          onClick={() => onDelete(user)}
-                          className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-text-subtle
-                                   hover:text-rose-400 hover:border-rose-400/40 hover:bg-rose-400/8 transition-all"
-                          title="Delete user"
-                          aria-label={`Delete ${user.fullName}`}
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
+                      {isAdminUser(user, roles) ? (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <span
+                            className="flex items-center gap-1 text-[10px] text-text-subtle px-2 py-1
+                   rounded-lg border border-border bg-base"
+                            title="Admin identity is managed in Settings"
+                          >
+                            <Lock size={10} /> Settings-managed
+                          </span>
+                          <button
+                            onClick={() => navigate("/settings")}
+                            className="w-7 h-7 rounded-lg border border-border flex items-center justify-center
+                                   text-text-subtle hover:text-sky-accent hover:border-sky-accent/40
+                                   hover:bg-sky-accent/8 transition-all"
+                            title="Edit in Settings"
+                            aria-label="Edit Admin profile in Settings"
+                          >
+                            <Eye size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            className="w-7 h-7 rounded-lg border border-border flex items-center justify-center
+                                   text-text-subtle hover:text-sky-accent hover:border-sky-accent/40
+                                   hover:bg-sky-accent/8 transition-all"
+                            onClick={() =>
+                              onView(user)
+                            } /* ...existing View button... */
+                          >
+                            <Eye size={12} />
+                          </button>
+                          <button
+                            className="w-7 h-7 rounded-lg border border-border flex items-center justify-center
+                                   text-text-subtle hover:text-gold hover:border-gold/40
+                                   hover:bg-gold/8 transition-all"
+                            onClick={() =>
+                              onEdit(user)
+                            } /* ...existing Edit button... */
+                          >
+                            <Edit size={12} />
+                          </button>
+                          <button
+                            className="w-7 h-7 rounded-lg border border-border flex items-center justify-center
+                                   text-text-subtle hover:text-rose-400 hover:border-rose-400/40
+                                   hover:bg-rose-400/8 transition-all"
+                            onClick={() =>
+                              onDelete(user)
+                            } /* ...existing Delete button... */
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </motion.tr>
                 );

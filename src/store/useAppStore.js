@@ -68,17 +68,6 @@ const useAppStore = create(
           applyTheme(next);
           return { theme: next };
         }),
-
-      // ── Module counts ────────────────────────────────────────────────────────
-      inventoryCount: 0,
-      setInventoryCount: (n) => set({ inventoryCount: n }),
-
-      // BUG-2 FIX: notification count for sidebar badge
-      notificationCount: 0,
-      setNotificationCount: (n) => set({ notificationCount: n }),
-
-      testDriveCount: 0,
-      setTestDriveCount: (n) => set({ testDriveCount: n }),
     }),
     {
       name: "apex-gt-store",

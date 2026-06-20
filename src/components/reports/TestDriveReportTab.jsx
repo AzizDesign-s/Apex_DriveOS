@@ -3,10 +3,14 @@
 // Test Drive Reports — Total/Approved/Rejected/Completed metrics,
 // Most Requested Vehicles, Conversion Performance
 
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { CalendarCheck, CheckCircle2, XCircle, Flag } from "lucide-react";
-import { computeTestDriveConversion } from "../../utils/analyticsUtils";
+import {
+  computeTestDriveConversion,
+  computeTopCars,
+  computePaymentMethods,
+} from "../../utils/analyticsUtils";
 import { computeMostRequestedVehicles } from "../../utils/reportUtils";
 import ReportSummaryCard from "./ReportSummaryCard";
 import TopCarsChart from "../analytics/TopCarsChart";
@@ -76,7 +80,8 @@ function MostRequestedList({ data }) {
   );
 }
 
-function TestDriveReportTab({ bookings = [], invoices = [] }) {
+function TestDriveReportTab({ bookings = [], invoices = [], cars = [] }) {
+  const [conversionTab, setConversionTab] = useState(0);
   const stats = useMemo(
     () => ({
       total: bookings.length,
@@ -94,6 +99,16 @@ function TestDriveReportTab({ bookings = [], invoices = [] }) {
   const mostRequested = useMemo(
     () => computeMostRequestedVehicles(bookings),
     [bookings],
+  );
+
+  const topCarsData = useMemo(
+    () => computeTopCars(invoices, cars),
+    [invoices, cars],
+  );
+
+  const paymentData = useMemo(
+    () => computePaymentMethods(invoices),
+    [invoices],
   );
 
   const overallConversion = useMemo(() => {
@@ -158,8 +173,8 @@ function TestDriveReportTab({ bookings = [], invoices = [] }) {
             topCars={[]}
             conversionData={conversionData}
             paymentData={[]}
-            activeTab={1}
-            onTabChange={() => {}}
+            activeTab={conversionTab}
+            onTabChange={setConversionTab}
           />
         </ReportSection>
       </div>

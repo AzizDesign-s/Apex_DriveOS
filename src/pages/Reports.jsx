@@ -129,6 +129,7 @@ function Reports() {
       cars,
       customers: rangeCustomers,
       bookings: rangeBookings,
+      cars: cars,
     });
     apexToast.success(
       `${activeTabMeta.label} Exported`,
@@ -141,6 +142,7 @@ function Reports() {
       cars,
       customers: rangeCustomers,
       bookings: rangeBookings,
+      cars: cars,
     });
     apexToast.success(
       "Full Report Exported",
@@ -189,6 +191,7 @@ function Reports() {
               <TestDriveReportTab
                 bookings={rangeBookings}
                 invoices={rangeInvoices}
+                cars={cars}
               />
             )}
           </motion.div>
