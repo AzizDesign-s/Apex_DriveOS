@@ -26,6 +26,11 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Minus,
+  Zap,
+  Trophy,
+  Target,
+  HeartPulse,
+  TrendingUp as TrendUpIcon,
 } from "lucide-react";
 import {
   BarChart,
@@ -39,7 +44,22 @@ import {
   PieChart,
   Pie,
 } from "recharts";
+import DashboardInsightCard from "../components/dashboard/DashboardInsightCard";
+import RevenueSparkline from "../components/dashboard/RevenueSparkline";
+import {
+  computeFastestSellingVehicle,
+  computeTopSalesExec,
+  computeMonthlyConversionRate,
+  computeInventoryHealthScore,
+  computeRevenueHighlight,
+} from "../utils/dashboardInsightUtils";
 import { motion as m } from "framer-motion";
+
+import AlertsPanel from "../components/dashboard/AlertsPanel";
+import {
+  computeActiveAlerts,
+  syncAlertsToNotifications,
+} from "../utils/alertUtils";
 
 // ── Data sources (Phase 2: replace with store selectors) ──────────────────────
 import {
@@ -283,6 +303,18 @@ function Dashboard() {
       window.removeEventListener("apex-gt-bookings-updated", onBookingUpdate);
     };
   }, []);
+
+  const activeAlerts = useMemo(
+    () => computeActiveAlerts(cars, invoices, liveBookings),
+    [cars, invoices, liveBookings],
+  );
+
+  // ── Sync newly-true alerts to the Notifications module — fires once per
+  //    new condition, not on every render. Same dependency array as activeAlerts
+  //    so it only re-evaluates when the underlying alert set actually changes.
+  useEffect(() => {
+    syncAlertsToNotifications(activeAlerts);
+  }, [activeAlerts]);
 
   const greeting = useMemo(() => {
     const h = new Date().getHours();
@@ -528,6 +560,33 @@ function Dashboard() {
     },
   ];
 
+  // ADD these — do NOT touch the existing useMemo hooks above/below them:
+
+  const fastestSelling = useMemo(
+    () => computeFastestSellingVehicle(liveCars, liveInvoices),
+    [liveCars, liveInvoices],
+  );
+
+  const topExec = useMemo(
+    () => computeTopSalesExec(liveBookings, liveInvoices),
+    [liveBookings, liveInvoices],
+  );
+
+  const monthlyConversion = useMemo(
+    () => computeMonthlyConversionRate(liveBookings, invoices),
+    [liveBookings, liveInvoices],
+  );
+
+  const inventoryHealth = useMemo(
+    () => computeInventoryHealthScore(liveCars),
+    [liveCars],
+  );
+
+  const revenueHighlight = useMemo(
+    () => computeRevenueHighlight(liveInvoices),
+    [liveInvoices],
+  );
+
   return (
     <div className="flex flex-col gap-4 h-full overflow-y-auto scrollbar-none pb-6">
       {/* ── Header ── */}
@@ -597,6 +656,122 @@ function Dashboard() {
           delay={0.15}
           onClick={() => navigate("/test-drives")}
         />
+      </div>
+
+      <AlertsPanel
+        alerts={activeAlerts}
+        onAction={(alert) => navigate(alert.link)}
+      />
+
+      {/* ── NEW: Dashboard Insights row — Sprint 2 Step 4 ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 flex-shrink-0">
+        {/* Fastest Selling Vehicle */}
+        <DashboardInsightCard
+          label="Fastest Selling"
+          icon={Zap}
+          iconClass="bg-amber-400/10 text-amber-400"
+          delay={0.18}
+          onClick={() => navigate("/inventory")}
+        >
+          {fastestSelling ? (
+            <>
+              <p className="text-sm font-extrabold text-text-primary leading-tight truncate">
+                {fastestSelling.model}
+              </p>
+              <p className="text-[10px] text-text-subtle">
+                Avg. {fastestSelling.avgDays}d to sell ·{" "}
+                {fastestSelling.unitsSold} sold
+              </p>
+            </>
+          ) : (
+            <p className="text-[11px] text-text-subtle">No sales data yet</p>
+          )}
+        </DashboardInsightCard>
+
+        {/* Top Sales Executive */}
+        <DashboardInsightCard
+          label="Top Sales Exec"
+          icon={Trophy}
+          iconClass="bg-gold/10 text-gold"
+          delay={0.21}
+          onClick={() => navigate("/test-drives")}
+        >
+          {topExec ? (
+            <>
+              <p className="text-sm font-extrabold text-text-primary leading-tight truncate">
+                {topExec.exec}
+              </p>
+              <p className="text-[10px] text-text-subtle">
+                AED {(topExec.revenue / 1000).toFixed(0)}K ·{" "}
+                {topExec.conversionRate}% conversion
+              </p>
+            </>
+          ) : (
+            <p className="text-[11px] text-text-subtle">No bookings yet</p>
+          )}
+        </DashboardInsightCard>
+
+        {/* Monthly Conversion Rate */}
+        <DashboardInsightCard
+          label="Monthly Conversion"
+          icon={Target}
+          iconClass="bg-sky-accent/10 text-sky-accent"
+          delay={0.24}
+          onClick={() => navigate("/test-drives")}
+        >
+          <p className="text-xl font-extrabold text-text-primary leading-none">
+            {monthlyConversion.rate}%
+          </p>
+          <p className="text-[10px] text-text-subtle">
+            {monthlyConversion.converted} of {monthlyConversion.totalDrives}{" "}
+            drives this month
+          </p>
+        </DashboardInsightCard>
+
+        {/* Inventory Health Score */}
+        <DashboardInsightCard
+          label="Inventory Health"
+          icon={HeartPulse}
+          iconClass="bg-emerald-400/10 text-emerald-400"
+          delay={0.27}
+          onClick={() => navigate("/inventory")}
+        >
+          <div className="flex items-baseline gap-1.5">
+            <p className="text-xl font-extrabold text-text-primary leading-none">
+              {inventoryHealth.score}
+            </p>
+            <p className="text-[10px] text-text-subtle">/100</p>
+          </div>
+          <p className={`text-[10px] font-semibold ${inventoryHealth.color}`}>
+            {inventoryHealth.label}
+          </p>
+        </DashboardInsightCard>
+
+        {/* Revenue Trend Highlight */}
+        <DashboardInsightCard
+          label="Revenue Trend"
+          icon={TrendUpIcon}
+          iconClass="bg-violet-400/10 text-violet-400"
+          delay={0.3}
+          onClick={() => navigate("/invoices")}
+        >
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-extrabold text-text-primary leading-none">
+              {fmtAED(revenueHighlight.thisMonthRevenue)}
+            </p>
+            <span
+              className={`text-[10px] font-bold flex items-center gap-0.5 ${
+                revenueHighlight.trend >= 0
+                  ? "text-emerald-400"
+                  : "text-rose-400"
+              }`}
+            >
+              {revenueHighlight.trend >= 0 ? "↑" : "↓"}{" "}
+              {Math.abs(revenueHighlight.trend)}%
+            </span>
+          </div>
+          <RevenueSparkline data={revenueHighlight.sparkline} />
+        </DashboardInsightCard>
       </div>
 
       {/* ── Revenue chart + Inventory donut ── */}

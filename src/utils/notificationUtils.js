@@ -343,4 +343,15 @@ export const notify = {
       linkLabel: "View User",
       meta: { userId: user.employeeId, status: newStatus },
     }),
+
+  alertTriggered: (alert) =>
+    createNotification({
+      type: alert.type,
+      priority: alert.priority,
+      title: alert.title,
+      message: alert.message,
+      link: alert.link,
+      linkLabel: alert.linkLabel,
+      meta: alert.meta,
+    }),
 };
