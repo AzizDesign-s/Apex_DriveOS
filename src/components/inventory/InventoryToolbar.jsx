@@ -25,10 +25,13 @@ import {
   Tag,
   Trash2,
   X,
+  Bookmark,
 } from "lucide-react";
 import { Button } from "../ui";
 import MoreMenu from "../ui/MoreMenu";
 import ColumnManager from "../ui/ColumnManager";
+import SavedFiltersDropdown from "../ui/SavedFilterDropdown";
+import { INVENTORY_FILTER_CONFIG } from "../../utils/filterConfig";
 import clsx from "clsx";
 
 function InventoryToolbar({
@@ -47,9 +50,15 @@ function InventoryToolbar({
   onRefresh,
   onExport,
   onAddCar,
+  activeFilters,
+  onFiltersChange,
 }) {
   const hasSelection = selected?.size > 0;
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  const [savedOpen, setSavedOpen] = useState(false);
+  const [saveMode, setSaveMode] = useState(false);
+  const savedBtnRef = useRef();
 
   return (
     <div className="flex flex-col gap-2 ">
@@ -174,7 +183,10 @@ function InventoryToolbar({
           variant="ghost"
           icon={SlidersHorizontal}
           onClick={onFilterOpen}
-          className={clsx(filterCount > 0 && "!border-gold/40 !text-gold"), "h-8 "}
+          className={clsx(
+            filterCount > 0 && "!border-gold/40 !text-gold",
+            "h-8 ",
+          )}
         >
           {/* Text hidden on mobile */}
           <span className="hidden lg:inline">Filters</span>
@@ -188,6 +200,32 @@ function InventoryToolbar({
           )}
         </Button>
 
+        <div className="relative">
+          <button
+            ref={savedBtnRef}
+            onClick={() => {
+              setSaveMode(false);
+              setSavedOpen((p) => !p);
+            }}
+            className="w-8 h-8 rounded-xl border border-border flex items-center justify-center
+               text-text-muted hover:text-gold hover:border-gold/30 transition-all"
+            title="Saved filters"
+            aria-label="Saved filters"
+          >
+            <Bookmark size={14} />
+          </button>
+          <SavedFiltersDropdown
+            isOpen={savedOpen}
+            onClose={() => setSavedOpen(false)}
+            anchorRef={savedBtnRef}
+            storageKey={INVENTORY_FILTER_CONFIG.storageKey}
+            currentFilters={activeFilters}
+            onApply={onFiltersChange}
+            saveMode={saveMode}
+            onSaveComplete={() => setSavedOpen(false)}
+          />
+        </div>
+
         {/* Column manager — icon only on mobile */}
         <div className="relative">
           <Button
@@ -195,7 +233,7 @@ function InventoryToolbar({
             variant="ghost"
             icon={Columns}
             onClick={onColMgrToggle}
-            className={clsx(colMgrOpen && "!border-gold/40 !text-gold"), "h-8"}
+            className={clsx(colMgrOpen && "!border-gold/40 !text-gold", "h-8")}
           >
             <span className="hidden lg:inline">Columns</span>
           </Button>
@@ -231,7 +269,7 @@ function InventoryToolbar({
 
         {/* Add Car */}
         <Button variant="primary" size="md" icon={Plus} onClick={onAddCar}>
-        <span className="hidden sm:inline">Add Car</span>
+          <span className="hidden sm:inline">Add Car</span>
         </Button>
       </div>
     </div>

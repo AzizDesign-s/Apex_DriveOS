@@ -1,7 +1,7 @@
 // src/components/customers/CustomerToolbar.jsx
 // Same pattern as InventoryToolbar — mobile search popup included
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -14,10 +14,13 @@ import {
   Trash2,
   Tag,
   X,
+  Bookmark,
 } from "lucide-react";
 import { Button } from "../ui";
 import MoreMenu from "../ui/MoreMenu";
 import ColumnManager from "../ui/ColumnManager";
+import SavedFiltersDropdown from "../ui/SavedFilterDropdown";
+import { INVENTORY_FILTER_CONFIG } from "../../utils/filterConfig";
 import clsx from "clsx";
 
 function CustomerToolbar({
@@ -36,9 +39,15 @@ function CustomerToolbar({
   onRefresh,
   onExport,
   onAddCustomer,
+  activeFilters,
+  onFiltersChange,
 }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const hasSelection = selected?.size > 0;
+
+  const [savedOpen, setSavedOpen] = useState(false);
+  const [saveMode, setSaveMode] = useState(false);
+  const savedBtnRef = useRef();
 
   return (
     <div className="flex flex-col gap-2">
@@ -158,7 +167,10 @@ function CustomerToolbar({
           variant="ghost"
           icon={SlidersHorizontal}
           onClick={onFilterOpen}
-          className={clsx(filterCount > 0 && "!border-gold/40 !text-gold"), "h-8 "}
+          className={clsx(
+            filterCount > 0 && "!border-gold/40 !text-gold",
+            "h-8 ",
+          )}
         >
           <span className="hidden lg:inline">Filters</span>
           {filterCount > 0 && (
@@ -171,6 +183,32 @@ function CustomerToolbar({
           )}
         </Button>
 
+        <div className="relative">
+          <button
+            ref={savedBtnRef}
+            onClick={() => {
+              setSaveMode(false);
+              setSavedOpen((p) => !p);
+            }}
+            className="w-8 h-8 rounded-xl border border-border flex items-center justify-center
+               text-text-muted hover:text-gold hover:border-gold/30 transition-all"
+            title="Saved filters"
+            aria-label="Saved filters"
+          >
+            <Bookmark size={14} />
+          </button>
+          <SavedFiltersDropdown
+            isOpen={savedOpen}
+            onClose={() => setSavedOpen(false)}
+            anchorRef={savedBtnRef}
+            storageKey={INVENTORY_FILTER_CONFIG.storageKey}
+            currentFilters={activeFilters}
+            onApply={onFiltersChange}
+            saveMode={saveMode}
+            onSaveComplete={() => setSavedOpen(false)}
+          />
+        </div>
+
         {/* Column manager — icon only on mobile */}
         <div className="relative">
           <Button
@@ -178,7 +216,7 @@ function CustomerToolbar({
             variant="ghost"
             icon={Columns}
             onClick={onColMgrToggle}
-            className={clsx(colMgrOpen && "!border-gold/40 !text-gold"), "h-8"}
+            className={clsx(colMgrOpen && "!border-gold/40 !text-gold", "h-8")}
           >
             <span className="hidden lg:inline">Columns</span>
           </Button>
@@ -189,8 +227,6 @@ function CustomerToolbar({
             onClose={() => onColMgrToggle(false)}
           />
         </div>
-
-        
 
         <div className="w-px h-5 bg-border flex-shrink-0" />
 
@@ -221,7 +257,7 @@ function CustomerToolbar({
           icon={UserPlus}
           onClick={onAddCustomer}
         >
-        <span className="hidden sm:inline">Add Customer</span>
+          <span className="hidden sm:inline">Add Customer</span>
         </Button>
       </div>
     </div>

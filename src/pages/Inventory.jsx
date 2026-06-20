@@ -2,13 +2,15 @@
 // Complete Inventory module — uses all reusable components.
 // Phase 5 final file.
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { notify } from "../utils/notificationUtils";
 import { cars as initialCars, DEFAULT_COLUMNS } from "../data/mockData";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 
 // ── Reusable UI components ────────────────────────────────────────────────────
 import { DeleteConfirm, ChangeStatusModal } from "../components/ui";
+import { INVENTORY_FILTER_CONFIG } from "../utils/filterConfig";
 
 // ── Inventory-specific components ─────────────────────────────────────────────
 import InventoryStats from "../components/inventory/InventoryStats";
@@ -21,6 +23,8 @@ import CarDetailDrawer from "../components/inventory/CarDetailDrawer";
 // ── Utilities ─────────────────────────────────────────────────────────────────
 import apexToast from "../utils/toast";
 import useAppStore from "../store/useAppStore";
+import SavedFiltersDropdown from "../components/ui/SavedFilterDropdown";
+import FilterChipRow from "../components/ui/FilterChipRow";
 
 const PER_PAGE = 10;
 
@@ -44,6 +48,23 @@ function Inventory() {
       return initialCars;
     }
   });
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [savedFiltersOpen, setSavedFiltersOpen] = useState(false);
+  const [savedFiltersSaveMode, setSavedFiltersSaveMode] = useState(false);
+  const savedBtnRef = useRef();
+
+  useEffect(() => {
+    const openId = location.state?.openRecordId;
+    if (openId) {
+      const car = cars.find((c) => c.id === openId);
+      if (car) setViewCar(car);
+      // Clear the state so refreshing doesn't reopen it
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, cars]);
 
   // ── Search + filters ─────────────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -118,12 +139,6 @@ function Inventory() {
   const [deleteCar, setDeleteCar] = useState(null); // single delete
   const [deleteBulk, setDeleteBulk] = useState(false); // bulk delete
   const [statusModal, setStatusModal] = useState(false); // change status
-
-  // ── Sync live inventory count to sidebar badge ────────────────────────────
-  const { setInventoryCount } = useAppStore();
-  useEffect(() => {
-    setInventoryCount(cars.length);
-  }, [cars, setInventoryCount]);
 
   // ── Unique brands list (for filter drawer dropdown) ───────────────────────
   const brands = useMemo(
@@ -376,6 +391,45 @@ function Inventory() {
         onRefresh={handleReset}
         onExport={handleExport}
         onAddCar={openAddForm}
+        activeFilters={activeFilters}
+        onFiltersChange={(f) => {
+          setActiveFilters(f);
+          setPage(1);
+        }}
+        savedOpen={savedFiltersOpen}
+        onSavedToggle={() => {
+          setSavedFiltersSaveMode(false);
+          setSavedFiltersOpen((p) => !p);
+        }}
+        savedBtnRef={savedBtnRef}
+      />
+
+      <FilterChipRow
+        activeFilters={activeFilters}
+        onFiltersChange={(f) => {
+          setActiveFilters(f);
+          setPage(1);
+        }}
+        onClearAll={handleReset}
+        config={INVENTORY_FILTER_CONFIG}
+        onSaveClick={() => {
+          setSavedFiltersSaveMode(true);
+          setSavedFiltersOpen(true);
+        }}
+      />
+
+      <SavedFiltersDropdown
+        isOpen={savedFiltersOpen}
+        onClose={() => setSavedFiltersOpen(false)}
+        anchorRef={savedBtnRef}
+        storageKey={INVENTORY_FILTER_CONFIG.storageKey}
+        currentFilters={activeFilters}
+        onApply={(f) => {
+          setActiveFilters(f);
+          setPage(1);
+        }}
+        saveMode={savedFiltersSaveMode}
+        onSaveComplete={() => setSavedFiltersOpen(false)}
       />
 
       {/* ── Main table ── */}

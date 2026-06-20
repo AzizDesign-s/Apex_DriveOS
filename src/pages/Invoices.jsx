@@ -1,7 +1,8 @@
 // src/pages/Invoices.jsx
 // Split layout: invoice list left + live preview right
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { notify } from "../utils/notificationUtils";
 import {
   invoices as initialInvoices,
@@ -18,6 +19,9 @@ import InvoiceFilterDrawer from "../components/invoices/InvoiceFilterDrawer";
 import InvoiceFormPage from "../components/invoices/InvoiceFormPage";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import { generateInvoicePDF } from "../utils/invoicePDFUtils";
+import SavedFiltersDropdown from "../components/ui/SavedFilterDropdown";
+import FilterChipRow from "../components/ui/FilterChipRow";
+import { INVOICE_FILTER_CONFIG } from "../utils/filterConfig";
 import apexToast from "../utils/toast";
 
 const PER_PAGE = 10;
@@ -61,6 +65,25 @@ function Invoices() {
       return initialInvoices;
     }
   });
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [savedFiltersOpen, setSavedFiltersOpen] = useState(false);
+  const [savedFiltersSaveMode, setSavedFiltersSaveMode] = useState(false);
+  const savedBtnRef = useRef();
+
+  useEffect(() => {
+    const openId = location.state?.openRecordId;
+    if (openId) {
+      const invoice = invoices.find((i) => i.id === openId);
+      if (invoice) {
+        setActiveInvoice(invoice);
+        if (window.innerWidth < 1024) setMobilePreviewOpen(true);
+      }
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, invoices]);
 
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
 
@@ -499,6 +522,34 @@ function Invoices() {
           setEditInvoice(null);
           setFormOpen(true);
         }}
+      />
+
+      <FilterChipRow
+        activeFilters={activeFilters}
+        onFiltersChange={(f) => {
+          setActiveFilters(f);
+          setPage(1);
+        }}
+        onClearAll={handleReset}
+        config={INVOICE_FILTER_CONFIG}
+        onSaveClick={() => {
+          setSavedFiltersSaveMode(true);
+          setSavedFiltersOpen(true);
+        }}
+      />
+
+      <SavedFiltersDropdown
+        isOpen={savedFiltersOpen}
+        onClose={() => setSavedFiltersOpen(false)}
+        anchorRef={savedBtnRef}
+        storageKey={INVOICE_FILTER_CONFIG.storageKey}
+        currentFilters={activeFilters}
+        onApply={(f) => {
+          setActiveFilters(f);
+          setPage(1);
+        }}
+        saveMode={savedFiltersSaveMode}
+        onSaveComplete={() => setSavedFiltersOpen(false)}
       />
 
       {/* ── Split layout: table left + preview right ── */}

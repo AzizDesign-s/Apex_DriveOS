@@ -8,6 +8,7 @@ import {
   markAllNotificationsRead,
   getUnreadCount,
 } from "../../utils/notificationUtils";
+import GlobalSearchOverlay from "./GlobalSearchOverlay";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, Sun, Moon, Bell, ChevronDown, Search, X } from "lucide-react";
 import useAppStore from "../../store/useAppStore";
@@ -40,7 +41,6 @@ function Navbar() {
   const [notifOpen, setNotifOpen] = useState(false);
 
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   // BUG-002 FIX: Read from the same source as the Notifications page.
   // BUG-003 FIX: Track read state locally so bell clears when items are read.
@@ -105,10 +105,16 @@ function Navbar() {
     setNotifItems(loadNotifications());
   };
 
-  const handleSearchClose = () => {
-    setSearchOpen(false);
-    setSearchQuery("");
-  };
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const pageTitle = PAGE_TITLES[location.pathname] || "Dashboard";
 
@@ -131,70 +137,10 @@ function Navbar() {
 
   return (
     <>
-      {/* ── Mobile search overlay ── */}
-      <AnimatePresence>
-        {searchOpen && (
-          <>
-            <motion.div
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={handleSearchClose}
-            />
-            <motion.div
-              className="fixed top-4 left-4 right-4 z-50 max-w-xl mx-auto"
-              initial={{ opacity: 0, y: -12, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -12, scale: 0.97 }}
-              transition={{ duration: 0.18 }}
-            >
-              <div
-                className="bg-card border border-border rounded-2xl p-3
-                              shadow-glass flex items-center gap-3"
-              >
-                <Search
-                  size={16}
-                  className="text-text-subtle flex-shrink-0 ml-1"
-                />
-                <input
-                  className="input-luxury flex-1 py-2.5 text-sm bg-transparent
-                             border-0 outline-none ring-0 placeholder:text-text-subtle"
-                  placeholder="Search cars, customers, invoices..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === "Escape" && handleSearchClose()}
-                  autoFocus
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="text-text-subtle hover:text-text-muted transition-colors"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-                <div className="w-px h-5 bg-border flex-shrink-0" />
-                <button
-                  onClick={handleSearchClose}
-                  className="w-8 h-8 rounded-xl border border-border flex items-center justify-center
-                             text-text-muted hover:text-rose-400 hover:border-rose-400/40 transition-all"
-                  aria-label="Close search"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-              <p className="text-[10px] text-text-subtle/50 text-center mt-2 tracking-wide">
-                Press{" "}
-                <kbd className="bg-card border border-border rounded px-1.5 py-0.5 text-[9px]">
-                  Esc
-                </kbd>{" "}
-                to close
-              </p>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <GlobalSearchOverlay
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+      />
 
       {/* ── Navbar bar ── */}
       <div
@@ -235,9 +181,7 @@ function Navbar() {
           style={{ flex: 1, maxWidth: "220px" }}
         >
           <Search size={13} className="flex-shrink-0" />
-          <span className="truncate">
-            {searchQuery || "Search anything..."}
-          </span>
+          <span className="truncate">Search anything...</span>
           <kbd
             className="ml-auto text-[9px] bg-border/60 text-text-subtle
                           px-1.5 py-0.5 rounded tracking-wide flex-shrink-0"

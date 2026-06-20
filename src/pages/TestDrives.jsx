@@ -1,6 +1,7 @@
 // src/pages/TestDrives.jsx
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { notify } from "../utils/notificationUtils";
 import {
   testDrives as initialBookings,
@@ -15,6 +16,9 @@ import TestDriveFilterDrawer from "../components/testdrives/TestDriveFilterDrawe
 import TestDriveFormPage from "../components/testdrives/TestDriveFormPage";
 import TestDriveDetailDrawer from "../components/testdrives/TestDriveDetailDrawer";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
+import SavedFiltersDropdown from "../components/ui/SavedFilterDropdown";
+import FilterChipRow from "../components/ui/FilterChipRow";
+import { TESTDRIVE_FILTER_CONFIG } from "../utils/filterConfig";
 import apexToast from "../utils/toast";
 import useAppStore from "../store/useAppStore";
 
@@ -52,6 +56,22 @@ function TestDrives() {
       return initialBookings;
     }
   });
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [savedFiltersOpen, setSavedFiltersOpen] = useState(false);
+  const [savedFiltersSaveMode, setSavedFiltersSaveMode] = useState(false);
+  const savedBtnRef = useRef();
+
+  useEffect(() => {
+    const openId = location.state?.openRecordId;
+    if (openId) {
+      const booking = bookings.find((b) => b.id === openId);
+      if (booking) setViewBooking(booking);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, bookings]);
 
   // Search + filters
   const [search, setSearch] = useState("");
@@ -158,11 +178,6 @@ function TestDrives() {
 
   const pageData = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
-
-  const { setTestDriveCount } = useAppStore();
-  useEffect(() => {
-    setTestDriveCount(bookings.legth);
-  }, [bookings, setTestDriveCount]);
 
   // Handlers
   const handleSort = useCallback((field) => {
@@ -404,6 +419,34 @@ function TestDrives() {
         }}
         view={view}
         onViewChange={setView}
+      />
+
+      <FilterChipRow
+        activeFilters={activeFilters}
+        onFiltersChange={(f) => {
+          setActiveFilters(f);
+          setPage(1);
+        }}
+        onClearAll={handleReset}
+        config={TESTDRIVE_FILTER_CONFIG}
+        onSaveClick={() => {
+          setSavedFiltersSaveMode(true);
+          setSavedFiltersOpen(true);
+        }}
+      />
+
+      <SavedFiltersDropdown
+        isOpen={savedFiltersOpen}
+        onClose={() => setSavedFiltersOpen(false)}
+        anchorRef={savedBtnRef}
+        storageKey={TESTDRIVE_FILTER_CONFIG.storageKey}
+        currentFilters={activeFilters}
+        onApply={(f) => {
+          setActiveFilters(f);
+          setPage(1);
+        }}
+        saveMode={savedFiltersSaveMode}
+        onSaveComplete={() => setSavedFiltersOpen(false)}
       />
 
       {/* ── Table or Calendar based on view ── */}

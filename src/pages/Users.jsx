@@ -1,7 +1,8 @@
 // src/pages/Users.jsx
 // Identical architecture to Customers.jsx
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { notify } from "../utils/notificationUtils";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import {
@@ -18,6 +19,9 @@ import UserTable from "../components/users/UserTable";
 import UserFilterDrawer from "../components/users/UserFilterDrawer";
 import UserFormPage from "../components/users/UserFormPage";
 import UserDetailDrawer from "../components/users/UserDetailDrawer";
+import SavedFiltersDropdown from "../components/ui/SavedFilterDropdown";
+import FilterChipRow from "../components/ui/FilterChipRow";
+import { USER_FILTER_CONFIG } from "../utils/filterConfig";
 import apexToast from "../utils/toast";
 
 const PER_PAGE = 10;
@@ -34,6 +38,22 @@ function Users() {
       return initialUsers;
     }
   });
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [savedFiltersOpen, setSavedFiltersOpen] = useState(false);
+  const [savedFiltersSaveMode, setSavedFiltersSaveMode] = useState(false);
+  const savedBtnRef = useRef();
+
+  useEffect(() => {
+    const openId = location.state?.openRecordId;
+    if (openId) {
+      const user = users.find((u) => u.id === openId);
+      if (user) openView(user);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, users]);
 
   // ── Roles — read live, written by Settings → User Management ──────────────
   const [roles, setRoles] = useState(() => {
@@ -331,6 +351,34 @@ function Users() {
           setEditUser(null);
           setFormOpen(true);
         }}
+      />
+
+      <FilterChipRow
+        activeFilters={activeFilters}
+        onFiltersChange={(f) => {
+          setActiveFilters(f);
+          setPage(1);
+        }}
+        onClearAll={handleReset}
+        config={USER_FILTER_CONFIG}
+        onSaveClick={() => {
+          setSavedFiltersSaveMode(true);
+          setSavedFiltersOpen(true);
+        }}
+      />
+
+      <SavedFiltersDropdown
+        isOpen={savedFiltersOpen}
+        onClose={() => setSavedFiltersOpen(false)}
+        anchorRef={savedBtnRef}
+        storageKey={USER_FILTER_CONFIG.storageKey}
+        currentFilters={activeFilters}
+        onApply={(f) => {
+          setActiveFilters(f);
+          setPage(1);
+        }}
+        saveMode={savedFiltersSaveMode}
+        onSaveComplete={() => setSavedFiltersOpen(false)}
       />
 
       <UserTable

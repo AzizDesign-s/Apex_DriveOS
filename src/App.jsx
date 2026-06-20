@@ -9,22 +9,25 @@ import AppLayout from "./components/layout/AppLayout";
 import SplashScreen from "./components/ui/SplashScreen";
 import { useState } from "react";
 import ToastConfig from "./components/ui/ToastConfig";
+import RouteSkeletonFallback from "./components/layout/RouteSkeletonFallback";
 
 // ── Page imports ──────────────────────────────────────────────────────────────
 // Not lazy-loaded yet (Phase 3 will evaluate lazy loading per route)
 // All imported directly for Sprint 1.1 stability
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Inventory from "./pages/Inventory";
-import Customers from "./pages/Customers";
-import TestDrives from "./pages/TestDrives";
-import Invoices from "./pages/Invoices";
+
 import Analytics from "./pages/Analytics";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 
-import Users from "./pages/Users";
 import Reports from "./pages/Reports";
+
+const Inventory = lazy(() => import("./pages/Inventory"));
+const Customers = lazy(() => import("./pages/Customers"));
+const Users = lazy(() => import("./pages/Users"));
+const Invoices = lazy(() => import("./pages/Invoices"));
+const TestDrives = lazy(() => import("./pages/TestDrives"));
 
 // ── Auth guards ───────────────────────────────────────────────────────────────
 function ProtectedRoute({ children }) {
@@ -39,24 +42,24 @@ function PublicRoute({ children }) {
 
 // ── Loading fallback ──────────────────────────────────────────────────────────
 // BUG-060 FIX: shown while any lazy component loads or Suspense boundary catches
-function LoadingFallback() {
-  return (
-    <div className="fixed inset-0 bg-base flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div
-          className="w-10 h-10 animate-spin"
-          style={{
-            background: "linear-gradient(135deg,#B8931F,#D4AF37,#E8C84A)",
-            clipPath: "polygon(50% 0%,100% 50%,50% 100%,0% 50%)",
-          }}
-        />
-        <p className="text-[10px] text-text-subtle tracking-[0.3em] uppercase font-semibold">
-          Loading...
-        </p>
-      </div>
-    </div>
-  );
-}
+// function LoadingFallback() {
+//   return (
+//     <div className="fixed inset-0 bg-base flex items-center justify-center">
+//       <div className="flex flex-col items-center gap-4">
+//         <div
+//           className="w-10 h-10 animate-spin"
+//           style={{
+//             background: "linear-gradient(135deg,#B8931F,#D4AF37,#E8C84A)",
+//             clipPath: "polygon(50% 0%,100% 50%,50% 100%,0% 50%)",
+//           }}
+//         />
+//         <p className="text-[10px] text-text-subtle tracking-[0.3em] uppercase font-semibold">
+//           Loading...
+//         </p>
+//       </div>
+//     </div>
+//   );
+// }
 
 // ── App ───────────────────────────────────────────────────────────────────────
 function App() {
@@ -77,7 +80,7 @@ function App() {
         <TooltipProvider>
           <ToastConfig />
           {/* BUG-060 FIX: Suspense boundary prevents full crash */}
-          <Suspense fallback={<LoadingFallback />}>
+          <Suspense fallback={<RouteSkeletonFallback />}>
             <Routes>
               {/* ── Public routes ── */}
               <Route

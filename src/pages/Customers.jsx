@@ -1,6 +1,8 @@
 // src/pages/Customers.jsx
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
 import { notify } from "../utils/notificationUtils";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import {
@@ -15,6 +17,9 @@ import CustomerTable from "../components/customers/CustomerTable";
 import CustomerFilterDrawer from "../components/customers/CustomerFilterDrawer";
 import CustomerFormPage from "../components/customers/CustomerFormPage";
 import CustomerDetailDrawer from "../components/customers/CustomerDetailDrawer";
+import SavedFiltersDropdown from "../components/ui/SavedFilterDropdown";
+import FilterChipRow from "../components/ui/FilterChipRow";
+import { CUSTOMER_FILTER_CONFIG } from "../utils/filterConfig";
 import apexToast from "../utils/toast";
 
 const PER_PAGE = 10;
@@ -31,6 +36,22 @@ function Customers() {
       return initialCustomers;
     }
   });
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [savedFiltersOpen, setSavedFiltersOpen] = useState(false);
+  const [savedFiltersSaveMode, setSavedFiltersSaveMode] = useState(false);
+  const savedBtnRef = useRef();
+
+  useEffect(() => {
+    const openId = location.state?.openRecordId;
+    if (openId) {
+      const customer = customers.find((c) => c.id === openId);
+      if (customer) openView(customer); // reuses existing openView (sets _displayIndex too)
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, customers]);
 
   // ── Search + filters ──────────────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -308,6 +329,34 @@ function Customers() {
           setEditCustomer(null);
           setFormOpen(true);
         }}
+      />
+
+      <FilterChipRow
+        activeFilters={activeFilters}
+        onFiltersChange={(f) => {
+          setActiveFilters(f);
+          setPage(1);
+        }}
+        onClearAll={handleReset}
+        config={CUSTOMER_FILTER_CONFIG}
+        onSaveClick={() => {
+          setSavedFiltersSaveMode(true);
+          setSavedFiltersOpen(true);
+        }}
+      />
+
+      <SavedFiltersDropdown
+        isOpen={savedFiltersOpen}
+        onClose={() => setSavedFiltersOpen(false)}
+        anchorRef={savedBtnRef}
+        storageKey={CUSTOMER_FILTER_CONFIG.storageKey}
+        currentFilters={activeFilters}
+        onApply={(f) => {
+          setActiveFilters(f);
+          setPage(1);
+        }}
+        saveMode={savedFiltersSaveMode}
+        onSaveComplete={() => setSavedFiltersOpen(false)}
       />
 
       <CustomerTable

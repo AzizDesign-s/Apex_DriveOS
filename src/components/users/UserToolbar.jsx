@@ -1,7 +1,7 @@
 // src/components/users/UserToolbar.jsx
 // Same pattern as CustomerToolbar.jsx — mobile search overlay, bulk bar, column manager, export
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -14,10 +14,13 @@ import {
   Trash2,
   Tag,
   X,
+  Bookmark,
 } from "lucide-react";
 import { Button } from "../ui";
 import MoreMenu from "../ui/MoreMenu";
 import ColumnManager from "../ui/ColumnManager";
+import SavedFiltersDropdown from "../ui/SavedFilterDropdown";
+import { INVENTORY_FILTER_CONFIG } from "../../utils/filterConfig";
 import clsx from "clsx";
 
 function UserToolbar({
@@ -36,9 +39,15 @@ function UserToolbar({
   onRefresh,
   onExport,
   onAddUser,
+  activeFilters,
+  onFiltersChange,
 }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const hasSelection = selected?.size > 0;
+
+  const [savedOpen, setSavedOpen] = useState(false);
+  const [saveMode, setSaveMode] = useState(false);
+  const savedBtnRef = useRef();
 
   return (
     <div className="flex flex-col gap-2">
@@ -158,6 +167,32 @@ function UserToolbar({
             </span>
           )}
         </Button>
+
+        <div className="relative">
+          <button
+            ref={savedBtnRef}
+            onClick={() => {
+              setSaveMode(false);
+              setSavedOpen((p) => !p);
+            }}
+            className="w-8 h-8 rounded-xl border border-border flex items-center justify-center
+               text-text-muted hover:text-gold hover:border-gold/30 transition-all"
+            title="Saved filters"
+            aria-label="Saved filters"
+          >
+            <Bookmark size={14} />
+          </button>
+          <SavedFiltersDropdown
+            isOpen={savedOpen}
+            onClose={() => setSavedOpen(false)}
+            anchorRef={savedBtnRef}
+            storageKey={INVENTORY_FILTER_CONFIG.storageKey}
+            currentFilters={activeFilters}
+            onApply={onFiltersChange}
+            saveMode={saveMode}
+            onSaveComplete={() => setSavedOpen(false)}
+          />
+        </div>
 
         <div className="relative">
           <Button
