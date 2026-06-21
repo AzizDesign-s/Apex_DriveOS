@@ -257,11 +257,11 @@ function Sidebar({ isMobile = false }) {
         <div
           className={clsx(
             "flex items-center  flex-shrink-0 transition-all duration-300",
-            sidebarOpen ? "w-12 h-12 justify-center" : "w-8 h-8 justify-start",
+            sidebarOpen ? "w-8 h-8 justify-center" : "w-8 h-8 justify-start",
           )}
         >
           <BrandLogo
-            brand="product"
+            brand="product-current"
             variant="icon"
             className="w-full h-full object-contain"
           />

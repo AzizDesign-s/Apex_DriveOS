@@ -177,10 +177,7 @@ function UserTable({
   const navigate = useNavigate();
 
   // Helper to identify if a user is the system Admin
-  const isAdminUser = (user, roles) => {
-    const role = roles.find((r) => r.id === Number(user.roleId));
-    return role?.name === "Admin" && user.id === 1; // id 1 = seeded primary admin
-  };
+  const isAdminUser = (user) => user.isAdmin === true;
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col flex-1 min-h-0">
@@ -353,7 +350,7 @@ function UserTable({
                       className="px-4 py-3"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {isAdminUser(user, roles) ? (
+                      {isAdminUser(user) ? (
                         <div className="flex items-center justify-end gap-1.5">
                           <span
                             className="flex items-center gap-1 text-[10px] text-text-subtle px-2 py-1

@@ -1,4 +1,8 @@
 // src/components/settings/AppearanceSettings.jsx
+// Sprint 2.1 bugfix: removed the dead/duplicate first Accent Color block
+// (used local useState, c.hex/c.default which don't exist on
+// ACCENT_COLORS objects, and never called the real setAccentColor action).
+// Only the correctly-wired second block remains.
 
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -23,8 +27,6 @@ function SectionCard({ title, desc, children }) {
   );
 }
 
-// Accent colour options — gold is default, others are future
-
 const FONT_SIZES = ["Compact", "Default", "Comfortable"];
 
 const LANGUAGES = [
@@ -34,10 +36,11 @@ const LANGUAGES = [
 
 function AppearanceSettings() {
   const { theme, toggleTheme } = useAppStore();
-  const [accent, setAccent] = useState("gold");
   const [fontSize, setFontSize] = useState("Default");
   const [language, setLanguage] = useState("en");
 
+  // Sprint 2.1 Message 6 — the ONLY accent color state, backed by the
+  // real Zustand store and persisted
   const accentColor = useAppStore((s) => s.accentColor);
   const setAccentColor = useAppStore((s) => s.setAccentColor);
 
@@ -49,7 +52,12 @@ function AppearanceSettings() {
   };
 
   const THEMES = [
-    { id: "dark", label: "Dark", icon: Moon, desc: "Deep navy · Gold accents" },
+    {
+      id: "dark",
+      label: "Dark",
+      icon: Moon,
+      desc: "Deep navy · Premium accents",
+    },
     {
       id: "light",
       label: "Light",
@@ -74,22 +82,18 @@ function AppearanceSettings() {
       <SectionCard title="Theme" desc="Choose how Apex DriveOS looks for you">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           {THEMES.map((t) => {
-            // BUG-052 FIX: correct active state check
             const isActive = theme === t.id;
-
             return (
               <button
                 key={t.id}
                 onClick={() => {
                   if (t.id === "system") {
-                    // System: detect OS preference and apply
                     const prefersDark = window.matchMedia(
                       "(prefers-color-scheme: dark)",
                     ).matches;
                     const osTheme = prefersDark ? "dark" : "light";
                     if (theme !== osTheme) toggleTheme();
                   } else if (theme !== t.id) {
-                    // Only toggle if not already this theme
                     toggleTheme();
                   }
                 }}
@@ -130,49 +134,12 @@ function AppearanceSettings() {
         </div>
       </SectionCard>
 
-      {/* Accent Color */}
+      {/* Accent Color — single, correctly-wired block */}
       <SectionCard
         title="Accent Color"
         desc="Choose the primary accent color used across buttons, charts, and highlights"
       >
-        <div className="flex items-center gap-3 flex-wrap">
-          {ACCENT_COLORS.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => c.default && setAccent(c.id)}
-              className={clsx(
-                "flex flex-col items-center gap-2 p-3 rounded-xl border transition-all",
-                !c.default && "opacity-40 cursor-not-allowed",
-                accent === c.id
-                  ? "border-gold/50 bg-gold/8"
-                  : "border-border hover:border-border/80",
-              )}
-              title={c.default ? c.label : `${c.label} — Coming soon`}
-              disabled={!c.default}
-            >
-              <div
-                className="w-8 h-8 rounded-xl border border-white/10 shadow-sm"
-                style={{ background: c.hex }}
-              />
-              <p className="text-[9px] text-text-subtle font-semibold">
-                {c.label}
-              </p>
-              {accent === c.id && <Check size={10} className="text-gold" />}
-            </button>
-          ))}
-        </div>
-      </SectionCard>
-
-      <div className="bg-card border border-border rounded-2xl p-5">
-        <h3 className="text-sm font-extrabold text-text-primary mb-1">
-          Accent Color
-        </h3>
-        <p className="text-[11px] text-text-subtle mb-5">
-          Choose the primary accent color used across buttons, charts, and
-          highlights.
-        </p>
-
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-5 gap-3 ">
           {ACCENT_COLORS.map((accent) => {
             const isActive = accentColor === accent.id;
             return (
@@ -219,7 +186,7 @@ function AppearanceSettings() {
             );
           })}
         </div>
-      </div>
+      </SectionCard>
 
       {/* Font Size */}
       <SectionCard

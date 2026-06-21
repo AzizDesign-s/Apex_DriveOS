@@ -105,10 +105,7 @@ function UserDetailDrawer({
     (m) => !m.disabled && role?.permissions?.[m.id]?.view,
   );
 
-  const isAdminUser = (user, roles) => {
-    const role = roles.find((r) => r.id === Number(user.roleId));
-    return role?.name === "Admin" && user.id === 1; // id 1 = seeded primary admin
-  };
+  const isAdminUser = (user) => user.isAdmin === true;
 
   return (
     <AnimatePresence>
@@ -245,7 +242,7 @@ function UserDetailDrawer({
               </div>
             </div>
 
-            {isAdminUser(user, roles) ? (
+            {isAdminUser(user) ? (
               <div className="flex gap-2 px-5 py-4 border-t border-border flex-shrink-0">
                 <Button variant="ghost" size="sm" onClick={onClose} fullWidth>
                   <X size={13} /> Close
