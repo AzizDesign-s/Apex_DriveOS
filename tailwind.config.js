@@ -21,13 +21,13 @@ export default {
 
         // Gold stays the same in both themes
         gold: {
-          DEFAULT: "#D4AF37",
-          light: "#E8C84A",
-          dark: "#B8931F",
+          DEFAULT: "#EBB811",
+          light: "#F9D855",
+          dark: "#B18F22",
           muted: "rgba(212,175,55,0.12)",
         },
         sky: {
-          accent: "#38BDF8",
+          accent: "#60A5FA",
           muted: "rgba(56,189,248,0.12)",
         },
       },

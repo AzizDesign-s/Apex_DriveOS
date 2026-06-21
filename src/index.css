@@ -13,28 +13,28 @@
 
 :root {
   /* Dark — Deep Navy + Gold */
-  --color-base: #080c14;
-  --color-card: #0d1526;
-  --color-card-hover: #112040;
-  --color-border: #1b2e4a;
-  --color-text-primary: #f0f4ff;
-  --color-text-muted: #8ba0c0;
+  --color-base: #000614;
+  --color-card: #050d24;
+  --color-card-hover: #172554;
+  --color-border: #0f1d3d;
+  --color-text-primary: #e6ecf3;
+  --color-text-muted: #93c5fd;
   --color-text-subtle: #4a6080;
 
-  --scrollbar-track: #0d1526;
-  --scrollbar-thumb: rgba(212, 175, 55, 0.3);
+  --scrollbar-track: #050b15;
+  --scrollbar-thumb: #525417;
 
   /* RGB variants for opacity modifiers */
-  --color-card-rgb: 13, 21, 38;
-  --color-base-rgb: 8, 12, 20;
+  --color-card-rgb: #0b1120;
+  --color-base-rgb: #050b15;
 }
 
 html:not(.dark) {
-  --color-base: #f0f4f8;
+  --color-base: #f5f7fa;
   --color-card: #ffffff;
-  --color-card-hover: #f8fafc;
+  --color-card-hover: #f4f6fd;
   --color-border: #e2e8f0;
-  --color-text-primary: #0f172a;
+  --color-text-primary: #000614;
   --color-text-muted: #475569;
   --color-text-subtle: #94a3b8;
   --scrollbar-track: #e2e8f0;
@@ -79,7 +79,7 @@ html:not(.dark) {
     border-radius: 2px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #d4af37;
+    background: #f9d855;
   }
 }
 
@@ -104,17 +104,6 @@ html:not(.dark) {
   /* Gold gradient text */
   .text-gold-gradient {
     @apply bg-gradient-to-r from-gold-light via-gold to-gold-dark bg-clip-text text-transparent;
-  }
-
-  /* Diamond logo shape */
-  .splash-diamond {
-    background: linear-gradient(135deg, #b8931f, #d4af37, #e8c84a);
-    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #0b0f14;
-    font-weight: 900;
   }
 
   /* Premium button */

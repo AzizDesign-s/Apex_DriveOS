@@ -252,25 +252,40 @@ function Sidebar({ isMobile = false }) {
   const SidebarContent = () => (
     <>
       {/* ── Logo ── */}
-      <div className="flex items-center gap-4 sm:px-4 px-1 py-5">
-        <BrandLogo
-          brand="product"
-          variant="icon"
-          className="w-12 h-auto flex-shrink-0 object-contain "
-        />
+      <div className="flex items-center gap-4 px-1  py-5">
+        <div
+          className={clsx(
+            "flex items-center  flex-shrink-0 transition-all duration-300",
+            sidebarOpen ? "w-12 h-12 justify-center" : "w-8 h-8 justify-start",
+          )}
+        >
+          <BrandLogo
+            brand="product"
+            variant="icon"
+            className="w-full h-full object-contain"
+          />
+        </div>
 
-        {sidebarOpen && (
-          <div className="min-w-0">
-            <p className="text-sm font-extrabold text-text-primary leading-none truncate">
-              {company.name}
-            </p>
-            <p className="text-[9px] text-text-subtle tracking-[0.2em] uppercase mt-1 truncate">
-              {company.isCustomBranding
-                ? company.tagline || "Luxury Automotive"
-                : "Luxury Automotive"}
-            </p>
-          </div>
-        )}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden whitespace-nowrap"
+            >
+              <p className="text-sm font-black tracking-[0.1em] text-gold-gradient">
+                {company.name}
+              </p>
+              <p className="text-[10px] tracking-[0.1em] text-text-subtle uppercase mt-0.5">
+                {company.isCustomBranding
+                  ? company.tagline || "Luxury Automotive"
+                  : "Luxury Automotive"}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ── Nav Sections ── */}
@@ -550,7 +565,7 @@ function Sidebar({ isMobile = false }) {
         onClick={toggleSidebar}
         className="absolute top-1/2 -right-3 -translate-y-1/2
                    w-6 h-6 rounded-full bg-card border border-border
-                   flex items-center justify-center
+                   flex items-center justify-start
                    text-text-muted hover:text-gold hover:border-gold/40
                    transition-colors duration-200 z-30 shadow-card"
         // Rotate the arrow when toggling

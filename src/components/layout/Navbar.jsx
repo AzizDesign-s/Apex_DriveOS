@@ -149,7 +149,7 @@ function Navbar() {
         className="h-16 mx-3 mt-3 flex-shrink-0
                       bg-card/85 backdrop-blur-[20px]
                       border border-border rounded-2xl
-                      flex items-center px-5 gap-4
+                      flex items-center px-4 gap-4
                       shadow-card z-10"
       >
         {/* Mobile hamburger */}

@@ -50,7 +50,7 @@ const SplashScreen = ({ onComplete }) => {
 
         {/* ── Tagline ── */}
         <motion.p
-          className="text-[10px] tracking-[0.3em] text-text-subtle uppercase"
+          className="text-[10px] tracking-[0.3em] text-text-subtle uppercase mt-2.5"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.5 }}
