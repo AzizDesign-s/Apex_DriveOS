@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import BrandLogo from "../branding/BrandLogo";
 
 const SplashScreen = ({ onComplete }) => {
   return (
@@ -25,31 +26,27 @@ const SplashScreen = ({ onComplete }) => {
         {/*  clip-path: polygon turns a square div into a diamond shape      */}
         {/*  We use a CSS utility class for this — defined in index.css below */}
         <motion.div
-          className="splash-diamond"
-          // Pulsing glow animation on the diamond
-          animate={{
-            boxShadow: [
-              "0 0 0px rgba(212,175,55,0)",
-              "0 0 40px rgba(212,175,55,0.5)",
-              "0 0 0px rgba(212,175,55,0)",
-            ],
-          }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-col items-center"
         >
-          <span className="font-black text-base text-base tracking-widest">
-            GT
-          </span>
+          <BrandLogo
+            brand="product"
+            variant="full"
+            className="h-14 sm:h-16 object-contain"
+          />
         </motion.div>
 
         {/* ── Brand Name ── */}
-        <motion.h1
+        {/* <motion.h1
           className="text-3xl font-black tracking-[0.3em] text-gold-gradient uppercase"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          APEX GT
-        </motion.h1>
+          Apex DriveOS
+        </motion.h1> */}
 
         {/* ── Tagline ── */}
         <motion.p

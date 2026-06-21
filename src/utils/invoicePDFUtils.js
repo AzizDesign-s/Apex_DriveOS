@@ -7,7 +7,11 @@
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { DEFAULT_COMPANY_INFO } from "../data/mockData";
+import useAppStore from "../store/useAppStore";
 import { calcInvoice } from "../data/mockData";
+
+const company = useAppStore.getState().company;
 
 // ── Color palette ─────────────────────────────────────────────────────────────
 const C = {
@@ -126,7 +130,7 @@ export function generateInvoicePDF(invoice) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(...C.gold);
-  doc.text("APEX GT", PAD + 16, 13);
+  doc.text(company.name, PAD + 16, 13);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
@@ -161,7 +165,7 @@ export function generateInvoicePDF(invoice) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...C.text);
-  doc.text("APEX GT Cars LLC", PAD, y + 5);
+  doc.text(company.name.name, PAD, y + 5);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
@@ -364,7 +368,8 @@ export function generateInvoicePDF(invoice) {
   doc.setFontSize(7);
   doc.setTextColor(...C.subtle);
   doc.text(
-    "APEX GT Cars LLC  ·  apexgt.ae  ·  Dubai, UAE",
+    company.name,
+    "·  apexdriveos.ae  ·  Dubai, UAE",
     W - PAD,
     footerY + 13,
     { align: "right" },
@@ -381,5 +386,5 @@ export function generateInvoicePDF(invoice) {
   );
 
   // ── SAVE ───────────────────────────────────────────────────────────────────
-  doc.save(`${invoice.invoiceId}-APEX-GT.pdf`);
+  doc.save(`${invoice.invoiceId}-${DEFAULT_COMPANY_INFO.name}.pdf`);
 }

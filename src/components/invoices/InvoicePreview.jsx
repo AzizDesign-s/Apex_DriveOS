@@ -78,7 +78,7 @@ function InvoiceTemplate({ invoice }) {
           </div>
           <div>
             <p className="text-sm font-black tracking-[0.25em] text-[#D4AF37]">
-              APEX GT
+              Apex DriveOS
             </p>
             <p className="text-[9px] tracking-[0.2em] text-[#64748B]">
               LUXURY AUTOMOTIVE · DUBAI
@@ -133,7 +133,9 @@ function InvoiceTemplate({ invoice }) {
           <p className="text-[9px] font-bold tracking-[0.2em] text-[#94A3B8] uppercase mb-2">
             From
           </p>
-          <p className="text-sm font-bold text-[#0F172A]">APEX GT Cars LLC</p>
+          <p className="text-sm font-bold text-[#0F172A]">
+            Apex DriveOS Cars LLC
+          </p>
           <p className="text-[10px] text-[#64748B] leading-relaxed mt-1">
             Sheikh Zayed Road, Dubai
             <br />
@@ -316,7 +318,7 @@ function InvoiceTemplate({ invoice }) {
             Thank you for your business
           </p>
           <p style={{ fontSize: "9px", color: "#94A3B8", marginTop: "2px" }}>
-            APEX GT Cars LLC · apexgt.ae
+            Apex DriveOS Cars LLC · apexgt.ae
           </p>
         </div>
       </div>

@@ -179,7 +179,7 @@ function CustomerReportTab({ customers = [] }) {
         {/* Customer Distribution by Source — new */}
         <ReportSection
           title="Distribution by Source"
-          sub="Where customers are discovering APEX GT"
+          sub="Where customers are discovering Apex DriveOS"
         >
           <DistributionDonut data={distribution.bySource} total={kpis.total} />
         </ReportSection>

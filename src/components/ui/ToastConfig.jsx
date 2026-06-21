@@ -2,7 +2,7 @@
 //
 // ─── WHY THIS FILE EXISTS ─────────────────────────────────────────────────────
 // react-hot-toast lets us override the default white toast with our own styles.
-// We create a <Toaster> component here with APEX GT luxury dark styling.
+// We create a <Toaster> component here with Apex DriveOS luxury dark styling.
 // This file is imported ONCE in App.jsx so toasts work everywhere in the app.
 // ─────────────────────────────────────────────────────────────────────────────
 

@@ -162,7 +162,7 @@ function InvoiceBottomSheet({
                             letterSpacing: "2px",
                           }}
                         >
-                          APEX GT
+                          Apex DriveOS
                         </p>
                         <p
                           style={{

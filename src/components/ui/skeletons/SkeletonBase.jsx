@@ -11,7 +11,7 @@ function SkeletonBase({ className = "", rounded = "rounded-lg" }) {
   return (
     <div
       className={clsx(
-        "relative overflow-hidden bg-base border border-border/40",
+        "relative overflow-hidden bg-base border border-border",
         rounded,
         className,
       )}

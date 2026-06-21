@@ -15,6 +15,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import BrandLogo from "../branding/BrandLogo";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadNotifications } from "../../utils/notificationUtils";
 import Tooltip from "../ui/Tooltip";
@@ -76,6 +77,8 @@ function Sidebar({ isMobile = false }) {
 
     user,
   } = useAppStore();
+
+  const company = useAppStore((s) => s.company);
 
   // On mobile, sidebar is always 'open' width — it's a full drawer
   // On desktop, width is controlled by sidebarOpen state
@@ -249,33 +252,25 @@ function Sidebar({ isMobile = false }) {
   const SidebarContent = () => (
     <>
       {/* ── Logo ── */}
-      <div className="flex items-center gap-3 px-2 pb-5 mb-2 border-b border-border overflow-hidden">
-        {/* Diamond logo mark */}
-        <div className="splash-diamond w-7 h-7 flex-shrink-0 flex items-center justify-center">
-          <span className="text-[8px] font-black text-base tracking-wider">
-            GT
-          </span>
-        </div>
+      <div className="flex items-center gap-4 sm:px-4 px-1 py-5">
+        <BrandLogo
+          brand="product"
+          variant="icon"
+          className="w-12 h-auto flex-shrink-0 object-contain "
+        />
 
-        {/* Brand name — hidden when sidebar collapsed */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden whitespace-nowrap"
-            >
-              <p className="text-sm font-black tracking-[0.2em] text-gold-gradient">
-                APEX GT
-              </p>
-              <p className="text-[9px] tracking-[0.2em] text-text-subtle uppercase mt-0.5">
-                Management
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {sidebarOpen && (
+          <div className="min-w-0">
+            <p className="text-sm font-extrabold text-text-primary leading-none truncate">
+              {company.name}
+            </p>
+            <p className="text-[9px] text-text-subtle tracking-[0.2em] uppercase mt-1 truncate">
+              {company.isCustomBranding
+                ? company.tagline || "Luxury Automotive"
+                : "Luxury Automotive"}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* ── Nav Sections ── */}

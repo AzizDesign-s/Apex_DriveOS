@@ -3,6 +3,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { DEFAULT_COMPANY_INFO } from "../data/mockData";
 
 // ── Theme helper ──────────────────────────────────────────────────────────────
 const applyTheme = (theme) => {
@@ -58,6 +59,38 @@ const useAppStore = create(
       toggleSidebar: () =>
         set((state) => ({ sidebarOpen: !state.sidebarOpen })),
       setSidebarOpen: (val) => set({ sidebarOpen: val }),
+
+      company: {
+        name: DEFAULT_COMPANY_INFO.name,
+        tagline: DEFAULT_COMPANY_INFO.tagline,
+        logo: null, // null = use default BrandLogo asset
+        isCustomBranding: false, // false = showing Apex DriveOS default
+      },
+
+      setCompany: (companyData) =>
+        set((state) => ({
+          company: {
+            ...state.company,
+            ...companyData,
+            // Flips true the moment EITHER name or logo diverges from default —
+            // this is what BrandLogo's 'product-current' check reads
+            isCustomBranding:
+              (companyData.name &&
+                companyData.name !== DEFAULT_COMPANY_INFO.name) ||
+              !!companyData.logo ||
+              state.company.isCustomBranding,
+          },
+        })),
+
+      resetCompanyToDefault: () =>
+        set({
+          company: {
+            name: DEFAULT_COMPANY_INFO.name,
+            tagline: DEFAULT_COMPANY_INFO.tagline,
+            logo: null,
+            isCustomBranding: false,
+          },
+        }),
 
       // ── Theme ────────────────────────────────────────────────────────────────
       theme: "dark",

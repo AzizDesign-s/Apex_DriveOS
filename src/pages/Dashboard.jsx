@@ -600,7 +600,7 @@ function Dashboard() {
             {greeting}, {user?.name?.split(" ")[0] || "Admin"} 👋
           </h1>
           <p className="text-[12px] text-text-subtle mt-1 tracking-wide">
-            Here's what's happening at APEX GT today
+            Here's what's happening at Apex DriveOS today
           </p>
         </div>
 

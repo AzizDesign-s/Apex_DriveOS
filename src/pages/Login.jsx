@@ -14,7 +14,7 @@ import bmw from "../assets/bmw.png";
 import useAppStore from "../store/useAppStore";
 import SplashScreen from "../components/ui/SplashScreen";
 import apexToast from "../utils/toast";
-
+import BrandLogo from "../components/branding/BrandLogo";
 // ─── DUMMY CREDENTIALS ───────────────────────────────────────────────────────
 // In a real app this would be an API call. For portfolio, hardcoded is fine.
 const ADMIN_EMAIL = "admin@apexgt.ae";
@@ -213,19 +213,12 @@ const Login = () => {
 
           {/* Brand info — bottom left */}
           <div className="absolute bottom-10 left-10 right-10">
-            <div className="flex items-center gap-4 mb-4">
-              {/* Diamond logo */}
-              <div className="splash-diamond w-9 h-9 flex items-center justify-center">
-                <span className="text-[10px] font-black text-base">GT</span>
-              </div>
-              <div>
-                <h2 className="text-xl font-black tracking-[0.25em] text-gold-gradient">
-                  APEX GT
-                </h2>
-                <p className="text-[9px] tracking-[0.3em] text-text-subtle uppercase">
-                  Luxury Cars · Dubai
-                </p>
-              </div>
+            <div className="flex flex-col items-start mb-8">
+              <BrandLogo
+                brand="product"
+                variant="full"
+                className="h-12 sm:h-14 object-contain mb-2"
+              />
             </div>
             <div className="w-14 h-px bg-gradient-to-r from-gold to-transparent mb-4" />
             <p className="text-sm text-text-muted leading-relaxed">

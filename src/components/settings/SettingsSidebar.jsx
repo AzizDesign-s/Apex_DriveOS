@@ -139,7 +139,7 @@ export function DesktopSidebar({ active, onChange }) {
 
       {/* Version */}
       <div className="px-4 py-3 border-t border-border">
-        <p className="text-[9px] text-text-subtle">APEX GT Dashboard</p>
+        <p className="text-[9px] text-text-subtle">Apex DriveOS Dashboard</p>
         <p className="text-[9px] text-text-subtle/50 mt-0.5">
           Sprint 1 · v1.0.0
         </p>

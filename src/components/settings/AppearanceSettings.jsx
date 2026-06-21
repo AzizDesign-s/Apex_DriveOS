@@ -74,7 +74,7 @@ function AppearanceSettings() {
       transition={{ duration: 0.22 }}
     >
       {/* Theme */}
-      <SectionCard title="Theme" desc="Choose how APEX GT looks for you">
+      <SectionCard title="Theme" desc="Choose how Apex DriveOS looks for you">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           {THEMES.map((t) => {
             // BUG-052 FIX: correct active state check

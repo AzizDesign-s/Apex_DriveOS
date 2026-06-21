@@ -38,7 +38,7 @@ export function exportToExcel(data, columns, filename = "export") {
 export function exportToPDF(
   data,
   columns,
-  title = "APEX GT",
+  title = "Apex DriveOS",
   filename = "export",
 ) {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
@@ -49,7 +49,7 @@ export function exportToPDF(
   doc.setTextColor(212, 175, 55);
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("APEX GT", 14, 13);
+  doc.text("Apex DriveOS", 14, 13);
   doc.setTextColor(148, 163, 184);
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -106,7 +106,7 @@ export function exportToPDF(
     doc.setFontSize(7);
     doc.setTextColor(148, 163, 184);
     doc.text(
-      `APEX GT · Confidential · Page ${i} of ${pageCount}`,
+      `Apex DriveOS · Confidential · Page ${i} of ${pageCount}`,
       doc.internal.pageSize.width / 2,
       doc.internal.pageSize.height - 5,
       { align: "center" },

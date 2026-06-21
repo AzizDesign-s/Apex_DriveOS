@@ -22,7 +22,7 @@ function TableSkeleton({ rows = 6, columns = 5, showAvatar = true }) {
         {Array.from({ length: rows }).map((_, r) => (
           <motion.div
             key={r}
-            className="flex items-center gap-3 px-4 py-3.5 border-b border-border/50 last:border-0"
+            className="flex items-center gap-3 px-4 py-3.5 border-b border-border last:border-0"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: r * 0.04 }}

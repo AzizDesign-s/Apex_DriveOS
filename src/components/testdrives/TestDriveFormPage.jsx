@@ -63,7 +63,7 @@ const EMPTY = {
   date: "",
   time: "10:00 AM",
   duration: "45 minutes",
-  location: "APEX GT Showroom, Sheikh Zayed Road, Dubai",
+  location: "Apex DriveOS Showroom, Sheikh Zayed Road, Dubai",
   exec: "",
   source: "Walk-in",
   status: "pending",
@@ -385,7 +385,7 @@ function TestDriveFormPage({
                   <div className="sm:col-span-3 col-span-1">
                     <Field label="Location">
                       <Input
-                        placeholder="e.g. APEX GT Showroom, Sheikh Zayed Road, Dubai"
+                        placeholder="e.g. Apex DriveOS Showroom, Sheikh Zayed Road, Dubai"
                         value={form.location}
                         onChange={(e) => set("location", e.target.value)}
                       />

@@ -42,12 +42,14 @@ function Navbar() {
 
   const [searchOpen, setSearchOpen] = useState(false);
 
+  const company = useAppStore((s) => s.company);
+
   // BUG-002 FIX: Read from the same source as the Notifications page.
   // BUG-003 FIX: Track read state locally so bell clears when items are read.
   // Phase 2 will lift this into useNotificationStore.
   const [readIds, setReadIds] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-read-notif-ids");
+      const saved = localStorage.getItem("apex-driveos-read-notif-ids");
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch {
       return new Set();
@@ -57,7 +59,7 @@ function Navbar() {
   // Persist readIds whenever they change
   useEffect(() => {
     localStorage.setItem(
-      "apex-gt-read-notif-ids",
+      "apex-driveos-read-notif-ids",
       JSON.stringify([...readIds]),
     );
   }, [readIds]);
@@ -66,15 +68,15 @@ function Navbar() {
     const reload = () => setNotifItems(loadNotifications());
 
     // Custom event — same tab actions (add car, approve booking, etc.)
-    window.addEventListener("apex-gt-notifications-updated", reload);
+    window.addEventListener("apex-driveos-notifications-updated", reload);
 
     // Storage event — cross-tab sync (future)
     window.addEventListener("storage", (e) => {
-      if (e.key === "apex-gt-notifications") reload();
+      if (e.key === "apex-driveos-notifications") reload();
     });
 
     return () => {
-      window.removeEventListener("apex-gt-notifications-updated", reload);
+      window.removeEventListener("apex-driveos-notifications-updated", reload);
       window.removeEventListener("storage", reload);
     };
   }, []);
@@ -166,8 +168,8 @@ function Navbar() {
           <h1 className="text-base font-bold text-text-primary leading-none">
             {pageTitle}
           </h1>
-          <p className="text-[10px] text-text-subtle tracking-widest mt-1.5 uppercase">
-            APEX GT / {pageTitle}
+          <p className="text-[10px] text-text-subtle tracking-widest mt-0.5 uppercase">
+            {company.name} / {pageTitle}
           </p>
         </div>
 
