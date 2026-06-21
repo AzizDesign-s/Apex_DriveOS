@@ -1,9 +1,14 @@
 // src/store/useAppStore.js
-// Complete file — all fixes from Module 1, Module 9, Module 10 applied
+// Sprint 2.1 Message 6: adds accentColor state + applyAccentColor wiring.
+// Message 5's company state (already present in your file) is preserved
+// unchanged. FIX: company and accentColor are now correctly included in
+// partialize — previously company would have reset on every refresh
+// since it wasn't in the persisted whitelist.
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { DEFAULT_COMPANY_INFO } from "../data/mockData";
+import { applyAccentColor } from "../utils/accentColors";
 
 // ── Theme helper ──────────────────────────────────────────────────────────────
 const applyTheme = (theme) => {
@@ -25,7 +30,7 @@ const useAppStore = create(
       isAuthenticated: false,
       user: {
         name: "Admin User",
-        email: "admin@apexgt.ae",
+        email: "admin@apexdriveos.ae",
         role: "Super Admin",
         phone: "+971 50 000 0000",
         avatar: null,
@@ -36,7 +41,7 @@ const useAppStore = create(
           isAuthenticated: true,
           user: userData || {
             name: "Admin User",
-            email: "admin@apexgt.ae",
+            email: "admin@apexdriveos.ae",
             role: "Super Admin",
           },
         }),
@@ -60,6 +65,7 @@ const useAppStore = create(
         set((state) => ({ sidebarOpen: !state.sidebarOpen })),
       setSidebarOpen: (val) => set({ sidebarOpen: val }),
 
+      // ── Company branding (Sprint 2.1 Message 5) ──────────────────────────────
       company: {
         name: DEFAULT_COMPANY_INFO.name,
         tagline: DEFAULT_COMPANY_INFO.tagline,
@@ -101,12 +107,24 @@ const useAppStore = create(
           applyTheme(next);
           return { theme: next };
         }),
+
+      // ── Accent Color (Sprint 2.1 Message 6) ──────────────────────────────────
+      accentColor: "gold", // confirmed default per Sprint 2.1 brief
+
+      setAccentColor: (accentId) =>
+        set((state) => {
+          applyAccentColor(accentId); // apply immediately — same pattern
+          // as toggleTheme above
+          return { accentColor: accentId };
+        }),
     }),
     {
-      name: "apex-gt-store",
+      name: "apex-driveos-store",
 
       // BUG-061 FIX: version field — stale localStorage auto-migrates
-      version: 1,
+      // Sprint 2.1: bumped 1 → 2 to seed company + accentColor for any
+      // existing persisted state from before this sprint
+      version: 2,
       migrate: (persistedState, version) => {
         // Version 0 = old store without version field → reset to clean defaults
         if (version === 0) {
@@ -115,23 +133,43 @@ const useAppStore = create(
             user: null,
             sidebarOpen: true,
             theme: "dark",
+            company: {
+              name: DEFAULT_COMPANY_INFO.name,
+              tagline: DEFAULT_COMPANY_INFO.tagline,
+              logo: null,
+              isCustomBranding: false,
+            },
+            accentColor: "gold",
+          };
+        }
+        // Version 1 = had company already, but not accentColor yet
+        if (version === 1) {
+          return {
+            ...persistedState,
+            accentColor: "gold",
           };
         }
         return persistedState;
       },
 
-      // Only persist what matters — never persist derived/transient counts
+      // FIX: company and accentColor were missing from this whitelist —
+      // without being listed here, neither one actually survives a page
+      // refresh despite the state existing at runtime. Now both persist.
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         user: state.user, // includes avatar as data URL
         sidebarOpen: state.sidebarOpen,
         theme: state.theme,
+        company: state.company,
+        accentColor: state.accentColor,
       }),
     },
   ),
 );
 
-// Apply theme on initial load before React renders
+// Apply theme + accent color on initial load before React renders —
+// prevents a flash of default styling before saved preferences kick in
 applyTheme(useAppStore.getState().theme);
+applyAccentColor(useAppStore.getState().accentColor);
 
 export default useAppStore;

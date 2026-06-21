@@ -1527,7 +1527,7 @@ export const users = [
     id: 1,
     employeeId: "EMP-001",
     fullName: "Admin User",
-    email: "admin@apexgt.ae",
+    email: "admin@apexdriveos.ae",
     phone: "+971 50 000 0000",
     avatar: null,
     roleId: 1,
@@ -1566,7 +1566,7 @@ export const DEFAULT_COMPANY_INFO = {
   email: "hello@apexdriveos.com",
   logo: null, // null = use default BrandLogo asset, not a custom upload
   phone: "+971 4 000 0000",
-  website: "apexgt.ae",
+  website: "apexdrive.ae",
   address: "Sheikh Zayed Road",
   city: "Dubai",
   country: "United Arab Emirates",

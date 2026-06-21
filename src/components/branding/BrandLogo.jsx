@@ -22,6 +22,10 @@ import apexIconLight from "../../assets/branding/apex-driveos-icon-light.svg";
 import apexIconDark from "../../assets/branding/apex-driveos-icon-dark.svg";
 import apexFullLight from "../../assets/branding/apex-driveos-full-light.svg";
 import apexFullDark from "../../assets/branding/apex-driveos-full-dark.svg";
+import nexoraFullDark from "../../assets/branding/nexora-full-dark.svg";
+import nexoraFullLight from "../../assets/branding/nexora-full-light.svg";
+import nexoraIconLight from "../../assets/branding/nexora-icon-light.svg";
+import nexoraIconDark from "../../assets/branding/nexora-icon-dark.svg";
 
 const LOGO_MAP = {
   product: {
@@ -36,12 +40,12 @@ const LOGO_MAP = {
   },
   company: {
     icon: {
-      dark: "/assets/branding/nexora-icon-dark.svg",
-      light: "/assets/branding/nexora-icon-light.svg",
+      dark: nexoraIconDark,
+      light: nexoraIconLight,
     },
     full: {
-      dark: "/assets/branding/nexora-full-dark.svg",
-      light: "/assets/branding/nexora-full-light.svg",
+      dark: nexoraFullDark,
+      light: nexoraFullLight,
     },
   },
 };

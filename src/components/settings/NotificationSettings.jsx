@@ -194,7 +194,7 @@ function NotificationSettings() {
         </div>
       </SectionCard>
 
-      <Button variant="primary" size="sm" icon={Check} onClick={handleSave}>
+      <Button variant="primary" size="md" icon={Check} onClick={handleSave}>
         Save Notification Preferences
       </Button>
     </motion.div>

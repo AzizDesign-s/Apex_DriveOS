@@ -34,7 +34,7 @@ const SplashScreen = ({ onComplete }) => {
           <BrandLogo
             brand="product"
             variant="full"
-            className="h-14 sm:h-16 object-contain"
+            className="w-auto h-12 sm:h-16 object-contain"
           />
         </motion.div>
 

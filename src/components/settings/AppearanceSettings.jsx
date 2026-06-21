@@ -6,6 +6,7 @@ import { Check, Monitor, Sun, Moon } from "lucide-react";
 import { Button } from "../ui";
 import useAppStore from "../../store/useAppStore";
 import apexToast from "../../utils/toast";
+import { ACCENT_COLORS } from "../../utils/accentColors";
 import clsx from "clsx";
 
 function SectionCard({ title, desc, children }) {
@@ -23,13 +24,6 @@ function SectionCard({ title, desc, children }) {
 }
 
 // Accent colour options — gold is default, others are future
-const ACCENT_COLORS = [
-  { id: "gold", label: "APEX Gold", hex: "#D4AF37", default: true },
-  { id: "blue", label: "Dubai Blue", hex: "#38BDF8", default: false },
-  { id: "emerald", label: "Emerald", hex: "#10B981", default: false },
-  { id: "violet", label: "Violet", hex: "#A78BFA", default: false },
-  { id: "rose", label: "Rose", hex: "#FB7185", default: false },
-];
 
 const FONT_SIZES = ["Compact", "Default", "Comfortable"];
 
@@ -43,6 +37,9 @@ function AppearanceSettings() {
   const [accent, setAccent] = useState("gold");
   const [fontSize, setFontSize] = useState("Default");
   const [language, setLanguage] = useState("en");
+
+  const accentColor = useAppStore((s) => s.accentColor);
+  const setAccentColor = useAppStore((s) => s.setAccentColor);
 
   const handleSave = () => {
     apexToast.success(
@@ -136,7 +133,7 @@ function AppearanceSettings() {
       {/* Accent Color */}
       <SectionCard
         title="Accent Color"
-        desc="Gold is the default. Other accents coming in future sprints."
+        desc="Choose the primary accent color used across buttons, charts, and highlights"
       >
         <div className="flex items-center gap-3 flex-wrap">
           {ACCENT_COLORS.map((c) => (
@@ -165,6 +162,64 @@ function AppearanceSettings() {
           ))}
         </div>
       </SectionCard>
+
+      <div className="bg-card border border-border rounded-2xl p-5">
+        <h3 className="text-sm font-extrabold text-text-primary mb-1">
+          Accent Color
+        </h3>
+        <p className="text-[11px] text-text-subtle mb-5">
+          Choose the primary accent color used across buttons, charts, and
+          highlights.
+        </p>
+
+        <div className="grid grid-cols-5 gap-3">
+          {ACCENT_COLORS.map((accent) => {
+            const isActive = accentColor === accent.id;
+            return (
+              <button
+                key={accent.id}
+                onClick={() => setAccentColor(accent.id)}
+                className="flex flex-col items-center gap-2 group"
+                aria-label={`Set accent color to ${accent.label}`}
+                aria-pressed={isActive}
+              >
+                <div
+                  className="relative w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-all"
+                  style={{
+                    background: accent.swatch,
+                    borderColor: isActive ? accent.swatch : "transparent",
+                    boxShadow: isActive
+                      ? `0 0 0 3px ${accent.swatch}33`
+                      : "none",
+                  }}
+                >
+                  {isActive && (
+                    <Check
+                      size={18}
+                      className="text-white drop-shadow"
+                      strokeWidth={3}
+                    />
+                  )}
+                </div>
+                <span
+                  className={`text-[11px] font-semibold transition-colors ${
+                    isActive
+                      ? "text-text-primary"
+                      : "text-text-subtle group-hover:text-text-muted"
+                  }`}
+                >
+                  {accent.label}
+                  {accent.isDefault && (
+                    <span className="block text-[9px] text-text-subtle font-normal">
+                      Default
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Font Size */}
       <SectionCard

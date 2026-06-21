@@ -18,6 +18,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import BrandLogo from "../branding/BrandLogo";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadNotifications } from "../../utils/notificationUtils";
+import SidebarFooterBrand from "./SidebarFooterBrand";
 import Tooltip from "../ui/Tooltip";
 import {
   LayoutDashboard,
@@ -423,6 +424,7 @@ function Sidebar({ isMobile = false }) {
 
       {/* ── Bottom: User Card + Logout ── */}
       <div className="mt-auto pt-4 border-t border-border space-y-2">
+        <SidebarFooterBrand />
         {/* User info card */}
         <Tooltip content={!isOpen ? "Admin · Super Admin" : null} side="right">
           <div
