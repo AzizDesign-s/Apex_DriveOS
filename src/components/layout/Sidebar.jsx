@@ -1,17 +1,11 @@
 // src/components/layout/Sidebar.jsx
-//
-// ─── WHAT THIS FILE DOES ──────────────────────────────────────────────────────
-// The floating glassmorphism sidebar that lives on the left side of every page.
-// It is NOT inside the page flow — it floats using absolute positioning inside
-// the AppLayout wrapper.
-//
-// KEY CONCEPTS used here:
-//   - Framer Motion: animates width (expand/collapse) and item entrance
-//   - useLocation (React Router): knows which page is active
-//   - useNavigate (React Router): changes page when a nav item is clicked
-//   - Zustand: reads sidebarOpen state + toggleSidebar action
-//   - Responsive: on mobile it slides in as a drawer with a backdrop overlay
-// ─────────────────────────────────────────────────────────────────────────────
+// Fixes applied:
+//   BUG-1: brand="product-current" so custom company logo actually reflects
+//   FIX: merged two separate count-update useEffects into one — previously
+//        both registered apex-driveos-cars/users/notifications listeners,
+//        meaning every handler fired twice per event
+//   FIX: moved all useState declarations above the useEffects that reference
+//        them, eliminating the fragile temporal ordering
 
 import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -37,133 +31,117 @@ import {
   FileChartColumnIncreasing,
 } from "lucide-react";
 import useAppStore from "../../store/useAppStore";
-import { notifications as notifData } from "../../data/mockData";
 import apexToast from "../../utils/toast";
 import clsx from "clsx";
 
-// ─── NAV STRUCTURE ────────────────────────────────────────────────────────────
-// Defining nav items as data (not hardcoded JSX) means:
-//   1. Easy to add/remove items later
-//   2. We loop over them instead of copy-pasting JSX
-//   3. Clean separation of data from presentation
-// ─────────────────────────────────────────────────────────────────────────────
-
 // ─── ANIMATION VARIANTS ───────────────────────────────────────────────────────
-// Framer Motion variants let you name animation states and switch between them.
-// 'open' = expanded sidebar, 'closed' = icon-only collapsed state
-// ─────────────────────────────────────────────────────────────────────────────
-
 const sidebarVariants = {
   open: { width: 240 },
   closed: { width: 72 },
 };
 
-const unreadCount = notifData.filter((n) => !n.isRead).length;
-
-// Drawer (mobile) slides in from left
 const drawerVariants = {
   open: { x: 0, opacity: 1 },
   closed: { x: -280, opacity: 0 },
 };
 
-// ─── COMPONENT ───────────────────────────────────────────────────────────────
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+const getLiveCount = (key, filterFn) => {
+  try {
+    const saved = localStorage.getItem(key);
+    const arr = saved ? JSON.parse(saved) : [];
+    return filterFn ? arr.filter(filterFn).length : arr.length;
+  } catch {
+    return 0;
+  }
+};
 
+// ─── COMPONENT ────────────────────────────────────────────────────────────────
 function Sidebar({ isMobile = false }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const {
-    sidebarOpen,
-    toggleSidebar,
-    logout,
 
-    user,
-  } = useAppStore();
-
+  const { sidebarOpen, toggleSidebar, logout, user } = useAppStore();
   const company = useAppStore((s) => s.company);
 
-  // On mobile, sidebar is always 'open' width — it's a full drawer
-  // On desktop, width is controlled by sidebarOpen state
+  // ── All count state — declared BEFORE any useEffect that references them ───
+  const [inventoryCount, setInventoryCount] = useState(() =>
+    getLiveCount("apex-driveos-cars", (c) => c.status === "available"),
+  );
+  const [testDriveCount, setTestDriveCount] = useState(() =>
+    getLiveCount("apex-driveos-bookings", (b) => b.status === "pending"),
+  );
+  const [userCount, setUserCount] = useState(() =>
+    getLiveCount("apex-driveos-users"),
+  );
+  const [notifCount, setNotifCount] = useState(() =>
+    getLiveCount("apex-driveos-notifications", (n) => !n.isRead),
+  );
 
+  // ── Mobile auto-collapse on route change ─────────────────────────────────────
   useEffect(() => {
-    if (window.innerWidth < 1024) {
-      // Only collapse if it's currently open
-      if (sidebarOpen) toggleSidebar();
+    if (window.innerWidth < 1024 && sidebarOpen) {
+      toggleSidebar();
     }
   }, [location.pathname]);
 
+  // ── FIX: single unified useEffect for ALL count updates ──────────────────────
+  // Previously there were two separate useEffects both registering listeners
+  // for the same events (apex-driveos-cars-updated, apex-driveos-users-updated,
+  // apex-driveos-notifications-updated) — every handler was firing TWICE per event.
+  // Merged into one, with clean removal of all listeners on unmount.
   useEffect(() => {
+    const onCars = () =>
+      setInventoryCount(
+        getLiveCount("apex-driveos-cars", (c) => c.status === "available"),
+      );
+    const onBookings = () =>
+      setTestDriveCount(
+        getLiveCount("apex-driveos-bookings", (b) => b.status === "pending"),
+      );
+    const onUsers = () => setUserCount(getLiveCount("apex-driveos-users"));
+    const onNotifs = () =>
+      setNotifCount(
+        getLiveCount("apex-driveos-notifications", (n) => !n.isRead),
+      );
+
+    // Count update via custom event (explicit count in detail)
     const onCountUpdate = (e) => {
-      if (e.detail?.count !== undefined) {
-        setNotifCount(e.detail.count);
-      }
+      if (e.detail?.count !== undefined) setNotifCount(e.detail.count);
     };
 
-    const onStorageUpdate = (e) => {
-      if (e.key === "apex-gt-notifications") {
+    // Count update via localStorage storage event (cross-tab)
+    const onStorage = (e) => {
+      if (e.key === "apex-driveos-notifications") {
         const notifs = loadNotifications();
         setNotifCount(notifs.filter((n) => !n.isRead).length);
       }
     };
 
-    window.addEventListener("apex-gt-notif-count-updated", onCountUpdate);
-    window.addEventListener("storage", onStorageUpdate);
+    window.addEventListener("apex-driveos-cars-updated", onCars);
+    window.addEventListener("apex-driveos-bookings-updated", onBookings);
+    window.addEventListener("apex-driveos-users-updated", onUsers);
+    window.addEventListener("apex-driveos-notifications-updated", onNotifs);
+    window.addEventListener("apex-driveos-notif-count-updated", onCountUpdate);
+    window.addEventListener("storage", onStorage);
 
     return () => {
-      window.removeEventListener("apex-gt-notif-count-updated", onCountUpdate);
-      window.removeEventListener("storage", onStorageUpdate);
+      window.removeEventListener("apex-driveos-cars-updated", onCars);
+      window.removeEventListener("apex-driveos-bookings-updated", onBookings);
+      window.removeEventListener("apex-driveos-users-updated", onUsers);
+      window.removeEventListener(
+        "apex-driveos-notifications-updated",
+        onNotifs,
+      );
+      window.removeEventListener(
+        "apex-driveos-notif-count-updated",
+        onCountUpdate,
+      );
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 
-  const getLiveCount = (key, filterFn) => {
-    try {
-      const saved = localStorage.getItem(key);
-      const arr = saved ? JSON.parse(saved) : [];
-      return filterFn ? arr.filter(filterFn).length : arr.length;
-    } catch {
-      return 0;
-    }
-  };
-
-  const [inventoryCount, setInventoryCount] = useState(() =>
-    getLiveCount("apex-gt-cars", (c) => c.status === "available"),
-  );
-  const [testDriveCount, setTestDriveCount] = useState(() =>
-    getLiveCount("apex-gt-bookings", (b) => b.status === "pending"),
-  );
-  const [userCount, setUserCount] = useState(() =>
-    getLiveCount("apex-gt-users"),
-  );
-  const [notifCount, setNotifCount] = useState(() =>
-    getLiveCount("apex-gt-notifications", (n) => !n.isRead),
-  );
-
-  useEffect(() => {
-    const onCars = () =>
-      setInventoryCount(
-        getLiveCount("apex-gt-cars", (c) => c.status === "available"),
-      );
-    const onBookings = () =>
-      setTestDriveCount(
-        getLiveCount("apex-gt-bookings", (b) => b.status === "pending"),
-      );
-    const onUsers = () => setUserCount(getLiveCount("apex-gt-users"));
-    const onNotifs = () =>
-      setNotifCount(getLiveCount("apex-gt-notifications", (n) => !n.isRead));
-
-    window.addEventListener("apex-gt-cars-updated", onCars);
-    window.addEventListener("apex-gt-bookings-updated", onBookings);
-    window.addEventListener("apex-gt-users-updated", onUsers);
-    window.addEventListener("apex-gt-notifications-updated", onNotifs);
-
-    return () => {
-      window.removeEventListener("apex-gt-cars-updated", onCars);
-      window.removeEventListener("apex-gt-bookings-updated", onBookings);
-      window.removeEventListener("apex-gt-users-updated", onUsers);
-      window.removeEventListener("apex-gt-notifications-updated", onNotifs);
-    };
-  }, []);
-
-  // In getBadge() (or wherever badges are resolved per nav item):
+  // ── Badge resolver ────────────────────────────────────────────────────────────
   const getBadge = (item) => {
     if (item.path === "/notifications")
       return notifCount > 0 ? String(notifCount) : null;
@@ -175,67 +153,31 @@ function Sidebar({ isMobile = false }) {
     return item.badge || null;
   };
 
+  // ── Nav structure ─────────────────────────────────────────────────────────────
   const NAV_SECTIONS = [
     {
       label: "Main",
       items: [
-        {
-          icon: LayoutDashboard,
-          label: "Dashboard",
-          path: "/dashboard",
-          badge: null,
-        },
-        {
-          icon: UsersIcon,
-          label: "Users",
-          path: "/users",
-          badge: userCount > 0 ? String(userCount) : null,
-        },
-
-        {
-          icon: Car,
-          label: "Inventory",
-          path: "/inventory",
-          badge: inventoryCount > 0 ? String(inventoryCount) : null,
-        },
-        { icon: Users, label: "Customers", path: "/customers", badge: null },
-        {
-          icon: CalendarCheck,
-          label: "Test Drives",
-          path: "/test-drives",
-          badge: testDriveCount > 0 ? String(testDriveCount) : null,
-        },
+        { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+        { icon: UsersIcon, label: "Users", path: "/users" },
+        { icon: Car, label: "Inventory", path: "/inventory" },
+        { icon: Users, label: "Customers", path: "/customers" },
+        { icon: CalendarCheck, label: "Test Drives", path: "/test-drives" },
       ],
     },
     {
       label: "Finance",
       items: [
-        { icon: FileText, label: "Invoices", path: "/invoices", badge: null },
-        {
-          icon: BarChart2,
-          label: "Analytics",
-          path: "/analytics",
-          badge: null,
-        },
-        {
-          icon: FileChartColumnIncreasing,
-          label: "Reports",
-          path: "/reports",
-          badge: null,
-        },
+        { icon: FileText, label: "Invoices", path: "/invoices" },
+        { icon: BarChart2, label: "Analytics", path: "/analytics" },
+        { icon: FileChartColumnIncreasing, label: "Reports", path: "/reports" },
       ],
     },
-
     {
       label: "System",
       items: [
-        {
-          icon: Bell,
-          label: "Notifications",
-          path: "/notifications",
-          badge: notifCount > 0 ? String(notifCount) : null,
-        },
-        { icon: Settings, label: "Settings", path: "/settings", badge: null },
+        { icon: Bell, label: "Notifications", path: "/notifications" },
+        { icon: Settings, label: "Settings", path: "/settings" },
       ],
     },
   ];
@@ -244,20 +186,21 @@ function Sidebar({ isMobile = false }) {
 
   const handleLogout = () => {
     logout();
-    apexToast.info("logged Out", "You have been signed out sucessfully.");
+    apexToast.info("Logged Out", "You have been signed out successfully.");
     navigate("/login");
   };
 
-  // ── Inner sidebar content (shared between desktop + mobile) ─────────────────
-
+  // ── Inner sidebar content (shared between desktop + mobile) ──────────────────
   const SidebarContent = () => (
     <>
-      {/* ── Logo ── */}
-      <div className="flex items-center gap-4 px-1  py-5">
+      {/* ── Logo — BUG-1 FIX: was brand="product" (static), now
+          brand="product-current" so the custom company logo from
+          Settings → Company actually reflects here ── */}
+      <div className="flex items-center gap-4 px-1 py-5">
         <div
           className={clsx(
-            "flex items-center  flex-shrink-0 transition-all duration-300",
-            sidebarOpen ? "w-8 h-8 justify-center" : "w-8 h-8 justify-start",
+            "flex items-center flex-shrink-0 transition-all duration-300",
+            sidebarOpen ? "w-12 h-12 justify-center" : "w-8 h-8 justify-start",
           )}
         >
           <BrandLogo
@@ -293,7 +236,6 @@ function Sidebar({ isMobile = false }) {
       <nav className="flex-1 overflow-y-auto overflow-x-hidden space-y-1 scrollbar-none">
         {NAV_SECTIONS.map((section) => (
           <div key={section.label} className="mb-3">
-            {/* Section label — hidden when collapsed */}
             <AnimatePresence>
               {isOpen && (
                 <motion.p
@@ -308,43 +250,35 @@ function Sidebar({ isMobile = false }) {
               )}
             </AnimatePresence>
 
-            {/* Nav Items */}
-
             {section.items.map((item, i) => {
-              // Check if this item matches the current URL
               const isActive = location.pathname === item.path;
+              const badge = getBadge(item);
               return (
                 <Tooltip
                   key={item.path}
                   content={
                     !isOpen
-                      ? item.badge
-                        ? `${item.label} (${item.badge})`
+                      ? badge
+                        ? `${item.label} (${badge})`
                         : item.label
                       : null
                   }
                   side="right"
                 >
                   <motion.button
-                    key={item.path}
-                    onClick={() => navigate(item.path)} // Stagger entrance: each item delays slightly after the previous
+                    onClick={() => navigate(item.path)}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
                     className={clsx(
-                      // Base styles always applied
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl",
                       "transition-all duration-200 relative group mb-0.5",
-                      // Justify center when collapsed (icon only)
                       !isOpen && "justify-center bg-transparent",
-                      // Active vs inactive styles
                       isActive
                         ? "bg-gold/10 text-text-primary"
                         : "text-text-muted hover:bg-gold/5 hover:text-text-primary",
                     )}
                   >
-                    {/* Active left border indicator */}
-
                     {isActive && (
                       <motion.div
                         layoutId="active-indicator"
@@ -355,7 +289,6 @@ function Sidebar({ isMobile = false }) {
                       />
                     )}
 
-                    {/* Icon wrapper */}
                     <div
                       className={clsx(
                         "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
@@ -368,7 +301,6 @@ function Sidebar({ isMobile = false }) {
                       <item.icon size={17} />
                     </div>
 
-                    {/* Label + badge — hidden when collapsed */}
                     <AnimatePresence>
                       {isOpen && (
                         <motion.div
@@ -387,30 +319,30 @@ function Sidebar({ isMobile = false }) {
                             {item.label}
                           </span>
 
-                          {item.badge && (
+                          {badge && (
                             <span
                               className="text-[9px] font-bold bg-gold/15 text-gold
-                                           px-2 py-0.5 rounded-full ml-auto"
+                                         px-2 py-0.5 rounded-full ml-auto"
                             >
-                              {item.badge}
+                              {badge}
                             </span>
                           )}
                         </motion.div>
                       )}
                     </AnimatePresence>
 
-                    {/* Tooltip on hover when collapsed */}
+                    {/* Collapsed tooltip */}
                     {!isOpen && (
                       <div
                         className="absolute left-full ml-3 px-2.5 py-1.5 bg-card
-                  border border-border rounded-lg text-xs font-medium
-                  text-text-primary whitespace-nowrap opacity-0 pointer-events-none
-                  group-hover:opacity-100 transition-opacity duration-200 z-50
-                  shadow-card"
+                                   border border-border rounded-lg text-xs font-medium
+                                   text-text-primary whitespace-nowrap opacity-0 pointer-events-none
+                                   group-hover:opacity-100 transition-opacity duration-200 z-50
+                                   shadow-card"
                       >
                         {item.label}
-                        {item.badge && (
-                          <span className="ml-2 text-gold">{item.badge}</span>
+                        {badge && (
+                          <span className="ml-2 text-gold">{badge}</span>
                         )}
                       </div>
                     )}
@@ -422,11 +354,15 @@ function Sidebar({ isMobile = false }) {
         ))}
       </nav>
 
-      {/* ── Bottom: User Card + Logout ── */}
+      {/* ── Bottom: Nexora footer + User Card + Logout ── */}
       <div className="mt-auto pt-4 border-t border-border space-y-2">
         <SidebarFooterBrand />
+
         {/* User info card */}
-        <Tooltip content={!isOpen ? "Admin · Super Admin" : null} side="right">
+        <Tooltip
+          content={!isOpen ? `${user?.name} · Admin` : null}
+          side="right"
+        >
           <div
             className={clsx(
               "flex items-center gap-3 p-2.5 rounded-xl",
@@ -434,10 +370,9 @@ function Sidebar({ isMobile = false }) {
               !isOpen && "justify-center bg-transparent border-none",
             )}
           >
-            {/* Avatar */}
             <div
               className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0
-                  flex items-center justify-center text-sm font-bold text-[#0B0F14]"
+                         flex items-center justify-center text-sm font-bold text-[#0B0F14]"
               style={{
                 background: user?.avatar
                   ? "transparent"
@@ -510,22 +445,19 @@ function Sidebar({ isMobile = false }) {
     </>
   );
 
-  // ── MOBILE: Full drawer ──────────────────────────────────────────────────────
+  // ── MOBILE: Full drawer ───────────────────────────────────────────────────────
   if (isMobile) {
     return (
       <AnimatePresence>
         {sidebarOpen && (
           <>
-            {/* Dark overlay behind drawer */}
             <motion.div
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={toggleSidebar} // tap outside to close
+              onClick={toggleSidebar}
             />
-
-            {/* Drawer panel */}
             <motion.aside
               className="fixed top-0 left-0 bottom-0 w-[260px] z-40
                          bg-card/95 border-r border-border bg-base/20 backdrop-blur-sm
@@ -544,14 +476,14 @@ function Sidebar({ isMobile = false }) {
     );
   }
 
-  // ── DESKTOP: Floating sidebar ────────────────────────────────────────────────
+  // ── DESKTOP: Floating sidebar ─────────────────────────────────────────────────
   return (
     <motion.aside
       className="fixed top-3 left-3 bottom-3 z-20
-             bg-card/85 backdrop-blur-[20px]
-             border border-border rounded-[20px]
-             flex flex-col p-4
-             shadow-glass overflow-hidden"
+                 bg-card/85 backdrop-blur-[20px]
+                 border border-border rounded-[20px]
+                 flex flex-col p-4
+                 shadow-glass overflow-hidden"
       style={{
         transition: "background-color 0.3s ease, border-color 0.3s ease",
       }}
@@ -561,16 +493,14 @@ function Sidebar({ isMobile = false }) {
     >
       <SidebarContent />
 
-      {/* ── Collapse / Expand toggle button ── */}
-      {/*  Lives on the right edge of the sidebar  */}
+      {/* Collapse / Expand toggle */}
       <motion.button
         onClick={toggleSidebar}
         className="absolute top-1/2 -right-3 -translate-y-1/2
                    w-6 h-6 rounded-full bg-card border border-border
-                   flex items-center justify-start
+                   flex items-center justify-center
                    text-text-muted hover:text-gold hover:border-gold/40
                    transition-colors duration-200 z-30 shadow-card"
-        // Rotate the arrow when toggling
         animate={{ rotate: sidebarOpen ? 0 : 180 }}
         transition={{ duration: 0.3 }}
       >

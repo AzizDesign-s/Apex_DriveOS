@@ -1,17 +1,18 @@
 // src/utils/invoicePDFUtils.js
-// Generates a styled PDF for a single invoice using jsPDF.
-// WHY separate from exportUtils.js:
-//   exportUtils handles tabular data export (rows of records).
-//   This file handles a single invoice rendered as a designed document.
-//   This separation makes it easy to swap invoice styles in the future.
+// BUG-4 FIXES:
+//   1. useAppStore.getState() moved INSIDE generateInvoicePDF() — was at
+//      module level (top of file), capturing a potentially pre-hydration
+//      snapshot that never updated. Now reads fresh state on every call.
+//   2. company.name.name → company.name (company.name is already a string,
+//      not an object; the extra .name made it undefined, crashing doc.text())
+//   3. doc.text(companyName, suffix, x, y, opts) → doc.text(combined, x, y, opts)
+//      (jsPDF doc.text() doesn't accept two separate strings as first two args)
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { DEFAULT_COMPANY_INFO } from "../data/mockData";
 import useAppStore from "../store/useAppStore";
 import { calcInvoice } from "../data/mockData";
-
-const company = useAppStore.getState().company;
 
 // ── Color palette ─────────────────────────────────────────────────────────────
 const C = {
@@ -48,7 +49,6 @@ const fmtDate = (d) => {
   });
 };
 
-// ── Status badge color ────────────────────────────────────────────────────────
 function getStatusColor(status) {
   switch (status) {
     case "paid":
@@ -64,16 +64,21 @@ function getStatusColor(status) {
     case "cancelled":
       return { bg: [241, 245, 249], text: [71, 85, 105] };
     default:
-      return { bg: [241, 245, 249], text: [71, 85, 105] }; // draft
+      return { bg: [241, 245, 249], text: [71, 85, 105] };
   }
 }
 
-// ── Main export function ──────────────────────────────────────────────────────
 export function generateInvoicePDF(invoice) {
+  // BUG-4 FIX: read store state INSIDE the function, not at module level.
+  // This ensures we always get the current persisted company branding,
+  // not a potentially stale snapshot taken at import time.
+  const company = useAppStore.getState().company;
+  const companyName = company?.name || DEFAULT_COMPANY_INFO.name;
+
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  const W = doc.internal.pageSize.width; // 210mm
-  const H = doc.internal.pageSize.height; // 297mm
-  const PAD = 16; // left/right margin
+  const W = doc.internal.pageSize.width;
+  const H = doc.internal.pageSize.height;
+  const PAD = 16;
 
   const { subtotal, afterDisc, vat, total } = calcInvoice(
     invoice.items,
@@ -81,32 +86,26 @@ export function generateInvoicePDF(invoice) {
     invoice.vatRate,
   );
 
-  let y = 0; // current Y cursor
+  let y = 0;
 
-  // ── PAGE BACKGROUND ────────────────────────────────────────────────────────
+  // Page background
   doc.setFillColor(...C.white);
   doc.rect(0, 0, W, H, "F");
 
-  // ── DARK HEADER BAND ──────────────────────────────────────────────────────
+  // Dark header band
   doc.setFillColor(...C.dark);
   doc.rect(0, 0, W, 38, "F");
 
-  // ── GOLD DIAMOND LOGO ─────────────────────────────────────────────────────
-  // Draw diamond shape using rotated square
+  // Gold diamond logo mark
   const cx = PAD + 7,
     cy = 14;
   doc.setFillColor(...C.gold);
-  doc.saveGraphicsState?.();
-  // Draw diamond as rotated rect using lines
-  doc.setDrawColor(...C.gold);
-  doc.setLineWidth(0);
   const pts = [
     [cx, cy - 6],
     [cx + 6, cy],
     [cx, cy + 6],
     [cx - 6, cy],
   ];
-  doc.setFillColor(...C.gold);
   doc.triangle(
     pts[0][0],
     pts[0][1],
@@ -126,18 +125,18 @@ export function generateInvoicePDF(invoice) {
     "F",
   );
 
-  // Brand name
+  // Brand name — BUG-4 FIX: was company.name.name (double property)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(...C.gold);
-  doc.text(company.name, PAD + 16, 13);
+  doc.text(companyName, PAD + 16, 13);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   doc.setTextColor(...C.subtle);
   doc.text("LUXURY AUTOMOTIVE · DUBAI", PAD + 16, 19);
 
-  // Invoice number — right side
+  // Invoice number
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(...C.white);
@@ -155,8 +154,7 @@ export function generateInvoicePDF(invoice) {
 
   y = 44;
 
-  // ── BILL FROM / TO ─────────────────────────────────────────────────────────
-  // Left: From
+  // Bill from / to
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...C.subtle);
@@ -165,7 +163,8 @@ export function generateInvoicePDF(invoice) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...C.text);
-  doc.text(company.name.name, PAD, y + 5);
+  // BUG-4 FIX: was company.name.name — correct is companyName (the string)
+  doc.text(companyName, PAD, y + 5);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
@@ -173,7 +172,6 @@ export function generateInvoicePDF(invoice) {
   doc.text("Sheikh Zayed Road, Dubai, UAE", PAD, y + 10);
   doc.text("TRN: 100432687000003", PAD, y + 15);
 
-  // Right: Bill To
   const halfW = W / 2;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
@@ -193,10 +191,9 @@ export function generateInvoicePDF(invoice) {
 
   y += 24;
 
-  // ── DATE ROW ───────────────────────────────────────────────────────────────
+  // Date row
   doc.setFillColor(...C.lightGray);
   doc.roundedRect(PAD, y, W - PAD * 2, 10, 2, 2, "F");
-
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(...C.muted);
@@ -210,7 +207,7 @@ export function generateInvoicePDF(invoice) {
 
   y += 16;
 
-  // ── LINE ITEMS TABLE ───────────────────────────────────────────────────────
+  // Line items table
   const tableBody = invoice.items.map((item) => [
     item.desc,
     item.type.toUpperCase(),
@@ -248,7 +245,6 @@ export function generateInvoicePDF(invoice) {
     },
     alternateRowStyles: { fillColor: C.lightGray },
     didDrawCell: (data) => {
-      // Color the Type cell badge
       if (data.column.index === 1 && data.section === "body") {
         const type = invoice.items[data.row.index]?.type;
         const bgCol =
@@ -278,7 +274,7 @@ export function generateInvoicePDF(invoice) {
 
   y = doc.lastAutoTable.finalY + 6;
 
-  // ── TOTALS ─────────────────────────────────────────────────────────────────
+  // Totals
   const totalsX = W - PAD - 60;
   const totalsWidth = 60;
 
@@ -311,17 +307,15 @@ export function generateInvoicePDF(invoice) {
     false,
     C.gold,
   );
-
   y += 1;
   doc.setLineWidth(0.3);
   doc.line(totalsX, y, totalsX + totalsWidth, y);
   y += 4;
-
   drawTotalRow("TOTAL DUE", `AED ${fmtAED(total)}`, true, C.text);
 
   y += 8;
 
-  // ── NOTES ──────────────────────────────────────────────────────────────────
+  // Notes
   if (invoice.notes) {
     doc.setFillColor(...C.lightGray);
     doc.roundedRect(PAD, y, W - PAD * 2, 18, 2, 2, "F");
@@ -337,12 +331,11 @@ export function generateInvoicePDF(invoice) {
     y += 22;
   }
 
-  // ── FOOTER BAND ────────────────────────────────────────────────────────────
+  // Footer band
   const footerY = H - 28;
   doc.setFillColor(...C.dark);
   doc.rect(0, footerY, W, 28, "F");
 
-  // Bank details
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...C.subtle);
@@ -356,7 +349,6 @@ export function generateInvoicePDF(invoice) {
     footerY + 13,
   );
 
-  // Thank you
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(...C.gold);
@@ -364,18 +356,18 @@ export function generateInvoicePDF(invoice) {
     align: "right",
   });
 
+  // BUG-4 FIX: was doc.text(company.name, "·  apexdriveos.ae...", W - PAD, ...)
+  // doc.text() expects a single string as first arg, not two separate strings.
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   doc.setTextColor(...C.subtle);
   doc.text(
-    company.name,
-    "·  apexdriveos.ae  ·  Dubai, UAE",
+    `${companyName}  ·  apexdriveos.ae  ·  Dubai, UAE`,
     W - PAD,
     footerY + 13,
     { align: "right" },
   );
 
-  // Page number
   doc.setFontSize(7);
   doc.setTextColor(...C.subtle);
   doc.text(
@@ -385,6 +377,5 @@ export function generateInvoicePDF(invoice) {
     { align: "center" },
   );
 
-  // ── SAVE ───────────────────────────────────────────────────────────────────
-  doc.save(`${invoice.invoiceId}-${DEFAULT_COMPANY_INFO.name}.pdf`);
+  doc.save(`${invoice.invoiceId}-${companyName}.pdf`);
 }

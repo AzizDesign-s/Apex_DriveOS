@@ -30,7 +30,7 @@ function Customers() {
   // ── Data ──────────────────────────────────────────────────────────────────
   const [customers, setCustomers] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-customers");
+      const saved = localStorage.getItem("apex-driveos-customers");
       return saved ? JSON.parse(saved) : initialCustomers;
     } catch {
       return initialCustomers;
@@ -72,7 +72,7 @@ function Customers() {
   // Add inside Customers():
   const [columns, setColumns] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-customer-cols");
+      const saved = localStorage.getItem("apex-driveos-customer-cols");
       return saved ? JSON.parse(saved) : DEFAULT_CUSTOMER_COLUMNS;
     } catch {
       return DEFAULT_CUSTOMER_COLUMNS;
@@ -80,16 +80,16 @@ function Customers() {
   });
 
   useEffect(() => {
-    localStorage.setItem("apex-gt-customers", JSON.stringify(customers));
+    localStorage.setItem("apex-driveos-customers", JSON.stringify(customers));
     window.dispatchEvent(
-      new CustomEvent("apex-gt-customers-updated", {
+      new CustomEvent("apex-driveos-customers-updated", {
         detail: { customers },
       }),
     );
   }, [customers]);
 
   useEffect(() => {
-    localStorage.setItem("apex-gt-customer-cols", JSON.stringify(columns));
+    localStorage.setItem("apex-driveos-customer-cols", JSON.stringify(columns));
   }, [columns]);
 
   // ── Selection ─────────────────────────────────────────────────────────────
@@ -260,7 +260,7 @@ function Customers() {
       ];
 
       if (type === "Excel") {
-        exportToExcel(filtered, exportCols, "apex-gt-customers");
+        exportToExcel(filtered, exportCols, "apex-driveos-customers");
         apexToast.success(
           "Excel Exported",
           `${filtered.length} customers exported.`,
@@ -270,7 +270,7 @@ function Customers() {
           filtered,
           exportCols,
           "Customer Report",
-          "apex-gt-customers",
+          "apex-driveos-customers",
         );
         apexToast.success(
           "PDF Exported",

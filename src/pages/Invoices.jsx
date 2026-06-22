@@ -25,7 +25,7 @@ import { INVOICE_FILTER_CONFIG } from "../utils/filterConfig";
 import apexToast from "../utils/toast";
 
 const PER_PAGE = 10;
-const LS_KEY = "apex-gt-invoice-cols";
+const LS_KEY = "apex-driveos-invoice-cols";
 const EMPTY_FILTERS = {
   status: [],
   method: "",
@@ -59,7 +59,7 @@ const EXPORT_COLS = [
 function Invoices() {
   const [invoices, setInvoices] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-invoices");
+      const saved = localStorage.getItem("apex-driveos-invoices");
       return saved ? JSON.parse(saved) : initialInvoices;
     } catch {
       return initialInvoices;
@@ -126,9 +126,9 @@ function Invoices() {
   }, [columns]);
 
   useEffect(() => {
-    localStorage.setItem("apex-gt-invoices", JSON.stringify(invoices));
+    localStorage.setItem("apex-driveos-invoices", JSON.stringify(invoices));
     window.dispatchEvent(
-      new CustomEvent("apex-gt-invoices-updated", {
+      new CustomEvent("apex-driveos-invoices-updated", {
         detail: { invoices },
       }),
     );
@@ -252,7 +252,7 @@ function Invoices() {
     if (!invoice.carId) return;
 
     try {
-      const saved = localStorage.getItem("apex-gt-cars");
+      const saved = localStorage.getItem("apex-driveos-cars");
       if (!saved) return;
 
       const allCars = JSON.parse(saved);
@@ -260,10 +260,10 @@ function Invoices() {
         car.id === Number(invoice.carId) ? { ...car, status: "sold" } : car,
       );
 
-      localStorage.setItem("apex-gt-cars", JSON.stringify(updated));
+      localStorage.setItem("apex-driveos-cars", JSON.stringify(updated));
       // Notify Inventory page if mounted
       window.dispatchEvent(
-        new CustomEvent("apex-gt-cars-updated", {
+        new CustomEvent("apex-driveos-cars-updated", {
           detail: { cars: updated },
         }),
       );
@@ -276,7 +276,7 @@ function Invoices() {
     if (!invoice.carId) return;
 
     try {
-      const saved = localStorage.getItem("apex-gt-cars");
+      const saved = localStorage.getItem("apex-driveos-cars");
       if (!saved) return;
 
       const allCars = JSON.parse(saved);
@@ -286,9 +286,9 @@ function Invoices() {
           : car,
       );
 
-      localStorage.setItem("apex-gt-cars", JSON.stringify(updated));
+      localStorage.setItem("apex-driveos-cars", JSON.stringify(updated));
       window.dispatchEvent(
-        new CustomEvent("apex-gt-cars-updated", {
+        new CustomEvent("apex-driveos-cars-updated", {
           detail: { cars: updated },
         }),
       );
@@ -301,7 +301,7 @@ function Invoices() {
     if (!invoice.customerId) return;
 
     try {
-      const saved = localStorage.getItem("apex-gt-customers");
+      const saved = localStorage.getItem("apex-driveos-customers");
       if (!saved) return;
 
       const { total } = calcInvoice(
@@ -341,9 +341,9 @@ function Invoices() {
         };
       });
 
-      localStorage.setItem("apex-gt-customers", JSON.stringify(updated));
+      localStorage.setItem("apex-driveos-customers", JSON.stringify(updated));
       window.dispatchEvent(
-        new CustomEvent("apex-gt-customers-updated", {
+        new CustomEvent("apex-driveos-customers-updated", {
           detail: { customers: updated },
         }),
       );
@@ -443,7 +443,7 @@ function Invoices() {
         total: calcInvoice(inv.items, inv.discount, inv.vatRate).total,
       }));
       if (type === "Excel") {
-        exportToExcel(exportData, EXPORT_COLS, "apex-gt-invoices");
+        exportToExcel(exportData, EXPORT_COLS, "apex-driveos-invoices");
         apexToast.success(
           "Excel Exported",
           `${filtered.length} invoices exported.`,
@@ -453,7 +453,7 @@ function Invoices() {
           exportData,
           EXPORT_COLS,
           "Invoice Report",
-          "apex-gt-invoices",
+          "apex-driveos-invoices",
         );
         apexToast.success(
           "PDF Exported",

@@ -1,10 +1,16 @@
 // src/components/settings/UserManagement.jsx
-// This Settings tab now hosts live Role CRUD (replaces the Sprint 1.1 static preview)
+// Bug 1 fixes:
+//   1. Storage key was "apex-driveos-roles" on read but "apex-driveos-roles" on write
+//      — unified to "apex-driveos-roles" everywhere to match the rest of the app
+//   2. computeUserCounts now also adds 1 for the synthetic Admin row, whose
+//      identity lives in useAppStore (not in apex-driveos-users localStorage),
+//      so the Admin role card correctly shows its count
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Plus, Users as UsersIcon } from "lucide-react";
+import useAppStore from "../../store/useAppStore";
 import {
   roles as initialRoles,
   PERMISSION_MODULES,
@@ -18,10 +24,13 @@ import apexToast from "../../utils/toast";
 
 function UserManagement() {
   const navigate = useNavigate();
+  const adminUser = useAppStore((s) => s.user);
 
+  // BUG-1 FIX: unified storage key — was reading from "apex-driveos-roles"
+  // but writing to "apex-driveos-roles", so reads always fell back to the seed
   const [roles, setRoles] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-roles");
+      const saved = localStorage.getItem("apex-driveos-roles");
       return saved ? JSON.parse(saved) : initialRoles;
     } catch {
       return initialRoles;
@@ -29,36 +38,54 @@ function UserManagement() {
   });
 
   useEffect(() => {
-    localStorage.setItem("apex-gt-roles", JSON.stringify(roles));
+    localStorage.setItem("apex-driveos-roles", JSON.stringify(roles));
     window.dispatchEvent(
-      new CustomEvent("apex-gt-roles-updated", { detail: { roles } }),
+      new CustomEvent("apex-driveos-roles-updated", { detail: { roles } }),
     );
   }, [roles]);
 
   const [userCounts, setUserCounts] = useState({});
   const [totalUsers, setTotalUsers] = useState(0);
 
+  // BUG-1 FIX: synthetic Admin row is NOT stored in apex-driveos-users —
+  // it lives in useAppStore. We must add it back manually when computing
+  // counts so the Admin role card shows 1 (or more, future-proof) instead of 0.
   const computeUserCounts = useCallback(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-users");
-      const users = saved ? JSON.parse(saved) : [];
+      const saved = localStorage.getItem("apex-driveos-users");
+      const regularUsers = saved ? JSON.parse(saved) : [];
       const counts = {};
-      users.forEach((u) => {
+
+      // Count regular users by their roleId
+      regularUsers.forEach((u) => {
         counts[u.roleId] = (counts[u.roleId] || 0) + 1;
       });
+
+      // BUG-1 FIX: also count the synthetic Admin whose roleId comes from
+      // the live roles list (whichever role is named "Admin")
+      if (adminUser) {
+        const adminRole = roles.find((r) => r.name === "Admin");
+        if (adminRole) {
+          counts[adminRole.id] = (counts[adminRole.id] || 0) + 1;
+        }
+      }
+
       setUserCounts(counts);
-      setTotalUsers(users.length);
+      setTotalUsers(regularUsers.length + (adminUser ? 1 : 0));
     } catch {
       setUserCounts({});
       setTotalUsers(0);
     }
-  }, []);
+  }, [roles, adminUser]);
 
   useEffect(() => {
     computeUserCounts();
-    window.addEventListener("apex-gt-users-updated", computeUserCounts);
+    window.addEventListener("apex-driveos-users-updated", computeUserCounts);
     return () =>
-      window.removeEventListener("apex-gt-users-updated", computeUserCounts);
+      window.removeEventListener(
+        "apex-driveos-users-updated",
+        computeUserCounts,
+      );
   }, [computeUserCounts]);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -157,7 +184,7 @@ function UserManagement() {
       </div>
 
       <div className="bg-base border border-border rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
           <div>
             <p className="text-[9px] font-bold tracking-[0.25em] text-gold uppercase">
               Roles & Permissions
@@ -168,7 +195,7 @@ function UserManagement() {
           </div>
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             icon={Plus}
             onClick={() => {
               setEditRole(null);

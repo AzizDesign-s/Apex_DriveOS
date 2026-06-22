@@ -162,25 +162,25 @@ export const exportReportTab = (
     case "sales": {
       ({ cols, rows } = buildSalesReportExport(invoices, cars, bookings));
       title = "Sales Report";
-      filename = "apex-gt-sales-report";
+      filename = "apex-driveos-sales-report";
       break;
     }
     case "inventory": {
       ({ cols, rows } = buildInventoryReportExport(cars));
       title = "Inventory Report";
-      filename = "apex-gt-inventory-report";
+      filename = "apex-driveos-inventory-report";
       break;
     }
     case "customer": {
       ({ cols, rows } = buildCustomerReportExport(customers));
       title = "Customer Report";
-      filename = "apex-gt-customer-report";
+      filename = "apex-driveos-customer-report";
       break;
     }
     case "testdrive": {
       ({ cols, rows } = buildTestDriveReportExport(bookings));
       title = "Test Drive Report";
-      filename = "apex-gt-testdrive-report";
+      filename = "apex-driveos-testdrive-report";
       break;
     }
     default:
@@ -199,7 +199,7 @@ export const exportFullReport = (
   const sections = buildFullReportExport(invoices, cars, customers, bookings);
 
   sections.forEach(({ title, cols, rows }) => {
-    const filename = `apex-gt-${title.toLowerCase().replace(/\s+/g, "-")}`;
+    const filename = `apex-driveos-${title.toLowerCase().replace(/\s+/g, "-")}`;
     if (type === "Excel") exportToExcel(rows, cols, filename);
     else exportToPDF(rows, cols, title, filename);
   });

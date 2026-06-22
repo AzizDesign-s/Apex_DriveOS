@@ -67,24 +67,18 @@ function Navbar() {
   useEffect(() => {
     const reload = () => setNotifItems(loadNotifications());
 
-    // Custom event — same tab actions (add car, approve booking, etc.)
-    window.addEventListener("apex-driveos-notifications-updated", reload);
+    const onStorage = (e) => {
+      if (e.key === "apex-driveos-notifications") reload(); // ← matches real storage key
+    };
 
-    // Storage event — cross-tab sync (future)
-    window.addEventListener("storage", (e) => {
-      if (e.key === "apex-driveos-notifications") reload();
-    });
+    window.addEventListener("apex-driveos-notifications-updated", reload); // ← matches dispatch
+    window.addEventListener("storage", onStorage);
 
     return () => {
       window.removeEventListener("apex-driveos-notifications-updated", reload);
-      window.removeEventListener("storage", reload);
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
-
-  const unreadCount = useMemo(
-    () => notifItems.filter((n) => !n.isRead).length,
-    [notifItems],
-  );
 
   // BUG-001 FIX: unreadCount derived from the shared notifications array
   // minus the locally-tracked read IDs.
@@ -95,6 +89,11 @@ function Navbar() {
       [...notifItems]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 4),
+    [notifItems],
+  );
+
+  const unreadCount = useMemo(
+    () => notifItems.filter((n) => !n.isRead).length,
     [notifItems],
   );
   const markNavRead = (id) => {

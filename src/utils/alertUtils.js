@@ -8,7 +8,7 @@
 
 import { notify } from "./notificationUtils";
 
-const NOTIFIED_KEY = "apex-gt-alert-notified-keys";
+const NOTIFIED_KEY = "apex-driveos-alert-notified-keys";
 
 // ── Compute currently active alerts ──────────────────────────────────────────
 export const computeActiveAlerts = (cars, invoices, bookings) => {

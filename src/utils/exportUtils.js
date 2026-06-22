@@ -10,7 +10,7 @@ import autoTable from "jspdf-autotable";
 // ── EXCEL EXPORT ──────────────────────────────────────────────────────────────
 // data     → array of objects
 // columns  → [{ id, label }] — which fields to include + their header labels
-// filename → e.g. 'apex-gt-inventory'
+// filename → e.g. 'apex-driveos-inventory'
 export function exportToExcel(data, columns, filename = "export") {
   // Build rows — each row is an object with column labels as keys
   const rows = data.map((row) => {

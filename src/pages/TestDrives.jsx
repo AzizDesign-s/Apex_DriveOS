@@ -23,7 +23,7 @@ import apexToast from "../utils/toast";
 import useAppStore from "../store/useAppStore";
 
 const PER_PAGE = 10;
-const LS_KEY = "apex-gt-testdrive-cols";
+const LS_KEY = "apex-driveos-testdrive-cols";
 const EMPTY_FILTERS = { status: [], exec: "", from: "", to: "" };
 
 const STATUS_OPTIONS = [
@@ -50,7 +50,7 @@ const EXPORT_COLS = [
 function TestDrives() {
   const [bookings, setBookings] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-bookings");
+      const saved = localStorage.getItem("apex-driveos-bookings");
       return saved ? JSON.parse(saved) : initialBookings;
     } catch {
       return initialBookings;
@@ -108,9 +108,9 @@ function TestDrives() {
   }, [columns]);
 
   useEffect(() => {
-    localStorage.setItem("apex-gt-bookings", JSON.stringify(bookings));
+    localStorage.setItem("apex-driveos-bookings", JSON.stringify(bookings));
     window.dispatchEvent(
-      new CustomEvent("apex-gt-bookings-updated", {
+      new CustomEvent("apex-driveos-bookings-updated", {
         detail: { bookings },
       }),
     );
@@ -260,7 +260,7 @@ function TestDrives() {
 
   const syncBookingToCustomer = useCallback((booking, newStatus) => {
     try {
-      const saved = localStorage.getItem("apex-gt-customers");
+      const saved = localStorage.getItem("apex-driveos-customers");
       if (!saved) return;
 
       const allCustomers = JSON.parse(saved);
@@ -305,10 +305,10 @@ function TestDrives() {
         return { ...customer, inquiries: updatedInquiries };
       });
 
-      localStorage.setItem("apex-gt-customers", JSON.stringify(updated));
+      localStorage.setItem("apex-driveos-customers", JSON.stringify(updated));
       // Notify Customers page if it's mounted
       window.dispatchEvent(
-        new CustomEvent("apex-gt-customers-updated", {
+        new CustomEvent("apex-driveos-customers-updated", {
           detail: { customers: updated },
         }),
       );
@@ -370,7 +370,7 @@ function TestDrives() {
   const handleExport = useCallback(
     (type) => {
       if (type === "Excel") {
-        exportToExcel(filtered, EXPORT_COLS, "apex-gt-testdrives");
+        exportToExcel(filtered, EXPORT_COLS, "apex-driveos-testdrives");
         apexToast.success(
           "Excel Exported",
           `${filtered.length} bookings exported.`,
@@ -380,7 +380,7 @@ function TestDrives() {
           filtered,
           EXPORT_COLS,
           "Test Drive Report",
-          "apex-gt-testdrives",
+          "apex-driveos-testdrives",
         );
         apexToast.success(
           "PDF Exported",

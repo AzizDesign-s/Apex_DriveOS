@@ -76,7 +76,7 @@ function Field({ label, required, error, children, className = "" }) {
 
 const getLiveCustomers = () => {
   try {
-    const saved = localStorage.getItem("apex-gt-customers");
+    const saved = localStorage.getItem("apex-driveos-customers");
     return saved ? JSON.parse(saved) : seedCustomers;
   } catch {
     return seedCustomers;
@@ -85,7 +85,7 @@ const getLiveCustomers = () => {
 
 const getLiveCars = () => {
   try {
-    const saved = localStorage.getItem("apex-gt-cars");
+    const saved = localStorage.getItem("apex-driveos-cars");
     return saved ? JSON.parse(saved) : seedCars;
   } catch {
     return seedCars;

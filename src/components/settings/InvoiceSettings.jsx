@@ -56,7 +56,7 @@ const TEMPLATE_STYLES = [
   },
 ];
 
-const LS_KEY = "apex-gt-invoice-settings";
+const LS_KEY = "apex-driveos-invoice-settings";
 
 const DEFAULT_INVOICE_SETTINGS = {
   defaultVat: "5",

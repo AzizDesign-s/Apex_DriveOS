@@ -13,7 +13,7 @@
 //       (e.g. roleId '2' → 'Sales Executive')
 
 export const INVENTORY_FILTER_CONFIG = {
-  storageKey: "apex-gt-saved-filters-inventory",
+  storageKey: "apex-driveos-saved-filters-inventory",
   fields: [
     { key: "status", type: "multi", label: "Status" },
     { key: "fuel", type: "multi", label: "Fuel" },
@@ -38,7 +38,7 @@ export const INVENTORY_FILTER_CONFIG = {
 };
 
 export const CUSTOMER_FILTER_CONFIG = {
-  storageKey: "apex-gt-saved-filters-customers",
+  storageKey: "apex-driveos-saved-filters-customers",
   fields: [
     { key: "status", type: "multi", label: "Status" },
     { key: "source", type: "single", label: "Source" },
@@ -50,7 +50,7 @@ export const CUSTOMER_FILTER_CONFIG = {
 };
 
 export const USER_FILTER_CONFIG = {
-  storageKey: "apex-gt-saved-filters-users",
+  storageKey: "apex-driveos-saved-filters-users",
   fields: [
     { key: "status", type: "multi", label: "Status" },
     {
@@ -69,7 +69,7 @@ export const USER_FILTER_CONFIG = {
 };
 
 export const INVOICE_FILTER_CONFIG = {
-  storageKey: "apex-gt-saved-filters-invoices",
+  storageKey: "apex-driveos-saved-filters-invoices",
   fields: [
     { key: "status", type: "multi", label: "Status" },
     { key: "method", type: "single", label: "Method" },
@@ -98,7 +98,7 @@ export const INVOICE_FILTER_CONFIG = {
 };
 
 export const TESTDRIVE_FILTER_CONFIG = {
-  storageKey: "apex-gt-saved-filters-testdrives",
+  storageKey: "apex-driveos-saved-filters-testdrives",
   fields: [
     { key: "status", type: "multi", label: "Status" },
     { key: "exec", type: "single", label: "Exec" },

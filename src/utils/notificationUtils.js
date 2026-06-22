@@ -5,7 +5,7 @@
 // Phase 2: replace with useNotificationStore actions.
 
 // ── Storage key ───────────────────────────────────────────────────────────────
-const LS_KEY = "apex-gt-notifications";
+const LS_KEY = "apex-driveos-notifications";
 
 // ── Load all notifications ────────────────────────────────────────────────────
 export const loadNotifications = () => {
@@ -28,7 +28,7 @@ const syncCountToStore = (notifications) => {
     const unread = notifications.filter((n) => !n.isRead).length;
     // Dispatch a separate count event that Sidebar listens to
     window.dispatchEvent(
-      new CustomEvent("apex-gt-notif-count-updated", {
+      new CustomEvent("apex-driveos-notif-count-updated", {
         detail: { count: unread },
       }),
     );
@@ -47,7 +47,7 @@ export const saveNotifications = (notifications) => {
 
   try {
     window.dispatchEvent(
-      new CustomEvent("apex-gt-notifications-updated", {
+      new CustomEvent("apex-driveos-notifications-updated", {
         detail: { notifications },
       }),
     );

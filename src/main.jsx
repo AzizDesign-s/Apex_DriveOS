@@ -5,7 +5,7 @@ import App from "./App.jsx";
 
 // ── Apply saved theme before first render ──────────────────────────────────
 // Without this, there's a flash of dark theme even if the user saved 'light'
-const savedStore = localStorage.getItem("apex-gt-store");
+const savedStore = localStorage.getItem("apex-driveos-store");
 if (savedStore) {
   try {
     const { state } = JSON.parse(savedStore);

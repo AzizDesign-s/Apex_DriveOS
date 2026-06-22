@@ -53,15 +53,15 @@ function Reports() {
   const [showCustom, setShowCustom] = useState(false);
 
   // ── Live data — same localStorage bridge as every other module ────────────
-  const [cars, setCars] = useState(() => getLiveArray("apex-gt-cars"));
+  const [cars, setCars] = useState(() => getLiveArray("apex-driveos-cars"));
   const [customers, setCustomers] = useState(() =>
-    getLiveArray("apex-gt-customers"),
+    getLiveArray("apex-driveos-customers"),
   );
   const [invoices, setInvoices] = useState(() =>
-    getLiveArray("apex-gt-invoices"),
+    getLiveArray("apex-driveos-invoices"),
   );
   const [bookings, setBookings] = useState(() =>
-    getLiveArray("apex-gt-bookings"),
+    getLiveArray("apex-driveos-bookings"),
   );
 
   useEffect(() => {
@@ -72,15 +72,15 @@ function Reports() {
       e.detail?.invoices && setInvoices(e.detail.invoices);
     const onBookings = (e) =>
       e.detail?.bookings && setBookings(e.detail.bookings);
-    window.addEventListener("apex-gt-cars-updated", onCars);
-    window.addEventListener("apex-gt-customers-updated", onCustomers);
-    window.addEventListener("apex-gt-invoices-updated", onInvoices);
-    window.addEventListener("apex-gt-bookings-updated", onBookings);
+    window.addEventListener("apex-driveos-cars-updated", onCars);
+    window.addEventListener("apex-driveos-customers-updated", onCustomers);
+    window.addEventListener("apex-driveos-invoices-updated", onInvoices);
+    window.addEventListener("apex-driveos-bookings-updated", onBookings);
     return () => {
-      window.removeEventListener("apex-gt-cars-updated", onCars);
-      window.removeEventListener("apex-gt-customers-updated", onCustomers);
-      window.removeEventListener("apex-gt-invoices-updated", onInvoices);
-      window.removeEventListener("apex-gt-bookings-updated", onBookings);
+      window.removeEventListener("apex-driveos-cars-updated", onCars);
+      window.removeEventListener("apex-driveos-customers-updated", onCustomers);
+      window.removeEventListener("apex-driveos-invoices-updated", onInvoices);
+      window.removeEventListener("apex-driveos-bookings-updated", onBookings);
     };
   }, []);
 

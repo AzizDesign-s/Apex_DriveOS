@@ -81,16 +81,16 @@ function Analytics() {
       if (e.detail?.bookings) setLiveBookings(e.detail.bookings);
     };
 
-    window.addEventListener("apex-gt-cars-updated", onCars);
-    window.addEventListener("apex-gt-customers-updated", onCustomers);
-    window.addEventListener("apex-gt-invoices-updated", onInvoices);
-    window.addEventListener("apex-gt-bookings-updated", onBookings);
+    window.addEventListener("apex-driveos-cars-updated", onCars);
+    window.addEventListener("apex-driveos-customers-updated", onCustomers);
+    window.addEventListener("apex-driveos-invoices-updated", onInvoices);
+    window.addEventListener("apex-driveos-bookings-updated", onBookings);
 
     return () => {
-      window.removeEventListener("apex-gt-cars-updated", onCars);
-      window.removeEventListener("apex-gt-customers-updated", onCustomers);
-      window.removeEventListener("apex-gt-invoices-updated", onInvoices);
-      window.removeEventListener("apex-gt-bookings-updated", onBookings);
+      window.removeEventListener("apex-driveos-cars-updated", onCars);
+      window.removeEventListener("apex-driveos-customers-updated", onCustomers);
+      window.removeEventListener("apex-driveos-invoices-updated", onInvoices);
+      window.removeEventListener("apex-driveos-bookings-updated", onBookings);
     };
   }, []);
 
@@ -257,7 +257,7 @@ function Analytics() {
   const revenueCellColors = useMemo(
     () =>
       revenueData.map((entry) =>
-        entry.revenue >= entry.target ? "#D4AF37" : "rgba(251,113,133,0.7)",
+        entry.revenue >= entry.target ? "#EBB811" : "#93C5FD",
       ),
     [revenueData],
   );

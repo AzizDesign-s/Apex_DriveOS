@@ -12,7 +12,7 @@ import { calcInvoice } from "../data/mockData";
 
 export const getLiveCars = () => {
   try {
-    const saved = localStorage.getItem("apex-gt-cars");
+    const saved = localStorage.getItem("apex-driveos-cars");
     return saved ? JSON.parse(saved) : [];
   } catch {
     return [];
@@ -21,7 +21,7 @@ export const getLiveCars = () => {
 
 export const getLiveCustomers = () => {
   try {
-    const saved = localStorage.getItem("apex-gt-customers");
+    const saved = localStorage.getItem("apex-driveos-customers");
     return saved ? JSON.parse(saved) : [];
   } catch {
     return [];
@@ -30,7 +30,7 @@ export const getLiveCustomers = () => {
 
 export const getLiveInvoices = () => {
   try {
-    const saved = localStorage.getItem("apex-gt-invoices");
+    const saved = localStorage.getItem("apex-driveos-invoices");
     return saved ? JSON.parse(saved) : [];
   } catch {
     return [];
@@ -39,7 +39,7 @@ export const getLiveInvoices = () => {
 
 export const getLiveBookings = () => {
   try {
-    const saved = localStorage.getItem("apex-gt-bookings");
+    const saved = localStorage.getItem("apex-driveos-bookings");
     return saved ? JSON.parse(saved) : [];
   } catch {
     return [];

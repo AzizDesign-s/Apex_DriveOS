@@ -247,7 +247,7 @@ function Dashboard() {
 
   const [liveCars, setLiveCars] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-cars");
+      const saved = localStorage.getItem("apex-driveos-cars");
       return saved ? JSON.parse(saved) : cars; // cars from mockData as fallback
     } catch {
       return cars;
@@ -256,7 +256,7 @@ function Dashboard() {
 
   const [liveCustomers, setLiveCustomers] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-customers");
+      const saved = localStorage.getItem("apex-driveos-customers");
       return saved ? JSON.parse(saved) : customers;
     } catch {
       return customers;
@@ -265,7 +265,7 @@ function Dashboard() {
 
   const [liveInvoices, setLiveInvoices] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-invoices");
+      const saved = localStorage.getItem("apex-driveos-invoices");
       return saved ? JSON.parse(saved) : invoices;
     } catch {
       return invoices;
@@ -274,7 +274,7 @@ function Dashboard() {
 
   const [liveBookings, setLiveBookings] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-bookings");
+      const saved = localStorage.getItem("apex-driveos-bookings");
       return saved ? JSON.parse(saved) : testDrives;
     } catch {
       return testDrives;
@@ -291,16 +291,25 @@ function Dashboard() {
     const onBookingUpdate = (e) =>
       setLiveBookings(e.detail?.bookings || liveBookings);
 
-    window.addEventListener("apex-gt-cars-updated", onCarsUpdated);
-    window.addEventListener("apex-gt-customers-updated", onCustomerUpdate);
-    window.addEventListener("apex-gt-invoices-updated", onInvoiceUpdate);
-    window.addEventListener("apex-gt-bookings-updated", onBookingUpdate);
+    window.addEventListener("apex-driveos-cars-updated", onCarsUpdated);
+    window.addEventListener("apex-driveos-customers-updated", onCustomerUpdate);
+    window.addEventListener("apex-driveos-invoices-updated", onInvoiceUpdate);
+    window.addEventListener("apex-driveos-bookings-updated", onBookingUpdate);
 
     return () => {
-      window.removeEventListener("apex-gt-cars-updated", onCarsUpdated);
-      window.removeEventListener("apex-gt-customers-updated", onCustomerUpdate);
-      window.removeEventListener("apex-gt-invoices-updated", onInvoiceUpdate);
-      window.removeEventListener("apex-gt-bookings-updated", onBookingUpdate);
+      window.removeEventListener("apex-driveos-cars-updated", onCarsUpdated);
+      window.removeEventListener(
+        "apex-driveos-customers-updated",
+        onCustomerUpdate,
+      );
+      window.removeEventListener(
+        "apex-driveos-invoices-updated",
+        onInvoiceUpdate,
+      );
+      window.removeEventListener(
+        "apex-driveos-bookings-updated",
+        onBookingUpdate,
+      );
     };
   }, []);
 
@@ -432,12 +441,12 @@ function Dashboard() {
         {
           name: "Reserved",
           value: liveCars.filter((c) => c.status === "reserved").length,
-          color: "#38BDF8",
+          color: "#93C5FD",
         },
         {
           name: "Sold",
           value: liveCars.filter((c) => c.status === "sold").length,
-          color: "#D4AF37",
+          color: "#EBB811",
         },
         {
           name: "Maintenance",
@@ -856,9 +865,7 @@ function Dashboard() {
                     <Cell
                       key={i}
                       fill={
-                        entry.revenue >= entry.target
-                          ? "#D4AF37"
-                          : "rgba(251,113,133,0.7)"
+                        entry.revenue >= entry.target ? "#EBB811" : "#93C5FD"
                       }
                     />
                   ))}

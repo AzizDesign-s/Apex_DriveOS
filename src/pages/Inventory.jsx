@@ -42,7 +42,7 @@ function Inventory() {
   // ── Core data ────────────────────────────────────────────────────────────
   const [cars, setCars] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-cars");
+      const saved = localStorage.getItem("apex-driveos-cars");
       return saved ? JSON.parse(saved) : initialCars;
     } catch {
       return initialCars;
@@ -96,7 +96,7 @@ function Inventory() {
   // ── Column config (persisted to localStorage) ─────────────────────────────
   const [columns, setColumns] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-inventory-cols");
+      const saved = localStorage.getItem("apex-driveos-inventory-cols");
       return saved ? JSON.parse(saved) : DEFAULT_COLUMNS;
     } catch {
       return DEFAULT_COLUMNS;
@@ -104,15 +104,18 @@ function Inventory() {
   });
 
   useEffect(() => {
-    localStorage.setItem("apex-gt-inventory-cols", JSON.stringify(columns));
+    localStorage.setItem(
+      "apex-driveos-inventory-cols",
+      JSON.stringify(columns),
+    );
   }, [columns]);
 
   useEffect(() => {
-    localStorage.setItem("apex-gt-cars", JSON.stringify(cars));
+    localStorage.setItem("apex-driveos-cars", JSON.stringify(cars));
     // BUG-012 + BUG-013 FIX: dispatch a custom event so other modules can react
     // Phase 2 will replace this with Zustand store subscription
     window.dispatchEvent(
-      new CustomEvent("apex-gt-cars-updated", {
+      new CustomEvent("apex-driveos-cars-updated", {
         detail: { cars },
       }),
     );
@@ -125,9 +128,9 @@ function Inventory() {
       }
     };
 
-    window.addEventListener("apex-gt-cars-updated", onCarsUpdated);
+    window.addEventListener("apex-driveos-cars-updated", onCarsUpdated);
     return () =>
-      window.removeEventListener("apex-gt-cars-updated", onCarsUpdated);
+      window.removeEventListener("apex-driveos-cars-updated", onCarsUpdated);
   }, []);
 
   // ── UI panel state ────────────────────────────────────────────────────────
@@ -319,7 +322,7 @@ function Inventory() {
       }));
 
       if (type === "Excel") {
-        exportToExcel(exportData, exportCols, "apex-gt-inventory");
+        exportToExcel(exportData, exportCols, "apex-driveos-inventory");
         apexToast.success(
           "Excel Exported",
           `${filtered.length} cars exported successfully.`,
@@ -329,7 +332,7 @@ function Inventory() {
           exportData,
           exportCols,
           "Inventory Report",
-          "apex-gt-inventory",
+          "apex-driveos-inventory",
         );
         apexToast.success(
           "PDF Exported",

@@ -38,13 +38,13 @@ function Notifications() {
     // Don't trust event.detail — read source of truth directly
     const reload = () => setItems(loadNotifications());
 
-    window.addEventListener("apex-gt-notifications-updated", reload);
+    window.addEventListener("apex-driveos-notifications-updated", reload);
     window.addEventListener("storage", (e) => {
-      if (e.key === "apex-gt-notifications") reload();
+      if (e.key === "apex-driveos-notifications") reload();
     });
 
     return () => {
-      window.removeEventListener("apex-gt-notifications-updated", reload);
+      window.removeEventListener("apex-driveos-notifications-updated", reload);
       window.removeEventListener("storage", reload);
     };
   }, []);

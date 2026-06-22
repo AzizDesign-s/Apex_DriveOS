@@ -220,25 +220,55 @@ function UserDetailDrawer({
                     {role.description}
                   </p>
                 )}
-                <p className="text-[9px] font-bold tracking-[0.15em] text-text-subtle uppercase mb-2">
-                  Can view
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {grantedModules.length > 0 ? (
-                    grantedModules.map((m) => (
-                      <span
-                        key={m.id}
-                        className="text-[10px] font-medium text-text-muted bg-card border border-border px-2 py-1 rounded-lg"
-                      >
-                        {m.label}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-[10px] text-text-subtle">
-                      No module access granted
-                    </p>
-                  )}
-                </div>
+
+                {/* BUG-3 FIX: full permissions breakdown, not just "Can view" list */}
+                {role ? (
+                  <div className="space-y-2">
+                    {PERMISSION_MODULES.filter((m) => !m.disabled).map((m) => {
+                      const perm = role.permissions?.[m.id];
+                      if (!perm) return null;
+                      // Only show modules where AT LEAST one permission is granted
+                      const hasAny =
+                        perm.view || perm.create || perm.edit || perm.delete;
+                      if (!hasAny) return null;
+
+                      return (
+                        <div
+                          key={m.id}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-[11px] text-text-muted">
+                            {m.label}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            {["view", "create", "edit", "delete"].map((key) => {
+                              // Skip create/edit/delete for view-only modules
+                              if (m.viewOnly && key !== "view") return null;
+                              const granted = !!perm[key];
+                              return (
+                                <span
+                                  key={key}
+                                  className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded
+                      ${
+                        granted
+                          ? "bg-gold/15 text-gold"
+                          : "bg-base text-text-subtle/40 border border-border/40"
+                      }`}
+                                >
+                                  {key.slice(0, 1).toUpperCase()}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-text-subtle">
+                    No module access granted
+                  </p>
+                )}
               </div>
             </div>
 

@@ -39,7 +39,7 @@ function Users() {
   // is no longer a regular, independently-stored user record at all.
   const [users, setUsers] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-users");
+      const saved = localStorage.getItem("apex-driveos-users");
       const parsed = saved ? JSON.parse(saved) : initialUsers;
       return parsed.filter((u) => u.id !== 1); // strip legacy seeded Admin row
     } catch {
@@ -60,7 +60,7 @@ function Users() {
   // ── Roles — read live, written by Settings → User Management ──────────────
   const [roles, setRoles] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-roles");
+      const saved = localStorage.getItem("apex-driveos-roles");
       return saved ? JSON.parse(saved) : seedRoles;
     } catch {
       return seedRoles;
@@ -71,9 +71,9 @@ function Users() {
     const onRolesUpdate = (e) => {
       if (e.detail?.roles) setRoles(e.detail.roles);
     };
-    window.addEventListener("apex-gt-roles-updated", onRolesUpdate);
+    window.addEventListener("apex-driveos-roles-updated", onRolesUpdate);
     return () =>
-      window.removeEventListener("apex-gt-roles-updated", onRolesUpdate);
+      window.removeEventListener("apex-driveos-roles-updated", onRolesUpdate);
   }, []);
 
   // FIX: resolve the Admin role's actual id from live roles data, so the
@@ -138,7 +138,7 @@ function Users() {
 
   const [columns, setColumns] = useState(() => {
     try {
-      const saved = localStorage.getItem("apex-gt-user-cols");
+      const saved = localStorage.getItem("apex-driveos-user-cols");
       return saved ? JSON.parse(saved) : DEFAULT_USER_COLUMNS;
     } catch {
       return DEFAULT_USER_COLUMNS;
@@ -147,16 +147,16 @@ function Users() {
 
   // FIX: only persist the REGULAR users array (never the synthetic admin
   // row — that one is always derived fresh from useAppStore.user and
-  // must never be written back to apex-gt-users)
+  // must never be written back to apex-driveos-users)
   useEffect(() => {
-    localStorage.setItem("apex-gt-users", JSON.stringify(users));
+    localStorage.setItem("apex-driveos-users", JSON.stringify(users));
     window.dispatchEvent(
-      new CustomEvent("apex-gt-users-updated", { detail: { users } }),
+      new CustomEvent("apex-driveos-users-updated", { detail: { users } }),
     );
   }, [users]);
 
   useEffect(() => {
-    localStorage.setItem("apex-gt-user-cols", JSON.stringify(columns));
+    localStorage.setItem("apex-driveos-user-cols", JSON.stringify(columns));
   }, [columns]);
 
   const [selected, setSelected] = useState(new Set());

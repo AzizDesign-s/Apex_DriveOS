@@ -106,7 +106,7 @@ function RoleCard({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 pt-1 border-t border-border/60">
+      <div className="flex items-center gap-2 pt-1 border-t border-border ">
         <button
           onClick={() => onEdit(role)}
           className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-border

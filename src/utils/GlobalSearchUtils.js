@@ -13,7 +13,7 @@ const getArray = (key) => {
 };
 
 // ── Recent searches — session-only, last 5, in-memory via sessionStorage ─────
-const RECENT_KEY = "apex-gt-recent-searches";
+const RECENT_KEY = "apex-driveos-recent-searches";
 
 export const getRecentSearches = () => {
   try {
@@ -49,7 +49,7 @@ export const clearRecentSearches = () => {
 // ── Per-entity search ──────────────────────────────────────────────────────
 
 const searchCars = (query) => {
-  const cars = getArray("apex-gt-cars");
+  const cars = getArray("apex-driveos-cars");
   const q = query.toLowerCase();
   return cars
     .filter((c) =>
@@ -68,7 +68,7 @@ const searchCars = (query) => {
 };
 
 const searchCustomers = (query) => {
-  const customers = getArray("apex-gt-customers");
+  const customers = getArray("apex-driveos-customers");
   const q = query.toLowerCase();
   return customers
     .filter((c) =>
@@ -87,7 +87,7 @@ const searchCustomers = (query) => {
 };
 
 const searchUsers = (query) => {
-  const users = getArray("apex-gt-users");
+  const users = getArray("apex-driveos-users");
   const q = query.toLowerCase();
   return users
     .filter((u) =>
@@ -104,7 +104,7 @@ const searchUsers = (query) => {
 };
 
 const searchInvoices = (query) => {
-  const invoices = getArray("apex-gt-invoices");
+  const invoices = getArray("apex-driveos-invoices");
   const q = query.toLowerCase();
   return invoices
     .filter((i) =>
@@ -121,7 +121,7 @@ const searchInvoices = (query) => {
 };
 
 const searchBookings = (query) => {
-  const bookings = getArray("apex-gt-bookings");
+  const bookings = getArray("apex-driveos-bookings");
   const q = query.toLowerCase();
   return bookings
     .filter((b) =>
