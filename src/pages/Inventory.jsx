@@ -5,6 +5,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { notify } from "../utils/notificationUtils";
+import { activity } from "../utils/activityLogger";
 import { cars as initialCars, DEFAULT_COLUMNS } from "../data/mockData";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 
@@ -244,13 +245,11 @@ function Inventory() {
     setCars((prev) => {
       const exists = prev.find((c) => c.id === carData.id);
       if (exists) {
-        // BUG-048 FIX: notify on car update
-        notify.carUpdated(carData);
+        activity.carUpdated(carData);
         return prev.map((c) => (c.id === carData.id ? carData : c));
       }
-      // BUG-048 FIX: notify on car add
-      notify.carAdded(carData);
-      // Check if inventory is now low after adding
+      activity.carAdded(carData);
+      // Low inventory is a business ALERT — stays as notify
       const newCars = [carData, ...prev];
       const availableNow = newCars.filter(
         (c) => c.status === "available",
@@ -289,8 +288,7 @@ function Inventory() {
       setCars((prev) => {
         const updated = prev.map((c) => {
           if (!selected.has(c.id)) return c;
-          // BUG-048 FIX: notify per car status change
-          notify.carStatusChanged(c, newStatus);
+          activity.carStatusChanged(c, c.status, newStatus);
           return { ...c, status: newStatus };
         });
         return updated;

@@ -7,7 +7,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import useAppStore from "../store/useAppStore";
-import { notify } from "../utils/notificationUtils";
+import { activity } from "../utils/activityLogger";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import {
   users as initialUsers,
@@ -263,11 +263,11 @@ function Users() {
     setUsers((prev) => {
       const exists = prev.find((u) => u.id === data.id);
       if (exists) {
-        notify.userUpdated(data);
+        activity.userUpdated(data);
         return prev.map((u) => (u.id === data.id ? data : u));
       }
       const newUser = { ...data, id: Date.now() };
-      notify.userAdded(newUser);
+      activity.userAdded(newUser);
       return [newUser, ...prev];
     });
     setFormOpen(false);
@@ -314,7 +314,7 @@ function Users() {
       setUsers((prev) =>
         prev.map((u) => {
           if (!selected.has(u.id)) return u;
-          notify.userStatusChanged(u, newStatus);
+          activity.userStatusChanged(u, u.status, newStatus);
           return { ...u, status: newStatus };
         }),
       );

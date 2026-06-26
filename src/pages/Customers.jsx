@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { notify } from "../utils/notificationUtils";
+import { activity } from "../utils/activityLogger";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import {
   customers as initialCustomers,
@@ -191,10 +191,10 @@ function Customers() {
     setCustomers((prev) => {
       const exists = prev.find((c) => c.id === data.id);
       if (exists) {
-        notify.customerUpdated(data);
+        activity.customerUpdated(data);
         return prev.map((c) => (c.id === data.id ? data : c));
       }
-      notify.customerAdded(data);
+      activity.customerAdded(data);
       return [data, ...prev];
     });
     setPage(1);

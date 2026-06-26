@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { notify } from "../utils/notificationUtils";
+import { activity } from "../utils/activityLogger";
 import {
   testDrives as initialBookings,
   DEFAULT_TESTDRIVE_COLUMNS,
@@ -331,7 +332,8 @@ function TestDrives() {
     if (newStatus === "approved")
       notify.bookingApproved({ ...booking, status: newStatus });
     if (newStatus === "completed")
-      notify.bookingCompleted({ ...booking, status: newStatus });
+      // Completed = action record (what happened), not a business alert
+      activity.bookingCompleted({ ...booking, status: newStatus });
     if (newStatus === "rejected")
       notify.bookingRejected({ ...booking, status: newStatus });
     if (newStatus === "cancelled")

@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { notify } from "../utils/notificationUtils";
+import { activity } from "../utils/activityLogger";
 import {
   invoices as initialInvoices,
   DEFAULT_INVOICE_COLUMNS,
@@ -356,8 +357,10 @@ function Invoices() {
     setInvoices((prev) => {
       const exists = prev.find((i) => i.id === data.id);
       if (!exists) {
-        // New invoice created
-        notify.invoiceCreated(data);
+        // New invoice — log to activity (creation record)
+        // invoicePaid/Overdue/Sent stay as notify (business alerts)
+        const { total } = calcInvoice(data.items, data.discount, data.vatRate);
+        activity.invoiceCreated(data, total);
       }
       // If created/saved as paid, notify
       if (data.status === "paid") {
