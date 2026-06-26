@@ -1,6 +1,5 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
 import App from "./App.jsx";
 
@@ -22,23 +21,8 @@ if (savedStore) {
   document.documentElement.classList.add("dark");
 }
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60 * 1000, // 1 minute — data stays fresh for 1 min
-      retry: 1, // retry failed requests once before erroring
-      refetchOnWindowFocus: false, // don't refetch every time user tabs back
-    },
-    mutations: {
-      retry: 0, // never retry mutations — a failed write should surface immediately
-    },
-  },
-});
-
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+    <App />
   </StrictMode>,
 );

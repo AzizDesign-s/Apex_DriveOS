@@ -1199,6 +1199,11 @@ export const PAYMENT_METHOD_DATA = [
 // type: 'test_drive' | 'invoice' | 'inventory' | 'customer' | 'system'
 // priority: 'high' | 'medium' | 'low'
 
+// src/data/mockData.js
+// Sprint 4 Phase 1: notifications[] trimmed to business alerts only.
+// Removed: IDs 4,5,6,8,10,12 (action records → now in mockActivityLogs.js)
+// Kept:    IDs 1,2,3,7,9,11 (business alerts requiring attention)
+
 export const notifications = [
   {
     id: 1,
@@ -1209,11 +1214,7 @@ export const notifications = [
       "Mohammed Al-Rashid's test drive for Mercedes AMG GT 63S has been approved. Scheduled for 10 Jun 2026 at 10:00 AM.",
     link: "/test-drives",
     linkLabel: "View Booking",
-    meta: {
-      bookingId: "TD-2026-001",
-      customer: "Mohammed Al-Rashid",
-      car: "Mercedes AMG GT 63S",
-    },
+    meta: { bookingId: "TD-2026-001" },
     isRead: false,
     isPinned: true,
     createdAt: "2026-06-15T09:30:00",
@@ -1227,7 +1228,7 @@ export const notifications = [
       "Invoice INV-0041 for Emma Williams (Rolls Royce Ghost EWB · AED 1.89M) is 5 days overdue. Immediate follow-up required.",
     link: "/invoices",
     linkLabel: "View Invoice",
-    meta: { invoiceId: "INV-0041", customer: "Emma Williams", amount: 1890000 },
+    meta: { invoiceId: "INV-0041" },
     isRead: false,
     isPinned: true,
     createdAt: "2026-06-15T08:15:00",
@@ -1247,90 +1248,18 @@ export const notifications = [
     createdAt: "2026-06-14T14:00:00",
   },
   {
-    id: 4,
-    type: "test_drive",
-    priority: "medium",
-    title: "Test Drive Completed",
-    message:
-      "Khalid Al-Mansoori completed his test drive for Lamborghini Urus Performante. Sales exec Omar Khalid has submitted feedback.",
-    link: "/test-drives",
-    linkLabel: "View Booking",
-    meta: {
-      bookingId: "TD-2026-003",
-      customer: "Khalid Al-Mansoori",
-      car: "Lamborghini Urus",
-    },
-    isRead: true,
-    isPinned: false,
-    createdAt: "2026-06-14T11:45:00",
-  },
-  {
-    id: 5,
-    type: "invoice",
-    priority: "low",
-    title: "New Invoice Created",
-    message:
-      "Invoice INV-0042 has been created for Mohammed Al-Rashid · Mercedes AMG GT 63S · AED 718,500. Due date: 20 Jun 2026.",
-    link: "/invoices",
-    linkLabel: "View Invoice",
-    meta: {
-      invoiceId: "INV-0042",
-      customer: "Mohammed Al-Rashid",
-      amount: 718500,
-    },
-    isRead: true,
-    isPinned: false,
-    createdAt: "2026-06-13T16:30:00",
-  },
-  {
-    id: 6,
-    type: "customer",
-    priority: "low",
-    title: "New Customer Registered",
-    message:
-      "Sarah Johnson (CUST-002) has been added to the CRM. Source: Facebook. Status set to Prospect.",
-    link: "/customers",
-    linkLabel: "View Customer",
-    meta: {
-      customerId: "CUST-002",
-      customer: "Sarah Johnson",
-      source: "Facebook",
-    },
-    isRead: true,
-    isPinned: false,
-    createdAt: "2026-06-13T10:20:00",
-  },
-  {
     id: 7,
     type: "test_drive",
     priority: "high",
     title: "Test Drive Cancelled — No Show",
     message:
-      "Ahmed Al-Farsi did not show up for the Ferrari 488 Pista test drive (TD-2026-006). Booking has been marked as cancelled.",
+      "Ahmed Al-Farsi did not show up for the Ferrari 488 Pista test drive (TD-2026-006). Booking marked as cancelled.",
     link: "/test-drives",
     linkLabel: "View Booking",
-    meta: {
-      bookingId: "TD-2026-006",
-      customer: "Ahmed Al-Farsi",
-      car: "Ferrari 488 Pista",
-    },
+    meta: { bookingId: "TD-2026-006" },
     isRead: false,
     isPinned: false,
     createdAt: "2026-06-12T17:00:00",
-  },
-  {
-    id: 8,
-    type: "inventory",
-    priority: "low",
-    title: "Car Status Updated",
-    message:
-      "Rolls Royce Ghost EWB (RRG-2024) has been updated from Available to Reserved by Ahmed Al-Sayed.",
-    link: "/inventory",
-    linkLabel: "View Car",
-    meta: { carModel: "Rolls Royce Ghost EWB", plate: "RRG-2024" },
-    isRead: true,
-    isPinned: false,
-    createdAt: "2026-06-12T09:10:00",
   },
   {
     id: 9,
@@ -1338,31 +1267,13 @@ export const notifications = [
     priority: "medium",
     title: "Partial Payment Received",
     message:
-      "Khalid Al-Mansoori made a partial payment of AED 400,000 on Invoice INV-0040 (Lamborghini Urus Performante). Balance: AED 421,500.",
+      "Khalid Al-Mansoori made a partial payment of AED 400,000 on Invoice INV-0040. Balance: AED 421,500.",
     link: "/invoices",
     linkLabel: "View Invoice",
-    meta: {
-      invoiceId: "INV-0040",
-      customer: "Khalid Al-Mansoori",
-      amount: 400000,
-    },
+    meta: { invoiceId: "INV-0040" },
     isRead: false,
     isPinned: false,
     createdAt: "2026-06-11T13:55:00",
-  },
-  {
-    id: 10,
-    type: "system",
-    priority: "low",
-    title: "System Backup Completed",
-    message:
-      "Apex DriveOS dashboard data has been successfully backed up. All records including inventory, customers, and invoices are secured.",
-    link: null,
-    linkLabel: null,
-    meta: {},
-    isRead: true,
-    isPinned: false,
-    createdAt: "2026-06-10T02:00:00",
   },
   {
     id: 11,
@@ -1373,28 +1284,10 @@ export const notifications = [
       "Emma Williams has requested a test drive for BMW M8 Competition on 14 Jun 2026 at 09:00 AM. Assigned to Sara Mohammed.",
     link: "/test-drives",
     linkLabel: "Approve Now",
-    meta: {
-      bookingId: "TD-2026-004",
-      customer: "Emma Williams",
-      car: "BMW M8 Competition",
-    },
+    meta: { bookingId: "TD-2026-004" },
     isRead: false,
     isPinned: false,
     createdAt: "2026-06-10T10:00:00",
-  },
-  {
-    id: 12,
-    type: "inventory",
-    priority: "medium",
-    title: "New Car Added to Inventory",
-    message:
-      "Porsche 911 Turbo S (PCH-911) has been added to inventory by Admin. Status: Available. Price: AED 620,000.",
-    link: "/inventory",
-    linkLabel: "View Car",
-    meta: { carModel: "Porsche 911 Turbo S", plate: "PCH-911" },
-    isRead: true,
-    isPinned: false,
-    createdAt: "2026-06-09T11:30:00",
   },
 ];
 

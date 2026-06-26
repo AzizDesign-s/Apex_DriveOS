@@ -37,7 +37,7 @@ function ProfileSettings() {
 
   const [form, setForm] = useState({
     name: user?.name || "Admin User",
-    email: user?.email || "admin@apexgt.ae",
+    email: user?.email || "admin@apexdriveos.ae",
     role: user?.role || "Super Admin",
     phone: user?.phone || "+971 50 000 0000",
   });

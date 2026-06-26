@@ -29,6 +29,7 @@ import {
   Users as UsersIcon,
   Shield,
   FileChartColumnIncreasing,
+  ClipboardList,
 } from "lucide-react";
 import useAppStore from "../../store/useAppStore";
 import apexToast from "../../utils/toast";
@@ -177,6 +178,7 @@ function Sidebar({ isMobile = false }) {
       label: "System",
       items: [
         { icon: Bell, label: "Notifications", path: "/notifications" },
+        { icon: ClipboardList, label: "Activity", path: "/activity" },
         { icon: Settings, label: "Settings", path: "/settings" },
       ],
     },

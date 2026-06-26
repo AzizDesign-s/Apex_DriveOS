@@ -142,38 +142,6 @@ export const getUnreadCount = () => {
 
 export const notify = {
   // ── Inventory ──
-  carAdded: (car) =>
-    createNotification({
-      type: "inventory",
-      priority: "low",
-      title: "Car Added to Inventory",
-      message: `${car.brand} ${car.model} (${car.plate}) has been added to inventory. Status: ${car.status}. Price: AED ${Number(car.price).toLocaleString()}.`,
-      link: "/inventory",
-      linkLabel: "View Inventory",
-      meta: { carId: car.id, plate: car.plate },
-    }),
-
-  carUpdated: (car) =>
-    createNotification({
-      type: "inventory",
-      priority: "low",
-      title: "Car Updated",
-      message: `${car.brand} ${car.model} (${car.plate}) details have been updated.`,
-      link: "/inventory",
-      linkLabel: "View Car",
-      meta: { carId: car.id, plate: car.plate },
-    }),
-
-  carStatusChanged: (car, newStatus) =>
-    createNotification({
-      type: "inventory",
-      priority: newStatus === "sold" ? "high" : "medium",
-      title: `Car ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`,
-      message: `${car.brand} ${car.model} (${car.plate}) status changed to ${newStatus}.`,
-      link: "/inventory",
-      linkLabel: "View Inventory",
-      meta: { carId: car.id, plate: car.plate, status: newStatus },
-    }),
 
   lowInventory: (count) =>
     createNotification({
@@ -187,27 +155,6 @@ export const notify = {
     }),
 
   // ── Customers ──
-  customerAdded: (customer) =>
-    createNotification({
-      type: "customer",
-      priority: "low",
-      title: "New Customer Added",
-      message: `${customer.name} (${customer.customerId}) has been added to the CRM. Source: ${customer.source}. Status: ${customer.status}.`,
-      link: "/customers",
-      linkLabel: "View Customer",
-      meta: { customerId: customer.customerId },
-    }),
-
-  customerUpdated: (customer) =>
-    createNotification({
-      type: "customer",
-      priority: "low",
-      title: "Customer Updated",
-      message: `${customer.name} (${customer.customerId}) profile has been updated.`,
-      link: "/customers",
-      linkLabel: "View Customer",
-      meta: { customerId: customer.customerId },
-    }),
 
   // ── Test Drives ──
   bookingCreated: (booking) =>
@@ -215,7 +162,7 @@ export const notify = {
       type: "test_drive",
       priority: "medium",
       title: "Test Drive Booked",
-      message: `${booking.customerName} has requested a test drive for ${booking.carName} on ${booking.date} at ${booking.time}. Assigned to ${booking.exec || "Unassigned"}.`,
+      message: `${booking.customerName} has requested a test drive for ${booking.carName} on ${booking.date} at ${booking.time}.`,
       link: "/test-drives",
       linkLabel: "View Booking",
       meta: { bookingId: booking.bookingId },
@@ -226,23 +173,11 @@ export const notify = {
       type: "test_drive",
       priority: "high",
       title: "Test Drive Approved",
-      message: `${booking.customerName}'s test drive for ${booking.carName} has been approved. Scheduled for ${booking.date} at ${booking.time}.`,
+      message: `${booking.customerName}'s test drive for ${booking.carName} approved. Scheduled ${booking.date} at ${booking.time}.`,
       link: "/test-drives",
       linkLabel: "View Booking",
       meta: { bookingId: booking.bookingId },
     }),
-
-  bookingCompleted: (booking) =>
-    createNotification({
-      type: "test_drive",
-      priority: "medium",
-      title: "Test Drive Completed",
-      message: `${booking.customerName} completed the test drive for ${booking.carName}. Sales exec: ${booking.exec || "Unassigned"}.`,
-      link: "/test-drives",
-      linkLabel: "View Booking",
-      meta: { bookingId: booking.bookingId },
-    }),
-
   bookingRejected: (booking) =>
     createNotification({
       type: "test_drive",
@@ -265,17 +200,18 @@ export const notify = {
       meta: { bookingId: booking.bookingId },
     }),
 
-  // ── Invoices ──
-  invoiceCreated: (invoice) =>
+  bookingCompleted: (booking) =>
     createNotification({
-      type: "invoice",
-      priority: "low",
-      title: "New Invoice Created",
-      message: `Invoice ${invoice.invoiceId} created for ${invoice.customerName}. Due: ${invoice.dueDate}.`,
-      link: "/invoices",
-      linkLabel: "View Invoice",
-      meta: { invoiceId: invoice.invoiceId },
+      type: "test_drive",
+      priority: "medium",
+      title: "Test Drive Completed",
+      message: `${booking.customerName} completed the test drive for ${booking.carName}. Sales exec: ${booking.exec || "Unassigned"}.`,
+      link: "/test-drives",
+      linkLabel: "View Booking",
+      meta: { bookingId: booking.bookingId },
     }),
+
+  // ── Invoices ──
 
   invoicePaid: (invoice, total) =>
     createNotification({
@@ -310,42 +246,6 @@ export const notify = {
       meta: { invoiceId: invoice.invoiceId },
     }),
 
-  // Add to src/utils/notificationUtils.js, inside the `notify` object alongside
-  // notify.customerAdded, notify.carAdded, etc.
-
-  userAdded: (user) =>
-    createNotification({
-      type: "user",
-      priority: "low",
-      title: "New User Added",
-      message: `${user.fullName} (${user.employeeId}) has been added to the team.`,
-      link: "/users",
-      linkLabel: "View User",
-      meta: { userId: user.employeeId },
-    }),
-
-  userUpdated: (user) =>
-    createNotification({
-      type: "user",
-      priority: "low",
-      title: "User Updated",
-      message: `${user.fullName} (${user.employeeId}) profile has been updated.`,
-      link: "/users",
-      linkLabel: "View User",
-      meta: { userId: user.employeeId },
-    }),
-
-  userStatusChanged: (user, newStatus) =>
-    createNotification({
-      type: "user",
-      priority: newStatus === "suspended" ? "high" : "medium",
-      title: `User ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`,
-      message: `${user.fullName} (${user.employeeId}) status changed to ${newStatus}.`,
-      link: "/users",
-      linkLabel: "View User",
-      meta: { userId: user.employeeId, status: newStatus },
-    }),
-
   alertTriggered: (alert) =>
     createNotification({
       type: alert.type,
@@ -356,4 +256,7 @@ export const notify = {
       linkLabel: alert.linkLabel,
       meta: alert.meta,
     }),
+
+  // Add to src/utils/notificationUtils.js, inside the `notify` object alongside
+  // notify.customerAdded, notify.carAdded, etc.
 };

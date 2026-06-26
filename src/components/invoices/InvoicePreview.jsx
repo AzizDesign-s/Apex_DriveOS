@@ -318,7 +318,7 @@ function InvoiceTemplate({ invoice }) {
             Thank you for your business
           </p>
           <p style={{ fontSize: "9px", color: "#94A3B8", marginTop: "2px" }}>
-            Apex DriveOS Cars LLC · apexgt.ae
+            Apex DriveOS Cars LLC · apexdriveos.ae
           </p>
         </div>
       </div>

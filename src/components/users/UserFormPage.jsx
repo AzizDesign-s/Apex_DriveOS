@@ -232,7 +232,7 @@ function UserFormPage({
               type="email"
               value={form.email}
               onChange={(e) => set("email", e.target.value)}
-              placeholder="name@apexgt.ae"
+              placeholder="name@apexdriveos.ae"
             />
           </Field>
           <Field label="Phone Number">
