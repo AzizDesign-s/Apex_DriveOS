@@ -29,7 +29,8 @@ import {
   Users as UsersIcon,
   Shield,
   FileChartColumnIncreasing,
-  ClipboardList,
+  TrendingUp,
+  Wrench,
 } from "lucide-react";
 import useAppStore from "../../store/useAppStore";
 import apexToast from "../../utils/toast";
@@ -78,6 +79,15 @@ function Sidebar({ isMobile = false }) {
   const [notifCount, setNotifCount] = useState(() =>
     getLiveCount("apex-driveos-notifications", (n) => !n.isRead),
   );
+  const [leadCount, setLeadCount] = useState(() =>
+    getLiveCount("apex-driveos-leads", (l) => l.status === "new_inquiry"),
+  );
+  const [serviceCount, setServiceCount] = useState(() =>
+    getLiveCount(
+      "apex-driveos-service",
+      (o) => o.status === "pending" || o.status === "in_progress",
+    ),
+  );
 
   // ── Mobile auto-collapse on route change ─────────────────────────────────────
   useEffect(() => {
@@ -106,6 +116,19 @@ function Sidebar({ isMobile = false }) {
         getLiveCount("apex-driveos-notifications", (n) => !n.isRead),
       );
 
+    const onLeads = () =>
+      // ← ADD
+      setLeadCount(
+        getLiveCount("apex-driveos-leads", (l) => l.status === "new_inquiry"),
+      );
+    const onService = () =>
+      setServiceCount(
+        getLiveCount(
+          "apex-driveos-service",
+          (o) => o.status === "pending" || o.status === "in_progress",
+        ),
+      );
+
     // Count update via custom event (explicit count in detail)
     const onCountUpdate = (e) => {
       if (e.detail?.count !== undefined) setNotifCount(e.detail.count);
@@ -123,17 +146,21 @@ function Sidebar({ isMobile = false }) {
     window.addEventListener("apex-driveos-bookings-updated", onBookings);
     window.addEventListener("apex-driveos-users-updated", onUsers);
     window.addEventListener("apex-driveos-notifications-updated", onNotifs);
+    window.addEventListener("apex-driveos-leads-updated", onLeads);
     window.addEventListener("apex-driveos-notif-count-updated", onCountUpdate);
+    window.addEventListener("apex-driveos-service-updated", onService);
     window.addEventListener("storage", onStorage);
 
     return () => {
       window.removeEventListener("apex-driveos-cars-updated", onCars);
       window.removeEventListener("apex-driveos-bookings-updated", onBookings);
       window.removeEventListener("apex-driveos-users-updated", onUsers);
+      window.removeEventListener("apex-driveos-service-updated", onService);
       window.removeEventListener(
         "apex-driveos-notifications-updated",
         onNotifs,
       );
+      window.removeEventListener("apex-driveos-leads-updated", onLeads);
       window.removeEventListener(
         "apex-driveos-notif-count-updated",
         onCountUpdate,
@@ -151,6 +178,11 @@ function Sidebar({ isMobile = false }) {
     if (item.path === "/test-drives")
       return testDriveCount > 0 ? String(testDriveCount) : null;
     if (item.path === "/users") return userCount > 0 ? String(userCount) : null;
+    if (item.path === "/service")
+      return serviceCount > 0 ? String(serviceCount) : null;
+    if (item.path === "/leads")
+      // ← ADD
+      return leadCount > 0 ? String(leadCount) : null;
     return item.badge || null;
   };
 
@@ -163,6 +195,8 @@ function Sidebar({ isMobile = false }) {
         { icon: UsersIcon, label: "Users", path: "/users" },
         { icon: Car, label: "Inventory", path: "/inventory" },
         { icon: Users, label: "Customers", path: "/customers" },
+        { icon: TrendingUp, label: "Leads", path: "/leads" },
+        { icon: Wrench, label: "Service", path: "/service" },
         { icon: CalendarCheck, label: "Test Drives", path: "/test-drives" },
       ],
     },
@@ -178,7 +212,7 @@ function Sidebar({ isMobile = false }) {
       label: "System",
       items: [
         { icon: Bell, label: "Notifications", path: "/notifications" },
-        { icon: ClipboardList, label: "Activity", path: "/activity" },
+
         { icon: Settings, label: "Settings", path: "/settings" },
       ],
     },

@@ -36,7 +36,7 @@ const saveActivityLogs = (logs) => {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify(logs));
     window.dispatchEvent(
-      new CustomEvent("apex-gt-activity-updated", { detail: { logs } }),
+      new CustomEvent("apex-driveos-activity-updated", { detail: { logs } }),
     );
   } catch {
     /* silent */

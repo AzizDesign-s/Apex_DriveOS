@@ -27,7 +27,9 @@ const PAGE_TITLES = {
   "/test-drives": "Test Drives",
   "/invoices": "Invoices",
   "/analytics": "Analytics",
-  "/notifications": "Notifications",
+  "/leads": "Leads",
+
+  "/notifications": "Notifications / Analytics",
   "/settings": "Settings",
   "/reports": "Reports",
 };

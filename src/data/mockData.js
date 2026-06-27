@@ -1154,6 +1154,7 @@ export const CUSTOMER_GROWTH = [
 
 export const INVENTORY_STATUS_DATA = [
   { name: "Available", value: 12, color: "#10B981" },
+  { value: "interested", label: "Interested", color: "#FBBF24" },
   { name: "Reserved", value: 5, color: "#38BDF8" },
   { name: "Sold", value: 18, color: "#D4AF37" },
   { name: "Maintenance", value: 3, color: "#FB7185" },
@@ -1306,7 +1307,8 @@ export const PERMISSION_MODULES = [
   { id: "reports", label: "Reports", viewOnly: true },
   { id: "settings", label: "Settings", viewOnly: false },
   { id: "users", label: "Users", viewOnly: false },
-  { id: "future", label: "Future Module", disabled: true },
+  { id: "service", label: "Service", viewOnly: false },
+  { id: "leads", label: "Leads", viewOnly: false },
 ];
 
 const emptyPerm = () => ({
@@ -1341,6 +1343,8 @@ export const roles = [
       invoices: { view: true, create: true, edit: true, delete: true },
       analytics: { view: true },
       reports: { view: true },
+      service: { view: true, create: true, edit: true, delete: true },
+      leads: { view: true, create: true, edit: true, delete: true },
       settings: { view: true, create: true, edit: true, delete: true },
       users: { view: true, create: true, edit: true, delete: true },
     }),
@@ -1357,6 +1361,7 @@ export const roles = [
       customers: { view: true, create: true, edit: true },
       testDrives: { view: true, create: true, edit: true },
       invoices: { view: true },
+      leads: { view: true, create: true, edit: true },
       analytics: { view: true },
       reports: { view: true },
     }),
@@ -1385,6 +1390,19 @@ export const roles = [
     permissions: buildPermissions({
       dashboard: { view: true },
       inventory: { view: true, create: true, edit: true, delete: true },
+      service: { view: true, create: true, edit: true, delete: true },
+      reports: { view: true },
+    }),
+    createdAt: "2024-01-01",
+  },
+  {
+    id: 5,
+    name: "Technician",
+    description: "Manages vehicle service, maintenance, and work orders.",
+    isSystemRole: true,
+    permissions: buildPermissions({
+      dashboard: { view: true },
+      inventory: { view: true },
       reports: { view: true },
     }),
     createdAt: "2024-01-01",

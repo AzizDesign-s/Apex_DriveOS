@@ -32,12 +32,12 @@ function Activity() {
   // Live sync — reload when any module logs an activity
   useEffect(() => {
     const reload = () => setLogs(loadActivityLogs());
-    window.addEventListener("apex-gt-activity-updated", reload);
+    window.addEventListener("apex-driveos-activity-updated", reload);
     window.addEventListener("storage", (e) => {
-      if (e.key === "apex-gt-activity") reload();
+      if (e.key === "apex-driveos-activity") reload();
     });
     return () => {
-      window.removeEventListener("apex-gt-activity-updated", reload);
+      window.removeEventListener("apex-driveos-activity-updated", reload);
       window.removeEventListener("storage", reload);
     };
   }, []);
