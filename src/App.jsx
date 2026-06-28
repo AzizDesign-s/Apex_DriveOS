@@ -31,6 +31,7 @@ const TestDrives = lazy(() => import("./pages/TestDrives"));
 const Activity = lazy(() => import("./pages/Activity"));
 const Leads = lazy(() => import("./pages/Leads"));
 const Service = lazy(() => import("./pages/Service"));
+const Promotions = lazy(() => import("./pages/Promotions"));
 
 // ── Auth guards ───────────────────────────────────────────────────────────────
 function ProtectedRoute({ children }) {
@@ -112,6 +113,7 @@ function App() {
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="notifications" element={<Notifications />} />
                 <Route path="service" element={<Service />} />
+                <Route path="promotions" element={<Promotions />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="leads" element={<Leads />} />
                 <Route path="users" element={<Users />} />

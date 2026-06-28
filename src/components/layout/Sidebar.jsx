@@ -31,6 +31,7 @@ import {
   FileChartColumnIncreasing,
   TrendingUp,
   Wrench,
+  Tag,
 } from "lucide-react";
 import useAppStore from "../../store/useAppStore";
 import apexToast from "../../utils/toast";
@@ -204,6 +205,7 @@ function Sidebar({ isMobile = false }) {
       label: "Finance",
       items: [
         { icon: FileText, label: "Invoices", path: "/invoices" },
+        { icon: Tag, label: "Promotions", path: "/promotions" },
         { icon: BarChart2, label: "Analytics", path: "/analytics" },
         { icon: FileChartColumnIncreasing, label: "Reports", path: "/reports" },
       ],

@@ -1,8 +1,9 @@
 // src/components/inventory/CarDetailDrawer.jsx
 // Slide-in drawer from right showing full car details.
 
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Edit, Trash2, Car } from "lucide-react";
+import { X, Edit, Trash2, Car, Wrench, Clock } from "lucide-react";
 import { Badge, Button } from "../ui";
 
 function DetailRow({ label, value }) {
@@ -28,6 +29,46 @@ function SectionTitle({ children }) {
 }
 
 function CarDetailDrawer({ car, isOpen, onClose, onEdit, onDelete }) {
+  const [serviceHistory, setServiceHistory] = useState([]);
+
+  useEffect(() => {
+    if (!car) return;
+    try {
+      const saved = localStorage.getItem("apex-gt-service");
+      const orders = saved ? JSON.parse(saved) : [];
+      const history = orders
+        .filter((o) => o.vehicleId === car.id)
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+      setServiceHistory(history);
+    } catch {
+      setServiceHistory([]);
+    }
+  }, [car]);
+
+  useEffect(() => {
+    const reload = () => {
+      if (!car) return;
+      try {
+        const saved = localStorage.getItem("apex-gt-service");
+        const orders = saved ? JSON.parse(saved) : [];
+        const history = orders
+          .filter((o) => o.vehicleId === car.id)
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          );
+        setServiceHistory(history);
+      } catch {
+        setServiceHistory([]);
+      }
+    };
+    window.addEventListener("apex-gt-service-updated", reload);
+    return () => window.removeEventListener("apex-gt-service-updated", reload);
+  }, [car]);
+
   return (
     <AnimatePresence>
       {isOpen && car && (
@@ -339,6 +380,119 @@ function CarDetailDrawer({ car, isOpen, onClose, onEdit, onDelete }) {
                   </div>
                 </div>
               )}
+
+              <div>
+                <SectionTitle>Service History</SectionTitle>
+
+                {serviceHistory.length === 0 ? (
+                  <div
+                    className="flex flex-col items-center py-6
+                                  border border-dashed border-border rounded-xl"
+                  >
+                    <Wrench size={20} className="text-text-subtle/30 mb-2" />
+                    <p className="text-[10px] text-text-subtle">
+                      No service records for this vehicle
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {serviceHistory.map((order) => {
+                      const statusColor =
+                        {
+                          pending: "text-amber-400   bg-amber-400/10",
+                          in_progress: "text-sky-accent  bg-sky-accent/10",
+                          completed: "text-emerald-400 bg-emerald-400/10",
+                          cancelled: "text-text-subtle bg-text-subtle/10",
+                        }[order.status] || "text-text-muted bg-border/30";
+
+                      return (
+                        <div
+                          key={order.id}
+                          className="bg-base border border-border rounded-xl p-3"
+                        >
+                          {/* Top row: WO ID + status + date */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-gold font-mono">
+                                {order.workOrderId}
+                              </span>
+                              <span
+                                className={`text-[8px] font-bold uppercase
+                                            tracking-wide px-1.5 py-0.5
+                                            rounded-full ${statusColor}`}
+                              >
+                                {order.status.replace("_", " ")}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 text-text-subtle">
+                              <Clock size={9} />
+                              <span className="text-[9px]">
+                                {new Date(order.createdAt).toLocaleDateString(
+                                  "en-AE",
+                                  {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Service type + technician */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <Wrench size={10} className="text-text-subtle" />
+                              <span className="text-[11px] font-semibold text-text-muted">
+                                {order.type}
+                              </span>
+                            </div>
+                            {order.technicianName && (
+                              <span className="text-[10px] text-text-subtle">
+                                {order.technicianName}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Cost */}
+                          {(order.actualCost != null ||
+                            order.estimatedCost) && (
+                            <div
+                              className="flex items-center gap-2 mt-2 pt-2
+                                            border-t border-border"
+                            >
+                              {order.actualCost != null ? (
+                                <span className="text-[10px] text-emerald-400 font-semibold">
+                                  AED{" "}
+                                  {Number(order.actualCost).toLocaleString()}{" "}
+                                  actual
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-text-subtle">
+                                  Est. AED{" "}
+                                  {Number(
+                                    order.estimatedCost || 0,
+                                  ).toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Notes preview */}
+                          {order.notes && (
+                            <p
+                              className="text-[10px] text-text-subtle mt-1.5
+                                          leading-relaxed line-clamp-2"
+                            >
+                              {order.notes}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Footer */}
