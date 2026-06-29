@@ -38,7 +38,7 @@ const EMPTY = {
   photos: [],
   price: "",
   currency: "AED",
-  discount: "",
+
   features: "",
   condition: "",
 };
@@ -418,62 +418,26 @@ function CarFormPage({ isOpen, onClose, onSave, editCar = null }) {
   );
 
   // ── TAB 2: Price & Features ────────────────────────────────────────────────
-  const finalPrice = Math.max(
-    0,
-    Number(form.price || 0) - Number(form.discount || 0),
-  );
 
   const Tab2 = (
     <>
       <FormSection title="Pricing">
-        <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
-          <Field label="Car Price" required error={errors.price}>
-            <div className="flex gap-2">
-              <Select
-                value={form.currency}
-                onChange={(e) => set("currency", e.target.value)}
-                options={["AED", "USD", "EUR", "GBP", "SAR", "QAR"]}
-                className="w-24 flex-shrink-0"
-              />
-              <Input
-                type="number"
-                placeholder="e.g. 680000"
-                value={form.price}
-                onChange={(e) => set("price", e.target.value)}
-              />
-            </div>
-          </Field>
-          <Field label="Discount (Static)">
-            <div className="flex gap-2">
-              <Select
-                value="AED"
-                options={["AED", "%"]}
-                className="w-20 flex-shrink-0"
-              />
-              <Input
-                type="number"
-                placeholder="0"
-                value={form.discount}
-                onChange={(e) => set("discount", e.target.value)}
-              />
-            </div>
-          </Field>
-        </div>
-
-        {/* Live price preview */}
-        {Number(form.price) > 0 && (
-          <div
-            className="mt-3 flex items-center justify-between
-                          bg-gold/[0.04] border border-gold/10 rounded-xl px-4 py-3"
-          >
-            <span className="text-xs text-text-subtle">
-              Final Price After Discount
-            </span>
-            <span className="text-lg font-extrabold text-gold">
-              {form.currency} {finalPrice.toLocaleString()}
-            </span>
+        <Field label="Car Price" required error={errors.price}>
+          <div className="flex gap-2">
+            <Select
+              value={form.currency}
+              onChange={(e) => set("currency", e.target.value)}
+              options={["AED", "USD", "EUR", "GBP", "SAR", "QAR"]}
+              className="w-24 flex-shrink-0"
+            />
+            <Input
+              type="number"
+              placeholder="e.g. 680000"
+              value={form.price}
+              onChange={(e) => set("price", e.target.value)}
+            />
           </div>
-        )}
+        </Field>
       </FormSection>
 
       <FormSection title="Car Features">

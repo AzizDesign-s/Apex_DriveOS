@@ -216,6 +216,25 @@ export function generateInvoicePDF(invoice) {
     `AED ${fmtAED(item.qty * item.unitPrice)}`,
   ]);
 
+  // Promotion banner — only shown if a promotion was applied
+  const discountAmountForBanner =
+    invoice.promotionValue || invoice.discount || 0;
+  if (discountAmountForBanner > 0 && invoice.promotionLabel) {
+    // Green banner bar
+    doc.setFillColor(220, 252, 231); // light emerald bg
+    doc.roundedRect(PAD, y, W - PAD * 2, 9, 2, 2, "F");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(5, 150, 105); // emerald text
+    doc.text(
+      `🏷  ${invoice.promotionLabel} — AED ${fmtAED(discountAmountForBanner)} off`,
+      PAD + 4,
+      y + 6,
+    );
+    y += 13;
+  }
+
   autoTable(doc, {
     startY: y,
     head: [["Description", "Type", "Qty", "Unit Price", "Total"]],
@@ -293,10 +312,14 @@ export function generateInvoicePDF(invoice) {
   y += 4;
 
   drawTotalRow("Subtotal", `AED ${fmtAED(subtotal)}`);
-  if (invoice.discount > 0) {
+  const discountAmount = invoice.promotionValue || invoice.discount || 0;
+  if (discountAmount > 0) {
+    const discountLabel = invoice.promotionLabel
+      ? `Promo: ${invoice.promotionLabel}`
+      : "Discount";
     drawTotalRow(
-      "Discount",
-      `− AED ${fmtAED(invoice.discount)}`,
+      discountLabel,
+      `− AED ${fmtAED(discountAmount)}`,
       false,
       [5, 150, 105],
     );

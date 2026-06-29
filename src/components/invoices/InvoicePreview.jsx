@@ -251,6 +251,32 @@ function InvoiceTemplate({ invoice }) {
         </tbody>
       </table>
 
+      {(invoice.promotionLabel || invoice.discount > 0) && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "8px 12px",
+            marginBottom: "12px",
+            background: "rgba(16,185,129,0.06)",
+            border: "1px solid rgba(16,185,129,0.15)",
+            borderRadius: "8px",
+            fontSize: "10px",
+            color: "#059669",
+            fontWeight: 600,
+          }}
+        >
+          <span style={{ fontSize: "12px" }}>🏷</span>
+          <span>
+            {invoice.promotionLabel || "Discount Applied"}
+            {" — "}
+            AED {fmtAED(invoice.promotionValue || invoice.discount)} off your
+            total
+          </span>
+        </div>
+      )}
+
       {/* ── Totals ── */}
       <div className="flex justify-end mb-5">
         <div className="w-52">
@@ -259,10 +285,17 @@ function InvoiceTemplate({ invoice }) {
               <span>Subtotal</span>
               <span>AED {fmtAED(subtotal)}</span>
             </div>
-            {invoice.discount > 0 && (
+            {(invoice.discount > 0 || invoice.promotionValue > 0) && (
               <div className="flex justify-between text-[11px] text-emerald-600 font-semibold">
-                <span>Discount</span>
-                <span>− AED {fmtAED(invoice.discount)}</span>
+                <span className="flex items-center gap-1">
+                  {/* Show promotion name if available, otherwise generic "Discount" */}
+                  {invoice.promotionLabel
+                    ? `🏷 ${invoice.promotionLabel}`
+                    : "Discount"}
+                </span>
+                <span>
+                  − AED {fmtAED(invoice.promotionValue || invoice.discount)}
+                </span>
               </div>
             )}
             <div

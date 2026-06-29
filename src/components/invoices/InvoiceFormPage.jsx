@@ -1,10 +1,18 @@
 // src/components/invoices/InvoiceFormPage.jsx
-// Create / Edit invoice with dynamic line items
+// Phase 6 changes:
+//   1. localStorage keys corrected: apex-driveos-* → apex-gt-*
+//   2. Manual discount field REMOVED from Invoice Summary panel
+//   3. Promotion picker ADDED above the totals
+//   4. calcInvoice() discount param now comes from selected
+//      promotion's computed value, not a manual input
+//   5. form.promotionId, form.promotionLabel, form.promotionValue
+//      added to form state so the invoice record stores which
+//      promotion was applied
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadInvoiceSettings } from "../settings/InvoiceSettings";
-import { ArrowLeft, Check, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, Plus, Trash2, Tag, X } from "lucide-react";
 import { Button, Input, Select } from "../ui";
 import {
   customers as seedCustomers,
@@ -13,6 +21,11 @@ import {
   generateInvoiceId,
   calcInvoice,
 } from "../../data/mockData";
+import {
+  getPromotionStatus,
+  computeDiscount,
+  promotionAppliesToCar,
+} from "../../data/mockPromotion";
 import apexToast from "../../utils/toast";
 
 const ITEM_TYPES = ["car", "service", "custom"];
@@ -39,11 +52,14 @@ const getEmptyForm = () => {
     dueDate: "",
     status: "draft",
     method: "Cash",
-    // BUG-054 FIX: use saved defaults from Settings
     vatRate: Number(settings.defaultVat) || 5,
     currency: settings.defaultCurrency || "AED",
     notes: settings.footerText || "",
     items: [],
+    // Phase 6: promotion fields (replaces manual discount)
+    promotionId: null,
+    promotionLabel: "",
+    promotionValue: 0, // computed AED amount from the promotion
   };
 };
 
@@ -74,9 +90,10 @@ function Field({ label, required, error, children, className = "" }) {
   );
 }
 
+// Phase 6: corrected keys
 const getLiveCustomers = () => {
   try {
-    const saved = localStorage.getItem("apex-driveos-customers");
+    const saved = localStorage.getItem("apex-gt-customers");
     return saved ? JSON.parse(saved) : seedCustomers;
   } catch {
     return seedCustomers;
@@ -85,10 +102,20 @@ const getLiveCustomers = () => {
 
 const getLiveCars = () => {
   try {
-    const saved = localStorage.getItem("apex-driveos-cars");
+    const saved = localStorage.getItem("apex-gt-cars");
     return saved ? JSON.parse(saved) : seedCars;
   } catch {
     return seedCars;
+  }
+};
+
+// Phase 6: load live promotions
+const getLivePromotions = () => {
+  try {
+    const saved = localStorage.getItem("apex-gt-promotions");
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
   }
 };
 
@@ -101,14 +128,24 @@ function InvoiceFormPage({
 }) {
   const [form, setForm] = useState(getEmptyForm);
   const [errors, setErrors] = useState({});
-
   const [liveCustomers, setLiveCustomers] = useState(getLiveCustomers);
   const [liveCars, setLiveCars] = useState(getLiveCars);
+  const [livePromotions, setLivePromotions] = useState(getLivePromotions);
+
+  // Selected car object — needed for promotion filtering
+  const selectedCar = liveCars.find((c) => c.id === Number(form.carId)) || null;
+
+  // Active promotions eligible for the current invoice
+  const eligiblePromotions = livePromotions.filter((p) => {
+    if (getPromotionStatus(p) !== "active") return false;
+    return promotionAppliesToCar(p, selectedCar);
+  });
 
   useEffect(() => {
     if (isOpen) {
       setLiveCustomers(getLiveCustomers());
       setLiveCars(getLiveCars());
+      setLivePromotions(getLivePromotions());
       if (editInvoice) {
         setForm({ ...getEmptyForm(), ...editInvoice });
       } else {
@@ -135,34 +172,58 @@ function InvoiceFormPage({
   };
 
   // Auto-fill car + create car line item
+  // Also clear promotion if car changes (it may no longer be eligible)
   const handleCarChange = (cid) => {
     const c = liveCars.find((x) => x.id === Number(cid));
-    set("carId", cid);
-    set("carName", c ? `${c.brand} ${c.model}` : "");
-    set("carPlate", c?.plate || "");
-    if (c) {
-      setForm((f) => ({
-        ...f,
-        carId: cid,
-        carName: `${c.brand} ${c.model}`,
-        carPlate: c.plate,
-        items: f.items.map((item, i) =>
-          item.type === "car" && i === 0
-            ? {
-                ...item,
-                desc: `${c.brand} ${c.model} — ${c.year || 2024}`,
-                unitPrice: c.price,
-              }
-            : item,
-        ),
-      }));
+    setForm((f) => ({
+      ...f,
+      carId: cid,
+      carName: c ? `${c.brand} ${c.model}` : "",
+      carPlate: c?.plate || "",
+      // Clear promotion — re-select after car is chosen
+      promotionId: null,
+      promotionLabel: "",
+      promotionValue: 0,
+      items: f.items.map((item, i) =>
+        item.type === "car" && i === 0
+          ? {
+              ...item,
+              desc: c ? `${c.brand} ${c.model} — ${c.year || 2024}` : item.desc,
+              unitPrice: c ? c.price : item.unitPrice,
+            }
+          : item,
+      ),
+    }));
+  };
+
+  // Phase 6: apply a promotion
+  const handleApplyPromotion = (promotionId) => {
+    if (!promotionId) {
+      // Clear promotion
+      set("promotionId", null);
+      set("promotionLabel", "");
+      set("promotionValue", 0);
+      return;
     }
+    const promo = livePromotions.find((p) => p.id === Number(promotionId));
+    if (!promo) return;
+    const { subtotal } = calcInvoice(form.items, 0, form.vatRate);
+    const discountAED = computeDiscount(promo, subtotal);
+    setForm((f) => ({
+      ...f,
+      promotionId: promo.id,
+      promotionLabel: promo.name,
+      promotionValue: discountAED,
+    }));
+    apexToast.success(
+      "Promotion Applied",
+      `${promo.name} — AED ${discountAED.toLocaleString()} discount applied.`,
+    );
   };
 
   // Line item handlers
   const addItem = () =>
     setForm((f) => ({ ...f, items: [...f.items, EMPTY_ITEM()] }));
-
   const updateItem = (id, key, val) =>
     setForm((f) => ({
       ...f,
@@ -170,14 +231,13 @@ function InvoiceFormPage({
         item.id === id ? { ...item, [key]: val } : item,
       ),
     }));
-
   const removeItem = (id) =>
     setForm((f) => ({ ...f, items: f.items.filter((item) => item.id !== id) }));
 
-  // Live totals
+  // Live totals — Phase 6: discount comes from promotionValue, not form.discount
   const { subtotal, vat, total } = calcInvoice(
     form.items,
-    form.discount,
+    form.promotionValue || 0,
     form.vatRate,
   );
 
@@ -197,8 +257,11 @@ function InvoiceFormPage({
       apexToast.error("Validation Failed", "Please fill all required fields.");
       return;
     }
+    // Pass promotionValue as discount so calcInvoice in other modules
+    // continues to work with the existing "discount" field pattern
     onSave({
       ...form,
+      discount: form.promotionValue || 0,
       id: editInvoice?.id || Date.now(),
     });
     apexToast.success(
@@ -230,8 +293,9 @@ function InvoiceFormPage({
             <div className="flex items-center gap-4">
               <button
                 onClick={onClose}
-                className="w-9 h-9 rounded-xl border border-border flex items-center justify-center
-                           text-text-muted hover:text-text-primary hover:border-gold/40 transition-all"
+                className="w-9 h-9 rounded-xl border border-border flex items-center
+                           justify-center text-text-muted hover:text-text-primary
+                           hover:border-gold/40 transition-all"
                 aria-label="Go back"
               >
                 <ArrowLeft size={16} />
@@ -264,12 +328,12 @@ function InvoiceFormPage({
             </div>
           </div>
 
-          {/* Two-column layout: Form left, live total right */}
+          {/* Two-column layout */}
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-4xl mx-auto px-6 py-6 grid sm:grid-cols-3 grid-cols-1 gap-5">
               {/* ── Left: Form (2 cols wide) ── */}
               <div className="sm:col-span-2 col-span-1 space-y-4">
-                {/* Invoice Identity */}
+                {/* Invoice Details */}
                 <FormSection title="Invoice Details">
                   <div className="grid sm:grid-cols-3 grid-cols-1 gap-4">
                     <Field label="Invoice ID">
@@ -344,7 +408,12 @@ function InvoiceFormPage({
                     </Field>
                     <Field label="Email">
                       <div
-                        className={`input-luxury py-2.5 text-xs ${form.customerEmail ? "text-text-primary" : "text-text-subtle"}`}
+                        className={`input-luxury py-2.5 text-xs
+                                       ${
+                                         form.customerEmail
+                                           ? "text-text-primary"
+                                           : "text-text-subtle"
+                                       }`}
                       >
                         {form.customerEmail || "Auto-filled from CRM"}
                       </div>
@@ -362,7 +431,12 @@ function InvoiceFormPage({
                     </Field>
                     <Field label="Plate No.">
                       <div
-                        className={`input-luxury py-2.5 text-xs ${form.carPlate ? "text-text-primary" : "text-text-subtle"}`}
+                        className={`input-luxury py-2.5 text-xs
+                                       ${
+                                         form.carPlate
+                                           ? "text-text-primary"
+                                           : "text-text-subtle"
+                                       }`}
                       >
                         {form.carPlate || "Auto-filled from Inventory"}
                       </div>
@@ -377,36 +451,30 @@ function InvoiceFormPage({
                       {errors.items}
                     </p>
                   )}
-
-                  {/* Header row */}
                   <div
-                    className="grid-cols-2 sm:grid gap-2 mb-2 sm:grid-cols-[1fr_120px_90px_140px_40px]"
-                    // style={{ gridTemplateColumns: "1fr 80px 80px 110px 32px" }}
+                    className="grid-cols-2 sm:grid gap-2 mb-2
+                                  sm:grid-cols-[1fr_120px_90px_140px_40px]"
                   >
                     {["Description", "Type", "Qty", "Unit Price (AED)", ""].map(
                       (h) => (
                         <p
                           key={h}
                           className="text-[9px] font-bold tracking-[0.15em]
-                                            text-text-subtle uppercase"
+                                    text-text-subtle uppercase"
                         >
                           {h}
                         </p>
                       ),
                     )}
                   </div>
-
-                  {/* Item rows */}
                   <div className="space-y-2 mb-3">
                     {form.items.map((item) => (
                       <div
                         key={item.id}
-                        className=" grid gap-2
-                                    lg:grid-cols-[1fr_120px_90px_140px_40px]
-                                    grid-cols-1 rounded-xl border border-border p-3 lg:p-0 lg:border-0 "
-                        // style={{
-                        //   gridTemplateColumns: "1fr 80px 80px 110px 32px",
-                        // }}
+                        className="grid gap-2
+                                   lg:grid-cols-[1fr_120px_90px_140px_40px]
+                                   grid-cols-1 rounded-xl border border-border
+                                   p-3 lg:p-0 lg:border-0"
                       >
                         <Input
                           placeholder="Item description..."
@@ -446,14 +514,12 @@ function InvoiceFormPage({
                           className="w-8 h-8 rounded-lg border border-border flex items-center
                                      justify-center text-text-subtle hover:text-rose-400
                                      hover:border-rose-400/40 transition-all flex-shrink-0"
-                          aria-label="Remove item"
                         >
                           <Trash2 size={13} />
                         </button>
                       </div>
                     ))}
                   </div>
-
                   <Button
                     variant="ghost"
                     size="sm"
@@ -475,16 +541,88 @@ function InvoiceFormPage({
                 </FormSection>
               </div>
 
-              {/* ── Right: Live totals ── */}
+              {/* ── Right: Live summary ── */}
               <div className="col-span-1">
                 <div className="sticky top-6">
                   <div className="bg-card border border-border rounded-2xl p-5">
                     <p
-                      className="text-[9px] font-bold tracking-[0.25em] text-gold uppercase
-                                  mb-4 pb-2.5 border-b border-border"
+                      className="text-[9px] font-bold tracking-[0.25em] text-gold
+                                  uppercase mb-4 pb-2.5 border-b border-border"
                     >
                       Invoice Summary
                     </p>
+
+                    {/* Phase 6: Promotion picker */}
+                    <div className="mb-4">
+                      <p
+                        className="text-[9px] font-bold tracking-[0.15em]
+                                    text-text-subtle uppercase mb-2"
+                      >
+                        Apply Promotion
+                      </p>
+
+                      {/* Active promotion applied */}
+                      {form.promotionId ? (
+                        <div
+                          className="flex items-center justify-between
+                                        bg-emerald-400/8 border border-emerald-400/20
+                                        rounded-xl px-3 py-2"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Tag
+                              size={11}
+                              className="text-emerald-400 flex-shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-bold text-emerald-400 truncate">
+                                {form.promotionLabel}
+                              </p>
+                              <p className="text-[9px] text-emerald-400/70">
+                                −AED{" "}
+                                {Number(form.promotionValue).toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleApplyPromotion(null)}
+                            className="w-5 h-5 rounded-full flex items-center
+                                       justify-center text-emerald-400/60
+                                       hover:text-rose-400 transition-colors flex-shrink-0"
+                            title="Remove promotion"
+                          >
+                            <X size={11} />
+                          </button>
+                        </div>
+                      ) : eligiblePromotions.length > 0 ? (
+                        <select
+                          className="input-luxury text-xs py-2 w-full"
+                          value=""
+                          onChange={(e) => handleApplyPromotion(e.target.value)}
+                        >
+                          <option value="">Select a promotion...</option>
+                          {eligiblePromotions.map((p) => (
+                            <option key={p.id} value={String(p.id)}>
+                              {p.name} —{" "}
+                              {p.discountType === "percentage"
+                                ? `${p.discountValue}%`
+                                : `AED ${Number(p.discountValue).toLocaleString()}`}{" "}
+                              off
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div
+                          className="px-3 py-2 rounded-xl border border-border
+                                        bg-base text-center"
+                        >
+                          <p className="text-[10px] text-text-subtle">
+                            {form.carId
+                              ? "No active promotions for this vehicle"
+                              : "Select a car to see eligible promotions"}
+                          </p>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Totals */}
                     <div className="space-y-2.5 mb-4">
@@ -495,24 +633,21 @@ function InvoiceFormPage({
                         </span>
                       </div>
 
-                      {/* Discount input */}
-                      <div className="flex justify-between items-center text-xs text-text-muted">
-                        <span>Discount</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-text-subtle text-[10px]">
-                            AED
+                      {/* Promotion discount line — replaces manual discount */}
+                      {form.promotionValue > 0 && (
+                        <div
+                          className="flex justify-between text-xs
+                                        text-emerald-400 font-semibold"
+                        >
+                          <span className="flex items-center gap-1">
+                            <Tag size={10} />
+                            {form.promotionLabel}
                           </span>
-                          <input
-                            type="number"
-                            className="input-luxury text-xs py-1 w-24 text-right"
-                            value={form.discount || ""}
-                            onChange={(e) =>
-                              set("discount", Number(e.target.value) || 0)
-                            }
-                            placeholder="0"
-                          />
+                          <span>
+                            −AED {Number(form.promotionValue).toLocaleString()}
+                          </span>
                         </div>
-                      </div>
+                      )}
 
                       <div
                         className="flex justify-between text-xs font-semibold"
@@ -532,9 +667,12 @@ function InvoiceFormPage({
                       </div>
                     </div>
 
-                    {/* Line item count */}
+                    {/* Line item mini list */}
                     <div className="bg-base border border-border rounded-xl p-3 mb-4">
-                      <p className="text-[9px] text-text-subtle uppercase tracking-widest mb-1">
+                      <p
+                        className="text-[9px] text-text-subtle uppercase
+                                    tracking-widest mb-1"
+                      >
                         Items
                       </p>
                       {form.items.length === 0 ? (
@@ -550,7 +688,10 @@ function InvoiceFormPage({
                             <span className="text-text-muted truncate max-w-[120px]">
                               {item.desc || "Unnamed item"}
                             </span>
-                            <span className="text-text-primary font-semibold flex-shrink-0 ml-2">
+                            <span
+                              className="text-text-primary font-semibold
+                                             flex-shrink-0 ml-2"
+                            >
                               AED {(item.qty * item.unitPrice).toLocaleString()}
                             </span>
                           </div>
@@ -558,7 +699,6 @@ function InvoiceFormPage({
                       )}
                     </div>
 
-                    {/* Save */}
                     <Button
                       variant="primary"
                       size="md"
