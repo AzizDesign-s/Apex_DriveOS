@@ -3,7 +3,17 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Edit, Trash2, Car, Wrench, Clock } from "lucide-react";
+import {
+  X,
+  Edit,
+  Trash2,
+  Car,
+  Wrench,
+  Clock,
+  Sheild,
+  DollarSign,
+  AlertTriangle,
+} from "lucide-react";
 import { Badge, Button } from "../ui";
 
 function DetailRow({ label, value }) {
@@ -30,6 +40,31 @@ function SectionTitle({ children }) {
 
 function CarDetailDrawer({ car, isOpen, onClose, onEdit, onDelete }) {
   const [serviceHistory, setServiceHistory] = useState([]);
+
+  const [reservedByLead, setReservedByLead] = useState(null);
+
+  useEffect(() => {
+    if (!car || car.status !== "reserved") {
+      setReservedByLead(null);
+      return;
+    }
+    const findReservation = () => {
+      try {
+        const saved = localStorage.getItem("apex-gt-leads");
+        const leads = saved ? JSON.parse(saved) : [];
+        const match = leads.find(
+          (l) => l.interestedCarId === car.id && l.status === "reserved",
+        );
+        setReservedByLead(match || null);
+      } catch {
+        setReservedByLead(null);
+      }
+    };
+    findReservation();
+    window.addEventListener("apex-gt-leads-updated", findReservation);
+    return () =>
+      window.removeEventListener("apex-gt-leads-updated", findReservation);
+  }, [car]);
 
   useEffect(() => {
     if (!car) return;
@@ -117,6 +152,162 @@ function CarDetailDrawer({ car, isOpen, onClose, onEdit, onDelete }) {
             {/* Scrollable body */}
             <div className="flex-1 overflow-y-auto px-2 py-4 scrollbar-none space-y-4">
               {/* Hero image / placeholder */}
+
+              {car.status === "reserved" && (
+                <div className="mb-4">
+                  {/* Banner header */}
+                  <div
+                    className="flex items-center gap-2 bg-sky-accent/[0.06]
+                              border border-sky-accent/20 rounded-2xl p-4"
+                  >
+                    <div
+                      className="w-9 h-9 rounded-xl bg-sky-accent/10 flex items-center
+                                justify-center flex-shrink-0"
+                    >
+                      <Shield size={16} className="text-sky-accent" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="text-[9px] font-bold tracking-[0.2em]
+                                text-sky-accent uppercase"
+                      >
+                        Vehicle Reserved
+                      </p>
+                      {reservedByLead ? (
+                        <>
+                          <p className="text-xs font-bold text-text-primary mt-0.5">
+                            {reservedByLead.name}
+                          </p>
+                          <p className="text-[10px] text-text-subtle">
+                            Lead {reservedByLead.leadId}
+                            {reservedByLead.assignedExec
+                              ? ` · ${reservedByLead.assignedExec}`
+                              : ""}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-xs text-text-muted mt-0.5">
+                          Reserved via Lead Management
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Deposit + Expiry row — only if lead has these fields */}
+                  {reservedByLead &&
+                    (reservedByLead.depositAmount ||
+                      reservedByLead.reservationExpiry) && (
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        {/* Deposit */}
+                        <div
+                          className="flex items-center gap-2 bg-gold/[0.04]
+                                  border border-gold/15 rounded-xl px-3 py-2.5"
+                        >
+                          <DollarSign
+                            size={12}
+                            className="text-gold flex-shrink-0"
+                          />
+                          <div>
+                            <p
+                              className="text-[8px] font-bold tracking-[0.15em]
+                                    text-text-subtle uppercase"
+                            >
+                              Deposit
+                            </p>
+                            <p className="text-xs font-extrabold text-gold">
+                              {reservedByLead.depositAmount
+                                ? `AED ${Number(reservedByLead.depositAmount).toLocaleString()}`
+                                : "Not collected"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Expiry */}
+                        {reservedByLead.reservationExpiry &&
+                          (() => {
+                            const diff = Math.ceil(
+                              (new Date(
+                                reservedByLead.reservationExpiry,
+                              ).getTime() -
+                                Date.now()) /
+                                (1000 * 60 * 60 * 24),
+                            );
+                            const isUrgent = diff <= 3;
+                            const isExpired = diff < 0;
+                            return (
+                              <div
+                                className={clsx(
+                                  "flex items-center gap-2 rounded-xl px-3 py-2.5 border",
+                                  isExpired
+                                    ? "bg-rose-400/8  border-rose-400/20"
+                                    : isUrgent
+                                      ? "bg-amber-400/8 border-amber-400/20"
+                                      : "bg-base border-border",
+                                )}
+                              >
+                                {isExpired || isUrgent ? (
+                                  <AlertTriangle
+                                    size={12}
+                                    className={
+                                      isExpired
+                                        ? "text-rose-400"
+                                        : "text-amber-400"
+                                    }
+                                  />
+                                ) : (
+                                  <Shield
+                                    size={12}
+                                    className="text-text-subtle"
+                                  />
+                                )}
+                                <div>
+                                  <p
+                                    className="text-[8px] font-bold tracking-[0.15em]
+                                        text-text-subtle uppercase"
+                                  >
+                                    Expiry
+                                  </p>
+                                  <p
+                                    className={clsx(
+                                      "text-xs font-extrabold",
+                                      isExpired
+                                        ? "text-rose-400"
+                                        : isUrgent
+                                          ? "text-amber-400"
+                                          : "text-text-primary",
+                                    )}
+                                  >
+                                    {new Date(
+                                      reservedByLead.reservationExpiry,
+                                    ).toLocaleDateString("en-AE", {
+                                      day: "numeric",
+                                      month: "short",
+                                    })}
+                                  </p>
+                                  <p
+                                    className={clsx(
+                                      "text-[9px] font-semibold",
+                                      isExpired
+                                        ? "text-rose-400/70"
+                                        : isUrgent
+                                          ? "text-amber-400/70"
+                                          : "text-text-subtle",
+                                    )}
+                                  >
+                                    {isExpired
+                                      ? `${Math.abs(diff)}d overdue`
+                                      : diff === 0
+                                        ? "Today"
+                                        : `${diff}d left`}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                      </div>
+                    )}
+                </div>
+              )}
               <div
                 className="w-full h-auto rounded-2xl bg-base border border-border
                               flex items-center justify-center overflow-hidden"

@@ -44,6 +44,8 @@ const EMPTY = {
   interestedCarImage: null,
   assignedExec: "",
   followUpDate: "",
+  depositAmount: "", // Phase 8
+  reservationExpiry: "",
   status: "new_inquiry",
 };
 
@@ -173,6 +175,9 @@ function LeadFormPage({
       id: editLead?.id || null,
       leadId: editLead?.leadId || null,
       followUpDate: followUpDate || null,
+      depositAmount:
+        form.depositAmount !== "" ? Number(form.depositAmount) : null,
+      reservationExpiry: form.reservationExpiry || null,
       createdAt: editLead?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       customerId: editLead?.customerId || null,
@@ -394,6 +399,24 @@ function LeadFormPage({
               min={new Date().toISOString().split("T")[0]}
             />
           </Field>
+          <Field label="Deposit Amount (AED)">
+            <Input
+              type="number"
+              value={form.depositAmount}
+              onChange={(e) => set("depositAmount", e.target.value)}
+              placeholder="e.g. 50000 — leave blank if not yet collected"
+            />
+          </Field>
+
+          <Field label="Reservation Expiry Date">
+            <input
+              type="date"
+              className="input-luxury text-xs py-2.5"
+              value={form.reservationExpiry || ""}
+              onChange={(e) => set("reservationExpiry", e.target.value)}
+              min={new Date().toISOString().split("T")[0]}
+            />
+          </Field>
 
           {/* Summary preview */}
           {(form.name || form.interestedCarName) && (
@@ -419,6 +442,16 @@ function LeadFormPage({
                   },
                   { label: "Exec", value: form.assignedExec || "Unassigned" },
                   { label: "Follow-up", value: form.followUpDate || "Not set" },
+                  {
+                    label: "Deposit",
+                    value: form.depositAmount
+                      ? `AED ${Number(form.depositAmount).toLocaleString()}`
+                      : "Not collected",
+                  },
+                  {
+                    label: "Expiry",
+                    value: form.reservationExpiry || "Not set",
+                  },
                 ].map((r) => (
                   <div key={r.label} className="flex items-center gap-3">
                     <span

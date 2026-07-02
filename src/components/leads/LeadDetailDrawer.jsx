@@ -30,6 +30,9 @@ import {
   Clock,
   ArrowRight,
   AlertTriangle,
+  DollarSign,
+  AlertTriangle,
+  Shield,
 } from "lucide-react";
 import { Button } from "../ui";
 import { LEAD_COLUMNS } from "../../data/mockLeads";
@@ -43,6 +46,14 @@ const SOURCE_STYLE = {
   Instagram: "bg-violet-400/10   text-violet-400   border-violet-400/20",
   Referral: "bg-gold/10         text-gold         border-gold/20",
   Phone: "bg-amber-400/10    text-amber-400    border-amber-400/20",
+};
+
+const EXPIRY_STYLE = {
+  expired: "text-rose-400   bg-rose-400/10   border-rose-400/20",
+  today: "text-rose-400   bg-rose-400/10   border-rose-400/20",
+  critical: "text-amber-400  bg-amber-400/10  border-amber-400/20",
+  warning: "text-amber-400  bg-amber-400/10  border-amber-400/20",
+  ok: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
 };
 
 function daysSince(dateStr) {
@@ -91,6 +102,25 @@ function SectionTitle({ children }) {
       {children}
     </p>
   );
+}
+
+function getExpiryStatus(expiryDate) {
+  if (!expiryDate) return null;
+  const diff = Math.ceil(
+    (new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
+  if (diff < 0)
+    return {
+      status: "expired",
+      days: Math.abs(diff),
+      label: `Expired ${Math.abs(diff)}d ago`,
+    };
+  if (diff === 0) return { status: "today", days: 0, label: "Expires today" };
+  if (diff <= 3)
+    return { status: "critical", days: diff, label: `Expires in ${diff}d` };
+  if (diff <= 7)
+    return { status: "warning", days: diff, label: `Expires in ${diff}d` };
+  return { status: "ok", days: diff, label: `${diff} days remaining` };
 }
 
 function LeadDetailDrawer({
@@ -252,6 +282,110 @@ function LeadDetailDrawer({
                   }
                 />
               </div>
+
+              {lead.status === "reserved" && (
+                <div className="mb-4">
+                  <p
+                    className="text-[9px] font-bold tracking-[0.2em] text-text-subtle
+                               uppercase mb-3 pb-2 border-b border-border"
+                  >
+                    Reservation Details
+                  </p>
+
+                  <div className="space-y-2">
+                    {/* Deposit amount */}
+                    <div
+                      className="flex items-center justify-between
+                                  bg-gold/[0.04] border border-gold/15 rounded-xl px-3 py-2.5"
+                    >
+                      <div className="flex items-center gap-2">
+                        <DollarSign
+                          size={13}
+                          className="text-gold flex-shrink-0"
+                        />
+                        <span className="text-[10px] font-bold text-text-subtle uppercase tracking-wide">
+                          Deposit Collected
+                        </span>
+                      </div>
+                      {lead.depositAmount ? (
+                        <span className="text-sm font-extrabold text-gold">
+                          AED {Number(lead.depositAmount).toLocaleString()}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-amber-400 font-semibold">
+                          Not yet collected
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Reservation expiry */}
+                    {lead.reservationExpiry ? (
+                      (() => {
+                        const expiry = getExpiryStatus(lead.reservationExpiry);
+                        return (
+                          <div
+                            className={clsx(
+                              "flex items-center justify-between rounded-xl px-3 py-2.5 border",
+                              EXPIRY_STYLE[expiry.status],
+                            )}
+                          >
+                            <div className="flex items-center gap-2">
+                              {expiry.status === "expired" ||
+                              expiry.status === "critical" ||
+                              expiry.status === "today" ? (
+                                <AlertTriangle
+                                  size={13}
+                                  className="flex-shrink-0"
+                                />
+                              ) : (
+                                <Shield size={13} className="flex-shrink-0" />
+                              )}
+                              <span className="text-[10px] font-bold uppercase tracking-wide">
+                                Reservation Expiry
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs font-extrabold">
+                                {new Date(
+                                  lead.reservationExpiry,
+                                ).toLocaleDateString("en-AE", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </p>
+                              <p className="text-[9px] font-semibold opacity-80">
+                                {expiry.label}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      <div
+                        className="flex items-center justify-between
+                                    bg-base border border-border rounded-xl px-3 py-2.5"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Shield
+                            size={13}
+                            className="text-text-subtle flex-shrink-0"
+                          />
+                          <span
+                            className="text-[10px] font-bold text-text-subtle
+                                         uppercase tracking-wide"
+                          >
+                            Reservation Expiry
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-text-subtle">
+                          No expiry set
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Contact info */}
               <SectionTitle>Contact Information</SectionTitle>
