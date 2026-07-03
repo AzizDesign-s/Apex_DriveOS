@@ -4,15 +4,15 @@
 // and Service modules — all live from localStorage, sorted chronologically.
 //
 // EVENT TYPES SHOWN:
-//   Lead Created          (from apex-gt-leads)
-//   Lead Stage Changed     (from apex-gt-leads — status history not stored,
+//   Lead Created          (from apex-driveos-leads)
+//   Lead Stage Changed     (from apex-driveos-leads — status history not stored,
 //                          so we show current stage as a single event)
-//   Test Drive Booked      (from apex-gt-bookings)
-//   Test Drive Completed   (from apex-gt-bookings, status=completed)
-//   Invoice Created         (from apex-gt-invoices)
-//   Invoice Paid             (from apex-gt-invoices, status=paid)
-//   Vehicle Purchased         (from apex-gt-invoices, status=paid, derived)
-//   Service Record              (from apex-gt-service, matched via owned vehicles)
+//   Test Drive Booked      (from apex-driveos-bookings)
+//   Test Drive Completed   (from apex-driveos-bookings, status=completed)
+//   Invoice Created         (from apex-driveos-invoices)
+//   Invoice Paid             (from apex-driveos-invoices, status=paid)
+//   Vehicle Purchased         (from apex-driveos-invoices, status=paid, derived)
+//   Service Record              (from apex-driveos-service, matched via owned vehicles)
 //
 // This component is read-only — it visualizes existing data,
 // it does not create or modify records.
@@ -93,10 +93,10 @@ function CustomerTimeline({ customer }) {
     if (!customer) return;
 
     const build = () => {
-      const leads = loadLS("apex-gt-leads", []);
-      const bookings = loadLS("apex-gt-bookings", []);
-      const invoices = loadLS("apex-gt-invoices", []);
-      const serviceOrders = loadLS("apex-gt-service", []);
+      const leads = loadLS("apex-driveos-leads", []);
+      const bookings = loadLS("apex-driveos-bookings", []);
+      const invoices = loadLS("apex-driveos-invoices", []);
+      const serviceOrders = loadLS("apex-driveos-service", []);
 
       const items = [];
 
@@ -213,10 +213,10 @@ function CustomerTimeline({ customer }) {
 
     // Live updates — rebuild timeline when any source module changes
     const sources = [
-      "apex-gt-leads-updated",
-      "apex-gt-bookings-updated",
-      "apex-gt-invoices-updated",
-      "apex-gt-service-updated",
+      "apex-driveos-leads-updated",
+      "apex-driveos-bookings-updated",
+      "apex-driveos-invoices-updated",
+      "apex-driveos-service-updated",
     ];
     sources.forEach((evt) => window.addEventListener(evt, build));
     return () =>

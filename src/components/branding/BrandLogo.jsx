@@ -6,7 +6,7 @@
 //
 // Props:
 //   brand:   'product' (Apex DriveOS, static default) |
-//            'company' (Nexora Technologies, static) |
+//            'company' (AjiX Technologies, static) |
 //            'product-current' (dynamic — checks for admin-uploaded
 //             custom company logo first, falls back to 'product' if none
 //             exists; wired up in Message 5, safe to use now since it
@@ -22,10 +22,10 @@ import apexIconLight from "../../assets/branding/apex-driveos-icon-light.svg";
 import apexIconDark from "../../assets/branding/apex-driveos-icon-dark.svg";
 import apexFullLight from "../../assets/branding/apex-driveos-full-light.svg";
 import apexFullDark from "../../assets/branding/apex-driveos-full-dark.svg";
-import nexoraFullDark from "../../assets/branding/nexora-full-dark.svg";
-import nexoraFullLight from "../../assets/branding/nexora-full-light.svg";
-import nexoraIconLight from "../../assets/branding/nexora-icon-light.svg";
-import nexoraIconDark from "../../assets/branding/nexora-icon-dark.svg";
+import ajixFullDark from "../../assets/branding/ajix-full-dark.svg";
+import ajixFullLight from "../../assets/branding/ajix-full-light.svg";
+import ajixIconLight from "../../assets/branding/ajix-icon-light.svg";
+import ajixIconDark from "../../assets/branding/ajix-icon-dark.svg";
 
 const LOGO_MAP = {
   product: {
@@ -40,12 +40,12 @@ const LOGO_MAP = {
   },
   company: {
     icon: {
-      dark: nexoraIconDark,
-      light: nexoraIconLight,
+      dark: ajixIconDark,
+      light: ajixIconLight,
     },
     full: {
-      dark: nexoraFullDark,
-      light: nexoraFullLight,
+      dark: ajixFullDark,
+      light: ajixFullLight,
     },
   },
 };
@@ -89,7 +89,7 @@ function BrandLogo({
       src={src}
       alt={
         alt ||
-        (resolvedBrand === "product" ? "Apex DriveOS" : "Nexora Technologies")
+        (resolvedBrand === "product" ? "Apex DriveOS" : "AjiX Technologies")
       }
       className={className}
       onError={(e) => {

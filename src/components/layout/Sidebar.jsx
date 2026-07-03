@@ -392,7 +392,7 @@ function Sidebar({ isMobile = false }) {
         ))}
       </nav>
 
-      {/* ── Bottom: Nexora footer + User Card + Logout ── */}
+      {/* ── Bottom: AjiX footer + User Card + Logout ── */}
       <div className="mt-auto pt-4 border-t border-border space-y-2">
         <SidebarFooterBrand />
 

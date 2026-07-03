@@ -88,7 +88,7 @@ function ServiceFormPage({
   useEffect(() => {
     if (!isOpen) return;
     try {
-      const saved = localStorage.getItem("apex-gt-cars");
+      const saved = localStorage.getItem("apex-driveos-cars");
       const parsed = saved ? JSON.parse(saved) : [];
       // All cars can have a work order, including those already in maintenance
       setCars(parsed);

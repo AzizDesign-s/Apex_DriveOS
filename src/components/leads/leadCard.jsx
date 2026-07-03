@@ -188,7 +188,7 @@ function LeadCard({ lead, onView, isCarReservedByOther = false }) {
         {/* ── Footer: exec + days + follow-up ── */}
         <div
           className="flex items-center justify-between gap-2 pt-2
-                        border-t border-border"
+                        border-t border-border flex-wrap"
         >
           {/* Assigned exec */}
           <div className="flex items-center gap-1">

@@ -10,7 +10,6 @@ import {
   Car,
   Wrench,
   Clock,
-  Sheild,
   DollarSign,
   AlertTriangle,
 } from "lucide-react";
@@ -50,7 +49,7 @@ function CarDetailDrawer({ car, isOpen, onClose, onEdit, onDelete }) {
     }
     const findReservation = () => {
       try {
-        const saved = localStorage.getItem("apex-gt-leads");
+        const saved = localStorage.getItem("apex-driveos-leads");
         const leads = saved ? JSON.parse(saved) : [];
         const match = leads.find(
           (l) => l.interestedCarId === car.id && l.status === "reserved",
@@ -61,15 +60,15 @@ function CarDetailDrawer({ car, isOpen, onClose, onEdit, onDelete }) {
       }
     };
     findReservation();
-    window.addEventListener("apex-gt-leads-updated", findReservation);
+    window.addEventListener("apex-driveos-leads-updated", findReservation);
     return () =>
-      window.removeEventListener("apex-gt-leads-updated", findReservation);
+      window.removeEventListener("apex-driveos-leads-updated", findReservation);
   }, [car]);
 
   useEffect(() => {
     if (!car) return;
     try {
-      const saved = localStorage.getItem("apex-gt-service");
+      const saved = localStorage.getItem("apex-driveos-service");
       const orders = saved ? JSON.parse(saved) : [];
       const history = orders
         .filter((o) => o.vehicleId === car.id)
@@ -87,7 +86,7 @@ function CarDetailDrawer({ car, isOpen, onClose, onEdit, onDelete }) {
     const reload = () => {
       if (!car) return;
       try {
-        const saved = localStorage.getItem("apex-gt-service");
+        const saved = localStorage.getItem("apex-driveos-service");
         const orders = saved ? JSON.parse(saved) : [];
         const history = orders
           .filter((o) => o.vehicleId === car.id)
@@ -100,8 +99,9 @@ function CarDetailDrawer({ car, isOpen, onClose, onEdit, onDelete }) {
         setServiceHistory([]);
       }
     };
-    window.addEventListener("apex-gt-service-updated", reload);
-    return () => window.removeEventListener("apex-gt-service-updated", reload);
+    window.addEventListener("apex-driveos-service-updated", reload);
+    return () =>
+      window.removeEventListener("apex-driveos-service-updated", reload);
   }, [car]);
 
   return (

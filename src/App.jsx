@@ -3,6 +3,7 @@
 
 import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ErrorBoundary from "./components/ErrorBoundary";
 import useAppStore from "./store/useAppStore";
 import { TooltipProvider } from "./components/ui/Tooltip";
 import AppLayout from "./components/layout/AppLayout";
@@ -90,18 +91,22 @@ function App() {
               <Route
                 path="/login"
                 element={
-                  <PublicRoute>
-                    <Login />
-                  </PublicRoute>
+                  <ErrorBoundary variant="auth">
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  </ErrorBoundary>
                 }
               />
 
               {/* ── Protected routes ── */}
               <Route
                 element={
-                  <ProtectedRoute>
-                    <AppLayout />
-                  </ProtectedRoute>
+                  <ErrorBoundary variant="app">
+                    <ProtectedRoute>
+                      <AppLayout />
+                    </ProtectedRoute>
+                  </ErrorBoundary>
                 }
               >
                 <Route index element={<Navigate to="/dashboard" replace />} />

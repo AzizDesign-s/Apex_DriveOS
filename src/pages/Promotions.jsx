@@ -19,7 +19,7 @@ import PromotionFormPage from "../components/promotions/PromotionFormPage";
 import apexToast from "../utils/toast";
 import clsx from "clsx";
 
-const LS_KEY = "apex-gt-promotions";
+const LS_KEY = "apex-driveos-promotions";
 
 const loadPromotions = () => {
   try {
@@ -41,7 +41,9 @@ function Promotions() {
   useEffect(() => {
     localStorage.setItem(LS_KEY, JSON.stringify(promotions));
     window.dispatchEvent(
-      new CustomEvent("apex-gt-promotions-updated", { detail: { promotions } }),
+      new CustomEvent("apex-driveos-promotions-updated", {
+        detail: { promotions },
+      }),
     );
   }, [promotions]);
 
@@ -129,14 +131,17 @@ function Promotions() {
       <PromotionStats promotions={promotions} />
 
       {/* Status filter tabs */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div
+        className="flex items-center gap-2 flex-shrink-0
+                      overflow-x-auto scrollbar-none pb-0.5"
+      >
         {["all", "active", "upcoming", "expired"].map((s) => (
           <button
             key={s}
             onClick={() => setFilterStatus(s)}
             className={clsx(
               "px-3 py-1.5 rounded-xl border text-[11px] font-semibold",
-              "transition-all capitalize",
+              "transition-all capitalize flex-shrink-0", // ← ADD flex-shrink-0
               filterStatus === s
                 ? "border-gold/50 text-gold bg-gold/8"
                 : "border-border text-text-subtle hover:text-text-muted hover:border-gold/25",

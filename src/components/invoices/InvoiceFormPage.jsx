@@ -1,6 +1,6 @@
 // src/components/invoices/InvoiceFormPage.jsx
 // Phase 6 changes:
-//   1. localStorage keys corrected: apex-driveos-* → apex-gt-*
+//   1. localStorage keys corrected: apex-driveos-* → apex-driveos-*
 //   2. Manual discount field REMOVED from Invoice Summary panel
 //   3. Promotion picker ADDED above the totals
 //   4. calcInvoice() discount param now comes from selected
@@ -93,7 +93,7 @@ function Field({ label, required, error, children, className = "" }) {
 // Phase 6: corrected keys
 const getLiveCustomers = () => {
   try {
-    const saved = localStorage.getItem("apex-gt-customers");
+    const saved = localStorage.getItem("apex-driveos-customers");
     return saved ? JSON.parse(saved) : seedCustomers;
   } catch {
     return seedCustomers;
@@ -102,7 +102,7 @@ const getLiveCustomers = () => {
 
 const getLiveCars = () => {
   try {
-    const saved = localStorage.getItem("apex-gt-cars");
+    const saved = localStorage.getItem("apex-driveos-cars");
     return saved ? JSON.parse(saved) : seedCars;
   } catch {
     return seedCars;
@@ -112,7 +112,7 @@ const getLiveCars = () => {
 // Phase 6: load live promotions
 const getLivePromotions = () => {
   try {
-    const saved = localStorage.getItem("apex-gt-promotions");
+    const saved = localStorage.getItem("apex-driveos-promotions");
     return saved ? JSON.parse(saved) : [];
   } catch {
     return [];

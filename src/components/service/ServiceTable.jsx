@@ -160,20 +160,33 @@ function ServiceTable({
           style={{ tableLayout: "fixed", minWidth: "860px" }}
         >
           <colgroup>
-            <col style={{ width: "120px" }} />
-            <col style={{ width: "220px" }} />
-            <col style={{ width: "160px" }} />
-            <col style={{ width: "160px" }} />
-            <col style={{ width: "120px" }} />
-            <col style={{ width: "130px" }} />
-            <col style={{ width: "110px" }} />
-            <col style={{ width: "120px" }} />
+            <col style={{ width: "120px", minWidth: "120px" }} /> {/* sticky */}
+            <col style={{ width: "220px", minWidth: "180px" }} />
+            <col style={{ width: "160px", minWidth: "130px" }} />
+            <col style={{ width: "160px", minWidth: "130px" }} />
+            <col style={{ width: "120px", minWidth: "100px" }} />
+            <col style={{ width: "130px", minWidth: "110px" }} />
+            <col style={{ width: "110px", minWidth: "100px" }} />
+            <col style={{ width: "120px", minWidth: "100px" }} />
           </colgroup>
 
           <thead>
             <tr className="bg-[rgba(212,175,55,0.02)] border-b border-border">
+              {/* Work Order ID — STICKY on mobile horizontal scroll */}
+              <th
+                onClick={() => onSort("workOrderId")}
+                className="px-4 py-3 text-left text-[9px] font-bold
+                           tracking-[0.2em] text-text-subtle uppercase
+                           whitespace-nowrap select-none cursor-pointer
+                           hover:text-text-muted
+                           sticky left-0 z-10
+                           bg-[rgba(13,21,38,0.98)]
+                           border-r border-border"
+              >
+                Work Order
+                <SortIcon active={sortField === "workOrderId"} dir={sortDir} />
+              </th>
               {[
-                { id: "workOrderId", label: "Work Order" },
                 { id: "vehicleName", label: "Vehicle" },
                 { id: "type", label: "Type" },
                 { id: "technicianName", label: "Technician" },
@@ -236,7 +249,10 @@ function ServiceTable({
                   onClick={() => onView(order)}
                 >
                   {/* Work Order ID */}
-                  <td className="px-4 py-3">
+                  <td
+                    className="px-4 py-3 sticky left-0 z-10
+                               bg-card border-r border-border"
+                  >
                     <span className="text-xs font-bold text-gold font-mono">
                       {order.workOrderId}
                     </span>

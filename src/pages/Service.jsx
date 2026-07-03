@@ -2,7 +2,7 @@
 // Sprint 4 Phase 4 — Service & Maintenance module
 //
 // STATE OWNED HERE:
-//   orders[]    — all work orders (localStorage: apex-gt-service)
+//   orders[]    — all work orders (localStorage: apex-driveos-service)
 //   roles[]     — read-only, to find Technician role ID
 //
 // CROSS-MODULE SYNC:
@@ -12,7 +12,7 @@
 //   Delete order   → vehicle status: maintenance → available (if was in_progress/pending)
 //
 // TECHNICIAN OPTIONS:
-//   Read from apex-gt-users filtered by Technician role
+//   Read from apex-driveos-users filtered by Technician role
 //   Falls back to empty array (exec adds technicians via Users module)
 
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -35,10 +35,10 @@ import apexToast from "../utils/toast";
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
 const LS = {
-  orders: "apex-gt-service",
-  cars: "apex-gt-cars",
-  users: "apex-gt-users",
-  roles: "apex-gt-roles",
+  orders: "apex-driveos-service",
+  cars: "apex-driveos-cars",
+  users: "apex-driveos-users",
+  roles: "apex-driveos-roles",
 };
 
 const loadLS = (key, fallback = []) => {
@@ -78,8 +78,9 @@ function Service() {
     const onRoles = (e) => {
       if (e.detail?.roles) setRoles(e.detail.roles);
     };
-    window.addEventListener("apex-gt-roles-updated", onRoles);
-    return () => window.removeEventListener("apex-gt-roles-updated", onRoles);
+    window.addEventListener("apex-driveos-roles-updated", onRoles);
+    return () =>
+      window.removeEventListener("apex-driveos-roles-updated", onRoles);
   }, []);
 
   // ── Technician options — users with Technician role ───────────────────────
@@ -95,7 +96,7 @@ function Service() {
   // ── Persist + dispatch on every orders change ─────────────────────────────
   useEffect(() => {
     saveLS(LS.orders, orders);
-    dispatch("apex-gt-service-updated", { orders });
+    dispatch("apex-driveos-service-updated", { orders });
   }, [orders]);
 
   // ── Search + filters ──────────────────────────────────────────────────────
@@ -120,7 +121,7 @@ function Service() {
         c.id === Number(vehicleId) ? { ...c, status: newStatus } : c,
       );
       saveLS(LS.cars, updated);
-      dispatch("apex-gt-cars-updated", { cars: updated });
+      dispatch("apex-driveos-cars-updated", { cars: updated });
     } catch (err) {
       console.error("Failed to sync car status:", err);
     }
@@ -444,7 +445,7 @@ function Service() {
             setActiveFilters((f) => ({ ...f, status: e.target.value }));
             setPage(1);
           }}
-          className="input-luxury text-xs py-2.5 w-36"
+          className="input-luxury text-xs py-2.5 w-36 flex-shrink-0"
         >
           <option value="">All Statuses</option>
           <option value="pending">Pending</option>
@@ -460,7 +461,7 @@ function Service() {
             setActiveFilters((f) => ({ ...f, type: e.target.value }));
             setPage(1);
           }}
-          className="input-luxury text-xs py-2.5 w-44"
+          className="input-luxury text-xs py-2.5 w-44 flex-shrink-0"
         >
           <option value="">All Types</option>
           {[
@@ -489,7 +490,10 @@ function Service() {
           </button>
         )}
 
-        <p className="text-[10px] text-text-subtle ml-auto flex-shrink-0">
+        <p
+          className="text-[10px] text-text-subtle ml-auto flex-shrink-0
+                      hidden sm:block"
+        >
           {filtered.length} order{filtered.length !== 1 ? "s" : ""}
         </p>
       </div>

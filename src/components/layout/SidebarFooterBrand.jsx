@@ -1,8 +1,8 @@
 // src/components/layout/SidebarFooterBrand.jsx
 //
-// Sprint 2.1 Message 7: compact "Powered by Nexora Technologies" footer
+// Sprint 2.1 Message 7: compact "Powered by AjiX Technologies" footer
 // for the Sidebar. Theme-aware via BrandLogo (company brand, icon variant —
-// uses the cropped Nexora "N" mark files from Message 3).
+// uses the cropped AjiX "N" mark files from Message 3).
 //
 // Collapses to icon-only when the sidebar itself is collapsed, matching
 // the same sidebarOpen-driven pattern the rest of Sidebar.jsx already uses.
@@ -25,7 +25,7 @@ function SidebarFooterBrand() {
           <p className="text-[9px] text-text-subtle leading-tight truncate">
             Powered by{" "}
             <span className="font-semibold text-text-muted">
-              Nexora Technologies
+              AjiX Technologies
             </span>
           </p>
         </div>
@@ -35,7 +35,7 @@ function SidebarFooterBrand() {
             brand="company"
             variant="icon"
             className="w-3.5 h-3.5 object-contain"
-            alt="Powered by Nexora Technologies"
+            alt="Powered by AjiX Technologies"
           />
         </div>
       )}

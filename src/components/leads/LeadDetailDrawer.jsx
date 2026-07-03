@@ -31,7 +31,6 @@ import {
   ArrowRight,
   AlertTriangle,
   DollarSign,
-  AlertTriangle,
   Shield,
 } from "lucide-react";
 import { Button } from "../ui";

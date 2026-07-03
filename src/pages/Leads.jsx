@@ -491,7 +491,7 @@ function Leads() {
       <LeadStats leads={leads} />
 
       {/* ── Kanban board — takes all remaining height ── */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 relative">
         <LeadKanban
           leads={leads}
           onLeadMove={handleLeadMove}
