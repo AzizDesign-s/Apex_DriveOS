@@ -31,8 +31,8 @@ import { AnimatePresence } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { arrayMove } from "@dnd-kit/sortable";
 import { motion } from "framer-motion";
-import LeadColumn from "./LeadColumn";
-import LeadCard from "./LeadCard";
+import LeadColumn from "./leadColumn";
+import LeadCard from "./leadCard";
 import { LEAD_COLUMNS } from "../../data/mockLeads";
 
 function LeadKanban({ leads, onLeadMove, onView, onAddLead }) {
