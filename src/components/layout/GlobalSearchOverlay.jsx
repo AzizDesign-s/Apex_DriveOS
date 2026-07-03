@@ -24,7 +24,7 @@ import {
   getRecentSearches,
   addRecentSearch,
   clearRecentSearches,
-} from "../../utils/globalSearchUtils";
+} from "../../utils/GlobalSearchUtils";
 import clsx from "clsx";
 
 const ENTITY_CONFIG = {
