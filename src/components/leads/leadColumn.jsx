@@ -15,7 +15,7 @@ import {
 } from "@dnd-kit/sortable";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
-import LeadCard from "./LeadCard";
+import LeadCard from "./leadCard";
 import clsx from "clsx";
 
 function LeadColumn({
